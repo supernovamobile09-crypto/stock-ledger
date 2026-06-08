@@ -2335,7 +2335,10 @@ window.createFullBackup=function(){
   try{data.pricingSubmittedKeys=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')}catch(e){console.warn('[BACKUP] read pricingSubmittedKeys:',e.message)}
   try{data.users=Object.entries(JSON.parse(localStorage.getItem('loginUsers')||'{}')).map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})}catch(e){console.warn('[BACKUP] read users:',e.message)}
   var keys=['vendorList','logisticsList','marksList','itemList','colorList','salesmen',
-    'backupFolder','pdfFolderName','companyLogo','invoiceCounter','lastInvoiceNo']
+    'backupFolder','pdfFolderName','companyLogo','invoiceCounter','lastInvoiceNo',
+    'specsList','vendor_custom','marks_custom','logistics_custom','learnedItems',
+    'plm_links_v1','plm_notif_v1','plm_settings_v1',
+    'acctJournalEntries','darkMode','autoFixTypos','bgImage','bgOpacity','bgBlur','cardOpacity']
   keys.forEach(function(k){
     try{var v=localStorage.getItem(k);if(v)data.localStorage[k]=v}catch(e){}
   })
