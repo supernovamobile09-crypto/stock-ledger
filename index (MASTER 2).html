@@ -2313,7 +2313,13 @@ function triggerCloudSync() {
 }
 // Hook DB.save
 var _dbSave=DB.save.bind(DB)
-DB.save=function(){ _dbSave(); triggerCloudSync() }
+DB.save=function(){ 
+  _dbSave(); 
+  try{localStorage.setItem('stockLedgerDB',JSON.stringify(DB.db.map(function(t){
+    return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
+  })))}catch(e){console.warn('[DB] localStorage save error:',e)}
+  triggerCloudSync() 
+}
 // ===================== FULL BACKUP SYSTEM =====================
 window.FULL_BACKUP_KEY='supernovaFullBackup'
 window.createFullBackup=function(){
