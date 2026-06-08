@@ -2366,6 +2366,8 @@ window.restoreFullBackup=function(data){
       })
       DB.save()
     }
+    // Refresh allSavedTx
+    try{if(typeof allSavedTx!=='undefined'){allSavedTx=DB.getTransactions()}}catch(e){}
     // Restore pricingPending
     if(data.pricingPending&&Array.isArray(data.pricingPending)){
       try{localStorage.setItem('pricingPending',JSON.stringify(data.pricingPending))}catch(e){}
@@ -9342,11 +9344,17 @@ window.settingsRestore=function(){
         if(!data.version){showMsg('Invalid backup file (no version field)','error');return}
         if(!confirm('Restore will REPLACE all current data:\n\nFile: '+file.name+'\nTransactions: '+(data.database?data.database.length:0)+'\nPricing entries: '+(data.pricingPending?data.pricingPending.length:0)+'\n\nContinue?'))return
         var msg=window.restoreFullBackup(data)
+        try{allSavedTx=DB.getTransactions()}catch(e){}
         refreshAllSections()
         var todayStr=new Date().toISOString().split('T')[0]
         var df=document.getElementById('do-date-filter')
         if(df){df.value=todayStr};window._doDateFilter=todayStr
         refreshDOCustomers();refreshDOCustomerList()
+        try{fetchHistory()}catch(e){}
+        try{renderBalance()}catch(e){}
+        try{renderWTB()}catch(e){}
+        try{dcRenderLists()}catch(e){}
+        try{window._raRender&&window._raRender()}catch(e){}
         window._supabaseDisabled=true
         showMsg('✅ '+msg+' (Cloud sync disabled)')
       }catch(e){showMsg('Invalid backup file: '+e.message,'error')}
