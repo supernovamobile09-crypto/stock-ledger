@@ -2322,10 +2322,12 @@ window.createFullBackup=function(){
     backedUpAt:new Date().toISOString(),
     database:(window.DB&&DB.db)?DB.db:[],
     pricingPending:[],
+    users:[],
     localStorage:{}
   }
   try{data.pricingPending=JSON.parse(localStorage.getItem('pricingPending')||'[]')}catch(e){console.warn('[BACKUP] read pricingPending:',e.message)}
   try{data.pricingSubmittedKeys=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')}catch(e){console.warn('[BACKUP] read pricingSubmittedKeys:',e.message)}
+  try{data.users=Object.entries(JSON.parse(localStorage.getItem('loginUsers')||'{}')).map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})}catch(e){console.warn('[BACKUP] read users:',e.message)}
   var keys=['vendorList','logisticsList','marksList','itemList','colorList','salesmen',
     'backupFolder','pdfFolderName','companyLogo','invoiceCounter','lastInvoiceNo']
   keys.forEach(function(k){
@@ -2370,6 +2372,14 @@ window.restoreFullBackup=function(data){
       Object.keys(data.localStorage).forEach(function(k){
         try{localStorage.setItem(k,data.localStorage[k])}catch(e){}
       })
+    }
+    // Restore users
+    if(data.users&&Array.isArray(data.users)&&data.users.length){
+      try{
+        var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
+        data.users.forEach(function(u){existing[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
+        localStorage.setItem('loginUsers',JSON.stringify(existing))
+      }catch(e){console.warn('[RESTORE] users:',e.message)}
     }
     return 'DB:'+(data.database?data.database.length:0)+' rows, PP:'+(data.pricingPending?data.pricingPending.length:0)+' items'
   }catch(e){return 'Restore failed: '+e.message}
@@ -5449,6 +5459,8 @@ async function saveToBackend(){
             await w.write(JSON.stringify({
               version:2,backedUpAt:data.backedUpAt,
               database:data.database,pricingPending:data.pricingPending,
+              pricingSubmittedKeys:data.pricingSubmittedKeys,
+              users:data.users,
               localStorage:data.localStorage
             },null,2))
             await w.close()
@@ -9255,7 +9267,7 @@ window.settingsBackup=async function(){
   // Build data first (synchronous)
   var data
   try{data=window.createFullBackup()}catch(e){console.error('[BACKUP] createFullBackup:',e);showMsg('Backup failed (storage error): '+e.message,'error');return}
-  var json=JSON.stringify({version:2,backedUpAt:data.backedUpAt,database:data.database,pricingPending:data.pricingPending,pricingSubmittedKeys:data.pricingSubmittedKeys,localStorage:data.localStorage},null,2)
+  var json=JSON.stringify({version:2,backedUpAt:data.backedUpAt,database:data.database,pricingPending:data.pricingPending,pricingSubmittedKeys:data.pricingSubmittedKeys,users:data.users,localStorage:data.localStorage},null,2)
   var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)
   var fname='supernova_backup_'+ts+'.json'
   console.log('[BACKUP] Data size:',json.length,'bytes')
