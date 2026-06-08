@@ -9539,18 +9539,34 @@ window.settingsRestore=function(){
       const lines=groupByLine(tc.items);
       lines.forEach(l=>{
         const item=parseLine(l.text);
-        if(!item){pendingItem=null;return}
+        if(!item){
+          // If line is just a number and we have a pending item, adopt it as qty
+          var loneNum=l.text.match(/^\s*(\d{1,4})\s*$/);
+          if(loneNum&&pendingItem){
+            pendingItem.qty=parseInt(loneNum[1],10);
+            allParsed.push(pendingItem);
+            pendingItem=null;
+          }else{
+            pendingItem=null;
+          }
+          return;
+        }
 
         if(item.model!=='Unknown'&&(item.color||item.qty)){
           pendingItem=null;
           allParsed.push(item);
         }else if(item.model!=='Unknown'){
           pendingItem=item;
-        }else if(pendingItem&&item.color&&item.qty){
+        }else if(pendingItem&&item.qty>0){
           item.model=pendingItem.model;
           item.storage=pendingItem.storage||item.storage;
           item.country=pendingItem.country||item.country;
           allParsed.push(item);
+          pendingItem=null;
+        }else if(pendingItem&&item.color&&!item.qty){
+          pendingItem.color=item.color;
+          pendingItem.country=pendingItem.country||item.country;
+          // keep pending for next line which may have qty
         }else if(item.model!=='Unknown'||item.color||item.storage){
           pendingItem=null;
           allParsed.push(item);
