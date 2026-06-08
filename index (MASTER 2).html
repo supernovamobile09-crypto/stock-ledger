@@ -2304,27 +2304,16 @@ async function syncToSupabase(){
   }catch(e){console.warn('[Supabase] Sync failed:',e.message)}
 }
 
-// Cloud sync engine — every localStorage write immediately syncs to Supabase
+// Cloud sync engine — syncs to Supabase when DB changes
 var _cloudSyncPending = false
 function triggerCloudSync() {
   if (_cloudSyncPending) return
   _cloudSyncPending = true
-  setTimeout(function() { _cloudSyncPending = false; syncToSupabase() }, 0)
+  setTimeout(function() { _cloudSyncPending = false; syncToSupabase() }, 200)
 }
 // Hook DB.save
 var _dbSave=DB.save.bind(DB)
 DB.save=function(){ _dbSave(); triggerCloudSync() }
-// Hook ALL localStorage writes to sync to Supabase
-var _origSetItem=localStorage.setItem.bind(localStorage)
-localStorage.setItem=function(key,val){
-  _origSetItem(key,val)
-  triggerCloudSync()
-}
-var _origRemoveItem=localStorage.removeItem.bind(localStorage)
-localStorage.removeItem=function(key){
-  _origRemoveItem(key)
-  triggerCloudSync()
-}
 // ===================== FULL BACKUP SYSTEM =====================
 window.FULL_BACKUP_KEY='supernovaFullBackup'
 window.createFullBackup=function(){
