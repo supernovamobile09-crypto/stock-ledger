@@ -9705,7 +9705,7 @@ window.settingsRestore=function(){
         const lenient=existingFimex.find(function(t){
           const d=String(t.date||'').trim();
           if(d!==today)return false;
-          if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage||norm(t.color)!==nColor)return false;
+          if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage)return false;
           var ts=mappedExisting(t);
           var ms=mappedSpecs;
           if(ts&&ms&&ts!==ms)return false;
@@ -9713,11 +9713,12 @@ window.settingsRestore=function(){
         });
         if(lenient){
           match=lenient;
-          var specsChanged=false;
-          if(nSpecs&&!norm(match.specs)){match.specs=specs;specsChanged=true}
-          else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;specsChanged=true}
-          if(specsChanged){
-            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById specs:',e)}
+          var lmChanged=false;
+          if(nColor&&!norm(match.color)){match.color=color;lmChanged=true}
+          if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
+          else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;lmChanged=true}
+          if(lmChanged){
+            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
           }
         }
       }
@@ -9734,11 +9735,11 @@ window.settingsRestore=function(){
         if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
         try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
       }else{
-        // Last resort: check ANY Fimex selling across all dates for same item+storage+color
+        // Last resort: check ANY Fimex selling across all dates for same item+storage (ignore color/specs)
         var anyMatch=allTx.find(function(tx){
           return String(tx.customer_vendor||'').toUpperCase().trim()===FIMEX.toUpperCase()
             &&String(tx.transaction_type||'').toLowerCase()==='selling'
-            &&norm(tx.item_name)===nItem&&norm(tx.storage)===nStorage&&norm(tx.color)===nColor;
+            &&norm(tx.item_name)===nItem&&norm(tx.storage)===nStorage;
         });
         if(anyMatch){
           match=anyMatch;match.date=today;match.quantity=q;
@@ -9773,6 +9774,27 @@ window.settingsRestore=function(){
         currentQty:q,read:false
       });
     });
+
+    // Cleanup: delete today's PLM transactions not in current snapshot
+    try{
+      var todayTx=allTx.filter(function(t){
+        return String(t.customer_vendor||'').toUpperCase().trim()===FIMEX.toUpperCase()
+          &&String(t.transaction_type||'').toLowerCase()==='selling'
+          &&String(t.date||'').trim()===today;
+      });
+      var snapKeys=Object.keys(currentSnap);
+      todayTx.forEach(function(tx){
+        var matchInSnap=snapKeys.some(function(k){
+          var d=currentDetails&&currentDetails[k];
+          if(!d)return false;
+          return norm(tx.item_name||'')===norm(d.model||'').replace(/^iphone\s+/i,'').trim()
+            &&norm(tx.storage||'')===norm(d.storage||'');
+        });
+        if(!matchInSnap){
+          try{DB.deleteById(tx.id)}catch(e){}
+        }
+      });
+    }catch(e){console.warn('[PLM] orphan cleanup error:',e)}
 
     if(changes.length>0){
       try{DB.save()}catch(e){console.warn('[PLM] DB.save error:',e)}
