@@ -9273,7 +9273,11 @@ window.settingsBackup=async function(){
   // Build data first (synchronous)
   var data
   try{data=window.createFullBackup()}catch(e){console.error('[BACKUP] createFullBackup:',e);showMsg('Backup failed (storage error): '+e.message,'error');return}
-  console.log('[BACKUP] DB.db length:',(data.database||[]).length,'PP:',(data.pricingPending||[]).length,'Users:',(data.users||[]).length)
+  var dbLen=(data.database||[]).length
+  var ppLen=(data.pricingPending||[]).length
+  var uLen=(data.users||[]).length
+  console.log('[BACKUP] DB.db length:',dbLen,'PP:',ppLen,'Users:',uLen)
+  if(dbLen===0&&ppLen===0){showMsg('⚠️ Empty backup — no transactions or pricing data found in DB. Add data first, then backup.','error');return}
   var json=JSON.stringify({version:2,backedUpAt:data.backedUpAt,database:data.database,pricingPending:data.pricingPending,pricingSubmittedKeys:data.pricingSubmittedKeys,users:data.users,localStorage:data.localStorage},null,2)
   var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)
   var fname='supernova_backup_'+ts+'.json'
