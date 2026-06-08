@@ -9273,6 +9273,7 @@ window.settingsBackup=async function(){
   // Build data first (synchronous)
   var data
   try{data=window.createFullBackup()}catch(e){console.error('[BACKUP] createFullBackup:',e);showMsg('Backup failed (storage error): '+e.message,'error');return}
+  console.log('[BACKUP] DB.db length:',(data.database||[]).length,'PP:',(data.pricingPending||[]).length,'Users:',(data.users||[]).length)
   var json=JSON.stringify({version:2,backedUpAt:data.backedUpAt,database:data.database,pricingPending:data.pricingPending,pricingSubmittedKeys:data.pricingSubmittedKeys,users:data.users,localStorage:data.localStorage},null,2)
   var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)
   var fname='supernova_backup_'+ts+'.json'
@@ -9310,8 +9311,8 @@ window.settingsBackup=async function(){
     var a=document.createElement('a')
     a.href=url;a.download=fname
     document.body.appendChild(a);a.click()
-    document.body.removeChild(a);URL.revokeObjectURL(url)
-    showMsg('✅ Backup downloaded: '+fname)
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},3000)
+    showMsg('✅ Backup downloaded: '+fname+' ('+json.length+' bytes)')
   }catch(e){console.error('[BACKUP] Download fallback:',e);showMsg('Backup failed: '+e.message,'error')}
 }
 
