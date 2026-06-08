@@ -9814,7 +9814,16 @@ window.settingsRestore=function(){
       const newDetails=result.details;
       const prev=link.currentSnapshot||{};
 
-      const changes=syncPLMTransactions(newSnap,newDetails,link);
+      // Detect snapshot changes first — only sync to DB when qty actually differs
+      var snapChanged=false;
+      for(var k in prev){if(prev[k]!==(newSnap[k]||0)){snapChanged=true;break}}
+      if(!snapChanged){for(var k in newSnap){if(newSnap[k]!==(prev[k]||0)){snapChanged=true;break}}}
+
+      var changes=[];
+      if(snapChanged){
+        changes=diffSnapshots(prev,newSnap,link.id,link.name,newDetails);
+        syncPLMTransactions(newSnap,newDetails,link);
+      }
 
       link.previousSnapshot=prev;
       link.currentSnapshot=newSnap;
