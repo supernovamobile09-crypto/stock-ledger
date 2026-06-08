@@ -9640,7 +9640,7 @@ window.settingsRestore=function(){
     var seen=new Map();
     existingFimex.slice().reverse().forEach(function(t){
       if(t.date!==today)return;
-      var tk=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color);
+      var tk=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(normSpecsMap[norm(t.specs)]||norm(t.specs));
       var prev=seen.get(tk);
       if(prev){
         var keep=(norm(t.specs)||!norm(prev.specs))?t:prev;
@@ -9665,10 +9665,17 @@ window.settingsRestore=function(){
       const color=String(det.color||'');
       const nItem=norm(itemName),nStorage=norm(storage),nSpecs=norm(specs),nColor=norm(color);
 
+      const normSpecsMap={'DE':'EURO','GERMANY':'EURO','IT':'EURO','ITALY':'EURO','EU':'EURO','EUROPE':'EURO'};
+      const mappedSpecs=normSpecsMap[nSpecs]||nSpecs;
+      const mappedExisting=function(t){
+        var ts=norm(t.specs);
+        return normSpecsMap[ts]||ts;
+      };
+
       let match=existingFimex.find(function(t){
         const d=String(t.date||'').trim();
         if(d!==today)return false;
-        return norm(t.item_name)===nItem&&norm(t.storage)===nStorage&&norm(t.specs)===nSpecs&&norm(t.color)===nColor;
+        return norm(t.item_name)===nItem&&norm(t.storage)===nStorage&&mappedExisting(t)===mappedSpecs&&norm(t.color)===nColor;
       });
 
       if(!match){
@@ -9676,24 +9683,28 @@ window.settingsRestore=function(){
           const d=String(t.date||'').trim();
           if(d!==today)return false;
           if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage||norm(t.color)!==nColor)return false;
-          const tnSpecs=norm(t.specs);
-          if(tnSpecs&&nSpecs&&tnSpecs!==nSpecs)return false;
+          var ts=mappedExisting(t);
+          var ms=mappedSpecs;
+          if(ts&&ms&&ts!==ms)return false;
           return true;
         });
         if(lenient){
           match=lenient;
           if(nSpecs&&!norm(match.specs)){match.specs=specs}
+          else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs}
         }
       }
 
       const matchQty=match?(parseInt(match.quantity)||0):0;
 
       if(match&&matchQty===q){
+        if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;try{DB.updateById(match.id,match)}catch(e){}}
         return;
       }
 
       if(match){
         match.quantity=q;
+        if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
         try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
       }else{
         const newTx={
