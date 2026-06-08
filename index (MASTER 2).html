@@ -2323,10 +2323,15 @@ DB.save=function(){
 // ===================== FULL BACKUP SYSTEM =====================
 window.FULL_BACKUP_KEY='supernovaFullBackup'
 window.createFullBackup=function(){
+  // Fallback: if DB.db is empty, try loading from localStorage
+  var dbData=(window.DB&&DB.db&&DB.db.length)?DB.db:[];
+  if(!dbData.length){
+    try{var cached=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]');if(cached.length)dbData=cached}catch(e){}
+  }
   var data={
     version:2,
     backedUpAt:new Date().toISOString(),
-    database:(window.DB&&DB.db)?DB.db:[],
+    database:dbData,
     pricingPending:[],
     users:[],
     localStorage:{}
