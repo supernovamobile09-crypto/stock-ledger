@@ -1961,6 +1961,9 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   <label><i class="fas fa-bell"></i> Browser
     <button class="btn" id="plmNotifPermBtn" style="font-size:0.65rem;padding:3px 8px">Enable</button>
   </label>
+  <label><i class="fas fa-calendar"></i> Order Date
+    <input type="date" id="plmOrderDate" style="padding:3px 6px;border:1px solid var(--input-border);border-radius:6px;font-size:0.72rem;background:var(--input-bg);color:var(--text-body)">
+  </label>
 </div>
 
 <div class="plm-statusline">
@@ -1981,6 +1984,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
     <th>Last Update</th>
     <th>Qty</th>
     <th>Changes</th>
+    <th>View</th>
     <th>Actions</th>
   </tr></thead>
   <tbody id="plmLinksBody"></tbody>
@@ -1999,6 +2003,12 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   </div>
 </div>
 <div id="plmHistoryList" style="max-height:38vh;overflow-y:auto;border:1px solid var(--summary-border);border-radius:8px;background:var(--summary-bg)">
+  <div style="display:flex;gap:8px;padding:6px 10px;align-items:center;flex-wrap:wrap">
+    <span style="font-weight:600;font-size:0.65rem;color:var(--badge-color)">Filter by Link:</span>
+    <select id="plmNotifFilter" style="padding:3px 6px;border:1px solid var(--input-border);border-radius:6px;font-size:0.7rem;background:var(--input-bg);color:var(--text-body)">
+      <option value="all">All Links</option>
+    </select>
+  </div>
   <div class="plm-history-row plm-hdr"><div data-lbl="Date">Date & Time</div><div data-lbl="Item">Item Name</div><div data-lbl="Stor">Storage</div><div data-lbl="Col">Color</div><div data-lbl="Specs">Specs</div><div data-lbl="Qty">Qty</div><div data-lbl="Source">Source</div></div>
   <div id="plmHistoryBody"></div>
   <div id="plmHistoryEmpty" class="plm-empty">No notifications yet. Changes will appear here when detected.</div>
@@ -9626,7 +9636,8 @@ window.settingsRestore=function(){
     }
     const FIMEX='FIMEX FZCO';
     const changes=[];
-    const today=new Date().toISOString().split('T')[0];
+    var orderDateInput=document.getElementById('plmOrderDate');
+    const today=(orderDateInput&&orderDateInput.value)||new Date().toISOString().split('T')[0];
     const norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
 
     let allTx=[];
@@ -9796,6 +9807,7 @@ window.settingsRestore=function(){
 
       link.previousSnapshot=prev;
       link.currentSnapshot=newSnap;
+      link._details=newDetails;
       link.grandTotal=result.totalQty;
       link.lastCheck=new Date().toISOString();
       link.itemCount=Object.keys(newSnap).length;
@@ -9893,6 +9905,7 @@ window.settingsRestore=function(){
         +'<td style="font-size:0.68rem">'+esc(l.lastUpdate?relTime(l.lastUpdate):'—')+(l.lastUpdate?'<br><span style="color:var(--badge-color)">'+esc(fmtShort(l.lastUpdate))+'</span>':'')+'</td>'
         +'<td style="font-weight:700;font-size:0.8rem">'+(l.grandTotal!=null?l.grandTotal:'—')+'</td>'
         +'<td><span class="plm-changes-pill '+(changes?'':'zero')+'">'+changes+'</span></td>'
+        +'<td><button class="plm-mini-btn primary" title="View Items" data-act="viewitems" data-id="'+l.id+'"><i class="fas fa-eye"></i></button></td>'
         +'<td class="actions">'
         +  '<button class="plm-mini-btn primary" title="Refresh" data-act="refresh" data-id="'+l.id+'"><i class="fas fa-sync"></i></button>'
         +  '<button class="plm-mini-btn" title="'+(l.status==='active'?'Pause':'Resume')+'" data-act="toggle" data-id="'+l.id+'"><i class="fas '+(l.status==='active'?'fa-pause':'fa-play')+'"></i></button>'
@@ -9905,9 +9918,18 @@ window.settingsRestore=function(){
   function renderHistory(){
     const body=$('plmHistoryBody');
     if(!body)return;
-    $('plmNotifCount').textContent=NOTIFS.length+' entr'+(NOTIFS.length===1?'y':'ies');
-    $('plmHistoryEmpty').style.display=NOTIFS.length?'none':'block';
-    body.innerHTML=NOTIFS.map(ch=>{
+    var filterSelect=$('plmNotifFilter');
+    if(filterSelect){
+      var currVal=filterSelect.value;
+      filterSelect.innerHTML='<option value="all">All Links</option>'
+        +LINKS.map(function(l){return '<option value="'+esc(l.id)+'">'+esc(l.name||'(unnamed)')+'</option>'}).join('');
+      filterSelect.value=currVal;
+    }
+    var filterLinkId=filterSelect?filterSelect.value:'all';
+    var filtered=filterLinkId==='all'?NOTIFS:NOTIFS.filter(function(n){return n.linkId===filterLinkId});
+    $('plmNotifCount').textContent=filtered.length+' entr'+(filtered.length===1?'y':'ies');
+    $('plmHistoryEmpty').style.display=filtered.length?'none':'block';
+    body.innerHTML=filtered.map(ch=>{
       const unread=!ch.read;
       const itemName=esc(ch.model||'');
       const xstorage=esc(ch.storage||'');
@@ -10114,9 +10136,39 @@ window.settingsRestore=function(){
     openLinkModal(l);
   }
 
+  function handleViewItems(id){
+    const l=LINKS.find(x=>x.id===id);if(!l)return;
+    if(!l.currentSnapshot||!Object.keys(l.currentSnapshot).length){
+      toast('No items for this link yet. Try refreshing first.','error');return;
+    }
+    const dets=l._details||{};
+    var html='<div class="plm-modal-bg" onclick="if(event.target===this)this.remove()" style="z-index:10001">'
+      +'<div class="plm-modal" style="max-width:700px">'
+      +'<h3><i class="fas fa-box"></i> '+esc(l.name||'Items')+'</h3>'
+      +'<div style="max-height:60vh;overflow-y:auto">'
+      +'<table class="plm-table" style="width:100%"><thead><tr>'
+      +'<th>Model</th><th>Storage</th><th>Color</th><th>Specs</th><th>Qty</th>'
+      +'</tr></thead><tbody>';
+    Object.keys(l.currentSnapshot).forEach(function(k){
+      var d=dets[k]||{};
+      var q=l.currentSnapshot[k];
+      html+='<tr><td>'+esc(d.model||'')+'</td><td>'+esc(d.storage||'')+'</td><td>'+esc(d.color||'')+'</td><td>'+esc(d.country||'')+'</td><td style="font-weight:700;text-align:center">'+q+'</td></tr>';
+    });
+    html+='</tbody></table>'
+      +'<div style="margin-top:10px;font-weight:700;text-align:right;padding:8px 12px;background:rgba(48,209,88,0.12);border-radius:8px">Total Qty: <span style="font-size:1.2rem">'+(l.grandTotal||0)+'</span></div>'
+      +'</div>'
+      +'<div class="plm-actions"><button class="btn btn-primary" onclick="this.closest(\'.plm-modal-bg\').remove()">Close</button></div>'
+      +'</div></div>';
+    var div=document.createElement('div');div.innerHTML=html;
+    document.body.appendChild(div.firstElementChild);
+  }
+
   function exportHistory(){
-    if(!NOTIFS.length){toast('No notification history to export','error');return}
-    const rows=NOTIFS.map(n=>({
+    var filterSelect=$('plmNotifFilter');
+    var filterLinkId=filterSelect?filterSelect.value:'all';
+    var exportData=filterLinkId==='all'?NOTIFS:NOTIFS.filter(function(n){return n.linkId===filterLinkId});
+    if(!exportData.length){toast('No notification history to export','error');return}
+    const rows=exportData.map(n=>({
       'Date & Time':fmtTime(n.timestamp),
       'Model':n.model,
       'Qty':n.currentQty!=null?n.currentQty:(n.previousQty!=null?n.previousQty:''),
@@ -10158,7 +10210,9 @@ window.settingsRestore=function(){
     $('plmIntervalSel').onchange=(e)=>{SETTINGS.globalInterval=parseInt(e.target.value,10);persistSettings();renderStatus();if(SETTINGS.autoRefresh){startMonitor()}};
     $('plmFilterSel').onchange=renderLinks;
     $('plmSearchInput').oninput=renderLinks;
+    $('plmNotifFilter').onchange=renderHistory;
     $('plmSoundToggle').onchange=(e)=>{SETTINGS.soundEnabled=e.target.checked;persistSettings()};
+    var od=$('plmOrderDate');if(od&&!od.value)od.value=new Date().toISOString().split('T')[0];
     $('plmNotifPermBtn').onclick=()=>{
       if(!('Notification'in window)){toast('Browser notifications not supported','error');return}
       Notification.requestPermission().then(p=>{
@@ -10185,6 +10239,7 @@ window.settingsRestore=function(){
       else if(act==='delete')handleDelete(id);
       else if(act==='toggle')handleToggle(id);
       else if(act==='edit')handleEdit(id);
+      else if(act==='viewitems')handleViewItems(id);
     });
 
     $('plmHistoryBody').addEventListener('click',function(e){
