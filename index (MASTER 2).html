@@ -2220,19 +2220,12 @@ window.SUPABASE_URL='https://rvizcshgwdjvwxqvuacd.supabase.co'
 window.SUPABASE_ANON_KEY='sb_publishable_fWYJ79gwC0ThFIc5DnBX7g_o30WSGzL'
 window._supabaseReady=false
 
-async function supabaseReq(table,method,query,body){
+async function supabaseReq(table,method,query,body,prefer){
   var url=SUPABASE_URL+'/rest/v1/'+table+(query?'?'+query:'')
-  var res=await fetch(url,{
-    method:method||'GET',
-    headers:{
-      'apikey':SUPABASE_ANON_KEY,
-      'Authorization':'Bearer '+SUPABASE_ANON_KEY,
-      'Content-Type':'application/json',
-      'Prefer':'return=minimal'
-    },
-    body:body?JSON.stringify(body):undefined
-  })
-  if(!res.ok)throw new Error('Supabase '+method+' '+table+': '+res.status)
+  var headers={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}
+  if(prefer)headers['Prefer']=prefer;else headers['Prefer']='return=minimal'
+  var res=await fetch(url,{method:method||'GET',headers:headers,body:body?JSON.stringify(body):undefined})
+  if(!res.ok&&method!=='POST')throw new Error('Supabase '+method+' '+table+': '+res.status)
   var ct=res.headers.get('content-type')
   return(ct&&ct.includes('json'))?res.json():null
 }
@@ -2248,6 +2241,9 @@ async function loadFromSupabase(){
   try{
     var txns=await supabaseReq('transactions','GET','select=*')
     if(txns&&!window._supabaseDisabled){
+      if(typeof DB!=='undefined'&&DB){DB.db=txns.map(function(t){
+        return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',created_at:t.created_at||new Date().toISOString()}
+      })}
       localStorage.setItem('stockLedgerDB',JSON.stringify(txns.map(function(t){
         return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',created_at:t.created_at||new Date().toISOString()}
       })))
@@ -2283,24 +2279,27 @@ async function loadFromSupabase(){
 async function syncToSupabase(){
   try{
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
-    await supabaseReq('transactions','DELETE','id=neq.__ALL__')
     if(db.length){for(var i=0;i<db.length;i+=100){
       var batch=db.slice(i,i+100).map(function(t){return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',created_at:t.created_at||new Date().toISOString()}})
-      await supabaseReq('transactions','POST',null,batch)
+      await supabaseReq('transactions','POST','',batch,'resolution=merge-duplicates')
     }}
     var pending=JSON.parse(localStorage.getItem('pricingPending')||'[]')
-    await supabaseReq('pricing_pending','DELETE','id=neq.__ALL__')
-    if(pending.length){await supabaseReq('pricing_pending','POST',null,pending.map(function(e){
-      return{id:e.id,customer:e.customer||'',week:e.week||'',status:e.status||'',date:e.date||'',logistics:e.logistics||'',marks:e.marks||'',items:JSON.stringify(e.items||[]),completed:!!e.completed,approved:e.approved===undefined?null:e.approved,warehouse_packed:!!e.warehousePacked,cash_released:!!e.cashReleased,pricing:JSON.stringify(e.pricing||[]),currency:e.currency||'USD'}
-    }))}
+    if(pending.length){var pBody=pending.map(function(e){return{id:e.id,customer:e.customer||'',week:e.week||'',status:e.status||'',date:e.date||'',logistics:e.logistics||'',marks:e.marks||'',items:JSON.stringify(e.items||[]),completed:!!e.completed,approved:e.approved===undefined?null:e.approved,warehouse_packed:!!e.warehousePacked,cash_released:!!e.cashReleased,pricing:JSON.stringify(e.pricing||[]),currency:e.currency||'USD'}})
+    var pUrl=SUPABASE_URL+'/rest/v1/pricing_pending'
+    var pRes=await fetch(pUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(pBody)})
+    if(!pRes.ok&&pRes.status!==409&&pRes.status!==201)console.warn('[Supabase] pricing_pending sync:',pRes.status)}
     var keysObj=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')
     var keys=Object.entries(keysObj)
-    await supabaseReq('pricing_submitted_keys','DELETE','key=neq.__ALL__')
-    if(keys.length){await supabaseReq('pricing_submitted_keys','POST',null,keys.map(function(k){return{key:k[0],qty:k[1]}}))}
+    if(keys.length){var kBody=keys.map(function(k){return{key:k[0],qty:k[1]}})
+    var kUrl=SUPABASE_URL+'/rest/v1/pricing_submitted_keys'
+    var kRes=await fetch(kUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(kBody)})
+    if(!kRes.ok&&kRes.status!==409&&kRes.status!==201)console.warn('[Supabase] pricing_submitted_keys sync:',kRes.status)}
     var usersObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     var users=Object.entries(usersObj)
-    await supabaseReq('users','DELETE','username=neq.__ALL__')
-    if(users.length){await supabaseReq('users','POST',null,users.map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}}))}
+    if(users.length){var uBody=users.map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})
+    var uUrl=SUPABASE_URL+'/rest/v1/users'
+    var uRes=await fetch(uUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(uBody)})
+    if(!uRes.ok&&uRes.status!==409&&uRes.status!==201)console.warn('[Supabase] users sync:',uRes.status)}
     console.log('[Supabase] Data synced to cloud')
   }catch(e){console.warn('[Supabase] Sync failed:',e.message)}
 }
