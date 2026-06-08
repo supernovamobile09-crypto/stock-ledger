@@ -9651,7 +9651,8 @@ window.settingsRestore=function(){
     var seen=new Map();
     existingFimex.slice().reverse().forEach(function(t){
       if(t.date!==today)return;
-      var tk=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(normSpecsMap[norm(t.specs)]||norm(t.specs));
+      const normSpecsMapDup={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
+      var tk=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(normSpecsMapDup[norm(t.specs)]||norm(t.specs));
       var prev=seen.get(tk);
       if(prev){
         var keep=(norm(t.specs)||!norm(prev.specs))?t:prev;
@@ -9676,7 +9677,7 @@ window.settingsRestore=function(){
       const color=String(det.color||'');
       const nItem=norm(itemName),nStorage=norm(storage),nSpecs=norm(specs),nColor=norm(color);
 
-      const normSpecsMap={'DE':'EURO','GERMANY':'EURO','IT':'EURO','ITALY':'EURO','EU':'EURO','EUROPE':'EURO'};
+      const normSpecsMap={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
       const mappedSpecs=normSpecsMap[nSpecs]||nSpecs;
       const mappedExisting=function(t){
         var ts=norm(t.specs);
