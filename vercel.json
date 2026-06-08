@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index (MASTER 2).html" }
+  ]
+}
