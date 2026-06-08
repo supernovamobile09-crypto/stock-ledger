@@ -5648,7 +5648,6 @@ async function saveToBackend(){
 // Then try to load from Supabase and refresh if newer data found
 if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFromSupabase().then(function(){
   if(window._supabaseDisabled)return
-  DB.init()
   try{fetchHistory()}catch(e){}
   try{switchTab('entry')}catch(e){}
   dcRenderLists()
