@@ -5638,6 +5638,7 @@ async function saveToBackend(){
   // Load saved data and show initial tab
   // Load from localStorage FIRST (instant), then try Supabase in background
   DB.init()
+  try{var cached=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]');if(cached.length){DB.db=cached}}catch(e){}
   try{fetchHistory()}catch(e){}
   try{switchTab('entry')}catch(e){}
   dcRenderLists()
