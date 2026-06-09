@@ -10486,5 +10486,16 @@ window.settingsRestore=function(){
   window.PLM={getLinks:()=>LINKS,getNotifs:()=>NOTIFS,refreshAll,checkLink,syncPLMTransactions,clearBalanceNotif,updateBalanceNotif,playAlert};
 })();
 </script>
+<script>
+(function forceLoginCheck(){
+  setTimeout(function(){
+    var ol=document.getElementById('loginOverlay')
+    if(ol&&ol.classList.contains('hidden')&&!window.currentUser){
+      ol.classList.remove('hidden')
+      console.log('[FORCE LOGIN] Showing login overlay')
+    }
+  },500)
+})()
+</script>
 </body>
 </html>
