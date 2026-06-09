@@ -2269,6 +2269,12 @@ async function loadFromSupabase(){
         if(!uobj[dk])uobj[dk]=existing[dk]
         else{for(var f in existing[dk]){if(uobj[dk][f]==null)uobj[dk][f]=existing[dk][f]}}
       }
+      // Only supernova can be admin; downgrade any other admin
+      Object.keys(uobj).forEach(function(k){
+        if(uobj[k].role==='admin'&&k!=='supernova'){uobj[k].role='pricing';uobj[k].tabs=uobj[k].tabs||['transaction','history','pricing']}
+      })
+      if(!uobj.supernova){uobj.supernova={password:'admin123',role:'admin',name:'Supernova Admin'}}
+      else{uobj.supernova.role='admin'}
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
     console.log('[Supabase] Data loaded from cloud (localStorage refreshed from cloud)')
@@ -2344,7 +2350,7 @@ window.createFullBackup=function(){
   }
   try{data.pricingPending=JSON.parse(localStorage.getItem('pricingPending')||'[]')}catch(e){console.warn('[BACKUP] read pricingPending:',e.message)}
   try{data.pricingSubmittedKeys=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')}catch(e){console.warn('[BACKUP] read pricingSubmittedKeys:',e.message)}
-  try{data.users=Object.entries(JSON.parse(localStorage.getItem('loginUsers')||'{}')).map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})}catch(e){console.warn('[BACKUP] read users:',e.message)}
+  try{data.users=Object.entries(JSON.parse(localStorage.getItem('loginUsers')||'{}')).map(function(u){return{username:u[0],role:u[1].role,name:u[1].name||u[0]}})}catch(e){console.warn('[BACKUP] read users:',e.message)}
   var keys=['vendorList','logisticsList','marksList','itemList','colorList','salesmen',
     'backupFolder','pdfFolderName','companyLogo','invoiceCounter','lastInvoiceNo',
     'specsList','vendor_custom','marks_custom','logistics_custom','learnedItems',
@@ -2399,7 +2405,11 @@ window.restoreFullBackup=function(data){
     if(data.users&&Array.isArray(data.users)&&data.users.length){
       try{
         var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
-        data.users.forEach(function(u){existing[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
+        data.users.forEach(function(u){
+          existing[u.username]={password:u.password||(existing[u.username]?existing[u.username].password:''),role:u.role,name:u.name||u.username}
+          if(u.username!=='supernova'&&u.role==='admin')existing[u.username].role='pricing'
+        })
+        if(!existing.supernova)existing.supernova={password:'admin123',role:'admin',name:'Supernova Admin'}
         localStorage.setItem('loginUsers',JSON.stringify(existing))
       }catch(e){console.warn('[RESTORE] users:',e.message)}
     }
