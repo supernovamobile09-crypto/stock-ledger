@@ -2279,24 +2279,29 @@ async function loadFromSupabase(){
 async function syncToSupabase(){
   try{
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
+    // First delete all cloud transactions, then re-insert fresh (ensures deletes persist)
+    await supabaseReq('transactions','DELETE','id=neq.nonexistent')
     if(db.length){for(var i=0;i<db.length;i+=100){
       var batch=db.slice(i,i+100).map(function(t){return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',created_at:t.created_at||new Date().toISOString()}})
       var syncRes=await supabaseReq('transactions','POST','',batch,'resolution=merge-duplicates')
       if(syncRes===null&&batch.length)console.warn('[Supabase] Sync batch returned null — check columns')
     }}
     var pending=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+    await fetch(SUPABASE_URL+'/rest/v1/pricing_pending?id=neq.nonexistent',{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}})
     if(pending.length){var pBody=pending.map(function(e){return{id:e.id,customer:e.customer||'',week:e.week||'',status:e.status||'',date:e.date||'',logistics:e.logistics||'',marks:e.marks||'',items:JSON.stringify(e.items||[]),completed:!!e.completed,approved:e.approved===undefined?null:e.approved,warehouse_packed:!!e.warehousePacked,cash_released:!!e.cashReleased,pricing:JSON.stringify(e.pricing||[]),currency:e.currency||'USD'}})
     var pUrl=SUPABASE_URL+'/rest/v1/pricing_pending'
     var pRes=await fetch(pUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(pBody)})
     if(!pRes.ok&&pRes.status!==409&&pRes.status!==201)console.warn('[Supabase] pricing_pending sync:',pRes.status)}
     var keysObj=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')
     var keys=Object.entries(keysObj)
+    await fetch(SUPABASE_URL+'/rest/v1/pricing_submitted_keys?key=neq.nonexistent',{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}})
     if(keys.length){var kBody=keys.map(function(k){return{key:k[0],qty:k[1]}})
     var kUrl=SUPABASE_URL+'/rest/v1/pricing_submitted_keys'
     var kRes=await fetch(kUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(kBody)})
     if(!kRes.ok&&kRes.status!==409&&kRes.status!==201)console.warn('[Supabase] pricing_submitted_keys sync:',kRes.status)}
     var usersObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     var users=Object.entries(usersObj)
+    await fetch(SUPABASE_URL+'/rest/v1/users?username=neq.nonexistent',{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}})
     if(users.length){var uBody=users.map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})
     var uUrl=SUPABASE_URL+'/rest/v1/users'
     var uRes=await fetch(uUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(uBody)})
