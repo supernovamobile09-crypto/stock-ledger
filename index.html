@@ -9804,8 +9804,8 @@ window.settingsRestore=function(){
             &&String(tx.transaction_type||'').toLowerCase()==='selling'
             &&norm(tx.item_name)===nItem&&norm(tx.storage)===nStorage;
         });
-        if(anyMatch){
-          match=anyMatch;match.date=today;match.quantity=q;
+        if(anyMatch&&String(anyMatch.date||'').trim()===today){
+          match=anyMatch;match.quantity=q;
           if(!match.linkId)match.linkId=linkIdVal;
           if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
           try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById fallback:',e)}
