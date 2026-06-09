@@ -6679,6 +6679,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
         if(pending[i].id===entryId){pending[i].salesman=value;break}
       }
       savePending(pending);
+      updateSubmitBtnState(entryId);
       if(value)showMsg('Salesman assigned: '+value);
     }
 
@@ -6871,13 +6872,39 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
         html+='<tfoot><tr class="appr-total"><td colspan="3" style="text-align:right">Total Units</td><td>'+totalUnits+'</td><td></td><td style="font-weight:700;color:#1e3c72">'+(grand>0?pricingSymbol()+pricingConv(grand).toFixed(2):pricingSymbol()+'0.00')+'</td></tr></tfoot>'
         html+='</table>'
         html+='<div class="appr-actions">'
-        html+='<button class="btn btn-success" style="background:#4ade80;color:#1e1e2e" onclick="submitPricingEntry(\''+entry.id+'\')"><i class="fas fa-check"></i> SUBMIT</button>'
+        html+='<button class="btn btn-success" id="submitBtn_'+entry.id+'" onclick="submitPricingEntry(\''+entry.id+'\')"><i class="fas fa-check"></i> SUBMIT</button>'
         html+='<button class="btn btn-danger" style="background:#ff3b30;color:#fff" onclick="deletePricingEntry(\''+entry.id+'\')"><i class="fas fa-trash"></i> DELETE</button>'
         html+='</div>'
         html+='</div>'
       })
       html+='</div>'
       el.innerHTML=html
+      // Disable submit until all items priced & salesman selected
+      var entries=el.querySelectorAll('.pricing-card[data-id]')
+      entries.forEach(function(card){
+        var id=card.getAttribute('data-id')
+        updateSubmitBtnState(id)
+      })
+    }
+
+    function updateSubmitBtnState(entryId){
+      var btn=document.getElementById('submitBtn_'+entryId)
+      if(!btn)return
+      var pending=getPending()
+      var entry=null
+      for(var i=0;i<pending.length;i++){if(pending[i].id===entryId){entry=pending[i];break}}
+      if(!entry){btn.disabled=true;btn.style.background='#6b7280';btn.style.cursor='not-allowed';return}
+      var allPriced=entry.items.every(function(it){return parseFloat(it.unitPrice)>0})
+      var hasSalesman=!!entry.salesman
+      if(allPriced&&hasSalesman){
+        btn.disabled=false
+        btn.style.background='#4ade80'
+        btn.style.cursor='pointer'
+      }else{
+        btn.disabled=true
+        btn.style.background='#6b7280'
+        btn.style.cursor='not-allowed'
+      }
     }
 
     window.onPricingItemPriceChange=function(entryId,itemIdx,val){
@@ -6909,9 +6936,12 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
         var gf=entryEl.querySelector('.appr-total td:last-child')
         if(gf)gf.textContent=grand>0?pricingSymbol()+pricingConv(grand).toFixed(2):pricingSymbol()+'0.00'
       }
+      updateSubmitBtnState(entryId)
     }
 
     window.submitPricingEntry=function(entryId){
+      var btn=document.getElementById('submitBtn_'+entryId)
+      if(btn&&btn.disabled)return
       var pending=getPending()
       for(var i=0;i<pending.length;i++){
         if(pending[i].id===entryId){
