@@ -9574,8 +9574,7 @@ window.settingsRestore=function(){
 
   async function fetchAndParsePDF(url){
     if(typeof pdfjsLib==='undefined')throw new Error('PDF.js not loaded');
-    const proxyUrl='/api/proxy-pdf?url='+encodeURIComponent(url);
-    const loadingTask=pdfjsLib.getDocument({url:proxyUrl,corsMode:'cors',withCredentials:false});
+    const loadingTask=pdfjsLib.getDocument({url:url,corsMode:'cors',withCredentials:false});
     const pdf=await loadingTask.promise;
     const allParsed=[];
     let pendingItem=null;
