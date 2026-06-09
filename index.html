@@ -2161,7 +2161,6 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </div>
 
 <script>
-window.bindClick=window.bindClick||function(id,fn){var el=document.getElementById(id);if(el)el.addEventListener("click",fn)}
 // ===================== LOCAL DATABASE (localStorage JSON) =====================
 const DB = {
   db: [],
@@ -2320,7 +2319,7 @@ DB.save=function(){
   try{localStorage.setItem('stockLedgerDB',JSON.stringify(DB.db.map(function(t){
     return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
   })))}catch(e){}
-  scheduleSync(); 
+  triggerCloudSync(); 
 }
 // ===================== FULL BACKUP SYSTEM =====================
 window.FULL_BACKUP_KEY='supernovaFullBackup'
@@ -5364,7 +5363,7 @@ async function saveToBackend(){
     var marks=(byId('parseMarksSelect')||{}).value||''
     parseText(txt.value,type,logistics,marks,vendor)
   })
-  if(el=byId('saveToBackendBtn'))el.addEventListener("click",async function(){await saveToBackend();triggerCloudSync()})
+  if(el=byId('saveToBackendBtn'))el.addEventListener('click',saveToBackend)
   ;(function(){
     var wrap=document.getElementById('editableTableWrap')
     if(!wrap)return
@@ -5680,7 +5679,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   try{
     var lu=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     if(lu.supernova&&typeof supabaseReq==='function'&&!window._supabaseDisabled){
-      supabaseReq('users','POST','',{username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'},"resolution=merge-duplicates")
+      supabaseReq('users','POST',JSON.stringify({username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'}))
         .catch(function(){})
     }
   }catch(e){}
@@ -7975,6 +7974,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   })()
   // ===================== END WAREHOUSE MODULE =====================
 
+  // ===================== END ACCOUNTING SALES MODULE =====================
 
   // ===================== INVOICE MODULE =====================
   ;(function(){
@@ -8308,7 +8308,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     })
   }catch(e){}
   // Initial tab notification update
-  if(typeof updateTabNotifs==='function')try{updateTabNotifs()}catch(e){};
+  if(typeof updateTabNotifs==='function')try{updateTabNotifs()}catch(e){}
 (function(){
   var bgBtn=document.getElementById('bgUploadBtn')
   var bgPanel=document.getElementById('bgPanel')
@@ -8476,7 +8476,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   // Ensure supernova exists
   (function(){var u=getUsers();if(!u.supernova){u.supernova={password:'admin123',role:'admin',name:'Supernova Admin'};saveUsers(u)}})()
   window.loginRefreshDropdown=function(){}
-  window.toggleShowPass=function toggleShowPass(){
+  function toggleShowPass(){
     var inp=document.getElementById('loginPass')
     var eye=document.getElementById('passEye')
     if(!inp||!eye)return
