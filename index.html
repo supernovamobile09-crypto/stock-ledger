@@ -9578,6 +9578,7 @@ window.settingsRestore=function(){
     const pdf=await loadingTask.promise;
     const allParsed=[];
     let pendingItem=null;
+    let lastCtx=null;
     for(let p=1;p<=pdf.numPages;p++){
       const page=await pdf.getPage(p);
       const tc=await page.getTextContent();
@@ -9585,7 +9586,6 @@ window.settingsRestore=function(){
       lines.forEach(l=>{
         const item=parseLine(l.text);
         if(!item){
-          // If line is just a number and we have a pending item, adopt it as qty
           var loneNum=l.text.match(/^\s*(\d{1,4})\s*$/);
           if(loneNum&&pendingItem){
             pendingItem.qty=parseInt(loneNum[1],10);
@@ -9599,6 +9599,7 @@ window.settingsRestore=function(){
 
         if(item.model!=='Unknown'&&item.color&&item.qty){
           pendingItem=null;
+          lastCtx={model:item.model,storage:item.storage,country:item.country};
           allParsed.push(item);
         }else if(item.model!=='Unknown'){
           if(pendingItem)allParsed.push(pendingItem);
@@ -9608,12 +9609,19 @@ window.settingsRestore=function(){
           item.storage=pendingItem.storage||item.storage;
           item.color=pendingItem.color||item.color;
           item.country=pendingItem.country||item.country;
+          lastCtx={model:item.model,storage:item.storage,country:item.country};
           allParsed.push(item);
           pendingItem=null;
         }else if(pendingItem&&item.color&&!item.qty){
           pendingItem.color=item.color;
           pendingItem.country=pendingItem.country||item.country;
-          if(pendingItem.qty>0){allParsed.push(pendingItem);pendingItem=null}
+          if(pendingItem.qty>0){allParsed.push(pendingItem);lastCtx={model:pendingItem.model,storage:pendingItem.storage,country:pendingItem.country};pendingItem=null}
+        }else if(lastCtx&&item.color&&item.qty>0&&item.model==='Unknown'){
+          item.model=lastCtx.model;
+          item.storage=lastCtx.storage||item.storage;
+          item.country=lastCtx.country||item.country;
+          if(pendingItem){allParsed.push(pendingItem);pendingItem=null}
+          allParsed.push(item);
         }else if(item.model!=='Unknown'||item.color||item.storage){
           if(pendingItem)allParsed.push(pendingItem);
           pendingItem=null;
