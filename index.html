@@ -2171,7 +2171,7 @@ const DB = {
   insertTransactions(txns) {
     for (var i = 0; i < txns.length; i++) {
       var t = txns[i];
-      this.db.push({ id: this.nextId(), date: t.date || '', transaction_type: t.transaction_type || '', customer_vendor: t.customer_vendor || '', marks: t.marks || '', item_name: t.item_name || '', storage: t.storage || '', specs: t.specs || '', color: t.color || '', quantity: Number(t.quantity) || 0, transaction_status: t.transaction_status || '', logistics: t.logistics || '', linkId: t.linkId || '', linkName: t.linkName || '', created_at: new Date().toISOString() });
+      this.db.push({ id: t.id || this.nextId(), date: t.date || '', transaction_type: t.transaction_type || '', customer_vendor: t.customer_vendor || '', marks: t.marks || '', item_name: t.item_name || '', storage: t.storage || '', specs: t.specs || '', color: t.color || '', quantity: Number(t.quantity) || 0, transaction_status: t.transaction_status || '', logistics: t.logistics || '', linkId: t.linkId || '', linkName: t.linkName || '', created_at: t.created_at || new Date().toISOString() });
     }
     this.save();
     return txns.length;
@@ -2209,7 +2209,7 @@ const DB = {
     this.db = [];
     for (var i = 0; i < data.transactions.length; i++) {
       var t = data.transactions[i];
-      this.db.push({ id: this.nextId(), date: t.date || '', transaction_type: t.transaction_type || '', customer_vendor: t.customer_vendor || '', marks: t.marks || '', item_name: t.item_name || '', storage: t.storage || '', specs: t.specs || '', color: t.color || '', quantity: Number(t.quantity) || 0, transaction_status: t.transaction_status || '', logistics: t.logistics || '', linkId: t.linkId || '', linkName: t.linkName || '', created_at: new Date().toISOString() });
+      this.db.push({ id: t.id || this.nextId(), date: t.date || '', transaction_type: t.transaction_type || '', customer_vendor: t.customer_vendor || '', marks: t.marks || '', item_name: t.item_name || '', storage: t.storage || '', specs: t.specs || '', color: t.color || '', quantity: Number(t.quantity) || 0, transaction_status: t.transaction_status || '', logistics: t.logistics || '', linkId: t.linkId || '', linkName: t.linkName || '', created_at: t.created_at || new Date().toISOString() });
     }
     this.save();
     return data.transactions.length;
