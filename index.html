@@ -2161,6 +2161,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </div>
 
 <script>
+window.bindClick=window.bindClick||function(id,fn){var el=document.getElementById(id);if(el)el.addEventListener("click",fn)}
 // ===================== LOCAL DATABASE (localStorage JSON) =====================
 const DB = {
   db: [],
@@ -5678,7 +5679,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   try{
     var lu=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     if(lu.supernova&&typeof supabaseReq==='function'&&!window._supabaseDisabled){
-      supabaseReq('users','POST',JSON.stringify({username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'}))
+      supabaseReq('users','POST','',{username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'},"resolution=merge-duplicates")
         .catch(function(){})
     }
   }catch(e){}
