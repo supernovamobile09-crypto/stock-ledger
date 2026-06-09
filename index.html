@@ -9597,10 +9597,11 @@ window.settingsRestore=function(){
           return;
         }
 
-        if(item.model!=='Unknown'&&(item.color||item.qty)){
+        if(item.model!=='Unknown'&&item.color&&item.qty){
           pendingItem=null;
           allParsed.push(item);
         }else if(item.model!=='Unknown'){
+          if(pendingItem)allParsed.push(pendingItem);
           pendingItem=item;
         }else if(pendingItem&&item.qty>0){
           item.model=pendingItem.model;
@@ -9612,13 +9613,15 @@ window.settingsRestore=function(){
         }else if(pendingItem&&item.color&&!item.qty){
           pendingItem.color=item.color;
           pendingItem.country=pendingItem.country||item.country;
-          // keep pending for next line which may have qty
+          if(pendingItem.qty>0){allParsed.push(pendingItem);pendingItem=null}
         }else if(item.model!=='Unknown'||item.color||item.storage){
+          if(pendingItem)allParsed.push(pendingItem);
           pendingItem=null;
           allParsed.push(item);
         }
       });
     }
+    if(pendingItem)allParsed.push(pendingItem);
     const map=new Map();
     allParsed.forEach(it=>{
       const k=itemKey(it);
