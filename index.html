@@ -545,7 +545,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 @keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.6)}70%{box-shadow:0 0 0 6px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 </style>
 </head>
-<body onload="setTimeout(function(){try{if(!window.currentUser){var ol=document.getElementById('loginOverlay');if(ol)ol.classList.remove('hidden')}}catch(e){}},300)">
+<body onload="setTimeout(function(){try{if(!window.currentUser){var ol=document.getElementById('loginOverlay');if(ol)ol.classList.remove('hidden');populateLoginUserList()}}catch(e){}},300)">
+<script>function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}catch(e){console.error('populateLoginUserList error:',e)}}()</script>
 <style>
 @media (max-width: 480px) {
   #loginBox{max-width:95vw;padding:30px 20px 20px}
@@ -10490,9 +10491,14 @@ window.settingsRestore=function(){
 (function forceLoginCheck(){
   setTimeout(function(){
     var ol=document.getElementById('loginOverlay')
-    if(ol&&ol.classList.contains('hidden')&&!window.currentUser){
-      ol.classList.remove('hidden')
-      console.log('[FORCE LOGIN] Showing login overlay')
+    if(ol){
+      if(!window.currentUser){
+        ol.classList.remove('hidden')
+        console.log('[FORCE LOGIN] Showing login overlay - no user')
+      }else{
+        ol.classList.add('hidden')
+        console.log('[FORCE LOGIN] User exists:',window.currentUser.username)
+      }
     }
   },500)
 })()
