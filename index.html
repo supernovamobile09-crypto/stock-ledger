@@ -782,6 +782,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   <button class="mob-tab" data-mobtab="warehouse"><i class="fas fa-warehouse"></i><span>Stock</span><span class="mob-notif hide" data-mobnotif="warehouse"></span></button>
   <button class="mob-tab" data-mobtab="invoice"><i class="fas fa-file-invoice"></i><span>Invoice</span><span class="mob-notif hide" data-mobnotif="invoice"></span></button>
   <button class="mob-tab" data-mobtab="balance"><i class="fas fa-balance-scale"></i><span>WTS/WTB</span><span class="mob-notif hide" data-mobnotif="balance"></span></button>
+  <button class="mob-tab" data-mobtab="login" onclick="if(currentUser){logout()}else{showLogin()}" style="color:var(--accent)"><i class="fas fa-user-circle"></i><span id="mobLoginLbl">Login</span></button>
 </nav>
 <button class="mob-fab" id="mobFab" title="New"><i class="fas fa-plus"></i></button>
 <div class="mob-sheet-overlay" id="mobSheetOverlay">
@@ -8464,6 +8465,15 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     if(!allowed)return false
     return allowed.indexOf(role)>=0
   }
+  function canAccessOrHasItems(tab){
+    if(canAccess(tab))return true
+    if(tab!=='pricing')return false
+    try{
+      var pp=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+      var cn=(currentUser.name||currentUser.username||'').toUpperCase()
+      return pp.some(function(e){return(e.customer||'').toUpperCase()===cn})
+    }catch(e){return false}
+  }
   function applyAccess(){
     if(!currentUser){
       document.querySelectorAll('.tab-btn').forEach(function(b){b.style.display=''})
@@ -8965,7 +8975,9 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     var bottomTabs=['delivery','pricing','approval','warehouse','invoice','balance']
     var activeMob=bottomTabs.indexOf(cur)>=0?cur:'delivery'
     document.querySelectorAll('.mob-tab').forEach(function(b){
-      b.classList.toggle('active',b.getAttribute('data-mobtab')===activeMob)
+      var mt=b.getAttribute('data-mobtab')
+      if(mt==='login')return
+      b.classList.toggle('active',mt===activeMob)
     })
   }
 
@@ -8976,7 +8988,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(t==='more'){
         var menu=document.getElementById('mobMoreMenu')
         if(menu)menu.classList.toggle('open')
-      }else{
+      }else if(t!=='login'){
         mobGo(t)
       }
     })
@@ -9032,8 +9044,12 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     btn.addEventListener('click',function(){
       pricingTabClicked=true
       setTimeout(function(){
-        try{ensurePricingRendered()}catch(e){}
-      },200)
+        try{
+          var pp=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+          console.log('[MOBILE PRICING] Loaded from localStorage:',pp.length,'items')
+          ensurePricingRendered()
+        }catch(e){console.error('[MOBILE PRICING] Error:',e)}
+      },300)
     })
   })
   document.querySelectorAll('.tab-btn[data-tab="pricing"]').forEach(function(btn){
