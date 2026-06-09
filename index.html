@@ -547,7 +547,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </head>
 <body onload="setTimeout(function(){try{if(!window.currentUser){var ol=document.getElementById('loginOverlay');if(ol)ol.classList.remove('hidden');populateLoginUserList()}}catch(e){}},300)">
 <script>
-function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}catch(e){console.error('populateLoginUserList error:',e)}}
+function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}}}catch(e){console.error('populateLoginUserList error:',e)}}
 </script>
 <style>
 @media (max-width: 480px) {
@@ -8497,23 +8497,23 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(firstVis&&typeof switchTab==='function')switchTab(firstVis.getAttribute('data-tab'))
     }
   }
-  function showLogin(){document.getElementById('loginOverlay').classList.remove('hidden')}
-  function hideLogin(){document.getElementById('loginOverlay').classList.add('hidden')}
+  function showLogin(){var el=document.getElementById('loginOverlay');if(el)el.classList.remove('hidden')}
+  function hideLogin(){var el=document.getElementById('loginOverlay');if(el)el.classList.add('hidden')}
   function updateUI(){
     if(currentUser){
-      document.getElementById('userNameDisplay').textContent=currentUser.name||currentUser.username
-      document.getElementById('userRoleDisplay').textContent=currentUser.role||(currentUser.tabs?'Custom':'')
-      document.getElementById('changePwdLink').style.display=''
+      var el=document.getElementById('userNameDisplay');if(el)el.textContent=currentUser.name||currentUser.username
+      var el2=document.getElementById('userRoleDisplay');if(el2)el2.textContent=currentUser.role||(currentUser.tabs?'Custom':'')
+      var pwdEl=document.getElementById('changePwdLink');if(pwdEl)pwdEl.style.display=''
       var cul=document.getElementById('changeUserLink');if(cul)cul.style.display=''
-      document.getElementById('adminUserMgmtLink').style.display=currentUser.role==='admin'?'':'none'
+      var admEl=document.getElementById('adminUserMgmtLink');if(admEl)admEl.style.display=currentUser.role==='admin'?'':'none'
       var ml=document.getElementById('mobLoginLabel');if(ml)ml.textContent='Logout'
       hideLogin()
     }else{
-      document.getElementById('userNameDisplay').textContent='Not logged in'
-      document.getElementById('userRoleDisplay').textContent=''
-      document.getElementById('changePwdLink').style.display='none'
+      var el=document.getElementById('userNameDisplay');if(el)el.textContent='Not logged in'
+      var el2=document.getElementById('userRoleDisplay');if(el2)el2.textContent=''
+      var pwdEl3=document.getElementById('changePwdLink');if(pwdEl3)pwdEl3.style.display='none'
       var cul2=document.getElementById('changeUserLink');if(cul2)cul2.style.display='none'
-      document.getElementById('adminUserMgmtLink').style.display='none'
+      var admEl3=document.getElementById('adminUserMgmtLink');if(admEl3)admEl3.style.display='none'
       var ml2=document.getElementById('mobLoginLabel');if(ml2)ml2.textContent='Login'
     }
     applyAccess()
