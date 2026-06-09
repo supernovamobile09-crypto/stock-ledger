@@ -9742,7 +9742,10 @@ window.settingsRestore=function(){
       const itemName=(det.model||'').replace(/^iPhone\s+/i,'').trim();
       const storage=String(det.storage||'');
       const specs=String(det.country||'');
-      const color=String(det.color||'');
+      var color=String(det.color||'');
+      var baseColorMap={'SKY BLUE':'Blue','SPACE BLACK':'Black','SPACE GRAY':'Gray','JET BLACK':'Black','LIGHT BLUE':'Blue','DEEP BLUE':'Blue','ROSE GOLD':'Rose Gold'};
+      var _bc=color.toUpperCase().replace(/\s+/g,' ');
+      if(baseColorMap[_bc])color=baseColorMap[_bc];
       const nItem=norm(itemName),nStorage=norm(storage),nSpecs=norm(specs),nColor=normColor(color);
 
       const normSpecsMap={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
