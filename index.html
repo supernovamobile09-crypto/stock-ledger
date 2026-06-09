@@ -8477,7 +8477,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   // Ensure supernova exists
   (function(){var u=getUsers();if(!u.supernova){u.supernova={password:'admin123',role:'admin',name:'Supernova Admin'};saveUsers(u)}})()
   window.loginRefreshDropdown=function(){}
-  function toggleShowPass(){
+  window.toggleShowPass=function toggleShowPass(){
     var inp=document.getElementById('loginPass')
     var eye=document.getElementById('passEye')
     if(!inp||!eye)return
