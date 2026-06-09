@@ -8308,7 +8308,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     })
   }catch(e){}
   // Initial tab notification update
-  if(typeof updateTabNotifs==='function')try{updateTabNotifs()}catch(e){}
+  if(typeof updateTabNotifs==='function')try{updateTabNotifs()}catch(e){};
 (function(){
   var bgBtn=document.getElementById('bgUploadBtn')
   var bgPanel=document.getElementById('bgPanel')
