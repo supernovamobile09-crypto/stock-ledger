@@ -5705,7 +5705,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   try{
     var lu=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     if(lu.supernova&&typeof supabaseReq==='function'&&!window._supabaseDisabled){
-      supabaseReq('users','POST','',{username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'}))
+      supabaseReq('users','POST','',{username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'})
         .catch(function(){})
     }
   }catch(e){}
