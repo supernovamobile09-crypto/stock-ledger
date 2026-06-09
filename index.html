@@ -4254,7 +4254,7 @@ function updateTabNotifs(){
   try{
     var pending=JSON.parse(localStorage.getItem('pricingPending'))||[]
     var pricingPending=pending.filter(function(e){return !e.completed})
-    var approvalPending=pending.filter(function(e){return e.completed && e.approved!==true && e.approved!==false})
+    var approvalPending=pending.filter(function(e){return e.approved!==true && e.approved!==false})
     var warehousePending=pending.filter(function(e){return e.approved===true && e.warehousePacked!==true})
     var invoicePending=pending.filter(function(e){return e.approved===true && e.warehousePacked===true && !e.invoiced})
     var pricingNotif=document.getElementById('pricingNotif')
@@ -6902,7 +6902,6 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     }
 
     window.submitPricingEntry=function(entryId){
-      if(!confirm('Submit this pricing? It will go to DO Approval.'))return
       var pending=getPending()
       for(var i=0;i<pending.length;i++){
         if(pending[i].id===entryId){
@@ -7087,17 +7086,6 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(tab==='pricing'){
         switchPricingView('pending')
         renderPendingView()
-        setTimeout(function(){
-          try{
-            var p=JSON.parse(localStorage.getItem('pricingPending'))||[]
-            var unread=p.filter(function(e){return !e.completed && !e._pricingNotified})
-            if(unread.length){
-              showSubmitPopup(unread.length,'pricing')
-              unread.forEach(function(e){e._pricingNotified=true})
-              localStorage.setItem('pricingPending',JSON.stringify(p))
-            }
-          }catch(ee){}
-        },300)
       }
     }
     document.querySelectorAll('.tab-btn[data-tab="pricing"]').forEach(function(btn){
@@ -7208,7 +7196,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       })
 
       var all=getPending()
-      var pendingEntries=all.filter(function(e){return e.completed && e.approved!==true && e.approved!==false})
+      var pendingEntries=all.filter(function(e){return e.approved!==true && e.approved!==false})
       var approvedEntries=all.filter(function(e){return e.approved===true && e.cashReleased!==true})
       var releasedEntries=all.filter(function(e){return e.cashReleased===true})
       var rejectedEntries=all.filter(function(e){return e.approved===false})
