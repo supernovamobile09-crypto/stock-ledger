@@ -546,7 +546,9 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </style>
 </head>
 <body onload="setTimeout(function(){try{if(!window.currentUser){var ol=document.getElementById('loginOverlay');if(ol)ol.classList.remove('hidden');populateLoginUserList()}}catch(e){}},300)">
-<script>function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}catch(e){console.error('populateLoginUserList error:',e)}}()</script>
+<script>
+function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}catch(e){console.error('populateLoginUserList error:',e)}}
+</script>
 <style>
 @media (max-width: 480px) {
   #loginBox{max-width:95vw;padding:30px 20px 20px}
@@ -5703,7 +5705,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   try{
     var lu=JSON.parse(localStorage.getItem('loginUsers')||'{}')
     if(lu.supernova&&typeof supabaseReq==='function'&&!window._supabaseDisabled){
-      supabaseReq('users','POST',JSON.stringify({username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'}))
+      supabaseReq('users','POST','',{username:'supernova',password:lu.supernova.password,role:lu.supernova.role||'admin',name:lu.supernova.name||'Supernova Admin'}))
         .catch(function(){})
     }
   }catch(e){}
@@ -8408,7 +8410,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       setTimeout(function(){bgPanel.style.display='none'},0)
     }
   })
-  bgFile.addEventListener('change',function(){
+  if(bgFile)bgFile.addEventListener('change',function(){
     var file=this.files[0]
     if(!file)return
     var reader=new FileReader()
@@ -8416,10 +8418,10 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     reader.readAsDataURL(file)
     this.value=''
   })
-  bgClear.addEventListener('click',function(){applyBgImage(null)})
-  bgOpacitySlider.addEventListener('input',function(){applyBgOpacity(this.value)})
-  bgBlurSlider.addEventListener('input',function(){applyBlur(this.value)})
-  cardOpacitySlider.addEventListener('input',function(){applyCardOpacity(this.value)})
+  if(bgClear)bgClear.addEventListener('click',function(){applyBgImage(null)})
+  if(bgOpacitySlider)bgOpacitySlider.addEventListener('input',function(){applyBgOpacity(this.value)})
+  if(bgBlurSlider)bgBlurSlider.addEventListener('input',function(){applyBlur(this.value)})
+  if(cardOpacitySlider)cardOpacitySlider.addEventListener('input',function(){applyCardOpacity(this.value)})
 })()
 // ===================== LOGIN SYSTEM =====================
 ;(function(){
