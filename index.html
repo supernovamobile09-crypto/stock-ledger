@@ -547,7 +547,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </head>
 <body onload="setTimeout(function(){try{if(!window.currentUser){var ol=document.getElementById('loginOverlay');if(ol)ol.classList.remove('hidden');populateLoginUserList()}}catch(e){}},300)">
 <script>
-function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}}}catch(e){console.error('populateLoginUserList error:',e)}}
+function populateLoginUserList(){try{var users=getUsers();var dl=document.getElementById('loginUserList');if(dl){dl.innerHTML='';for(var u in users){var opt=document.createElement('option');opt.value=u;dl.appendChild(opt)}}}catch(e){console.error('populateLoginUserList error:',e)}}
 </script>
 <style>
 @media (max-width: 480px) {
