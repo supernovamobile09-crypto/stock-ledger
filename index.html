@@ -6620,7 +6620,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   ;(function(){
     var currentView='pending'
     var _today=function(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}()
-    var _pricingDateFilter=_today
+    var _pricingDateFilter=''
 
     function getPending(){try{return JSON.parse(localStorage.getItem('pricingPending'))||[]}catch(e){return []}}
     function savePending(arr){try{localStorage.setItem('pricingPending',JSON.stringify(arr))}catch(e){}}
@@ -7125,13 +7125,13 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     window.switchTab=function(tab){
       if(origPricingSwitch)origPricingSwitch(tab)
       if(tab==='pricing'){
-        switchPricingView('pending')
-        renderPendingView()
+        try{switchPricingView('pending')}catch(e){}
+        try{renderPendingView()}catch(e){}
       }
     }
-    document.querySelectorAll('.tab-btn[data-tab="pricing"]').forEach(function(btn){
+    document.querySelectorAll('.tab-btn[data-tab="pricing"],.mob-tab[data-mobtab="pricing"]').forEach(function(btn){
       btn.addEventListener('click',function(){
-        setTimeout(function(){switchPricingView('pending');renderPendingView()},100)
+        setTimeout(function(){try{switchPricingView('pending');renderPendingView()}catch(e){}},100)
       })
     })
     var currencyEl=document.getElementById('pricingCurrency')
@@ -7200,7 +7200,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   ;(function(){
     var approvalView='pending'
     var _today=function(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}()
-    var _apprDateFilter=_today
+    var _apprDateFilter=''
 
     window.getApprovalView=function(){return approvalView}
     window.refreshApprovalView=function(){switchApprovalView(approvalView)}
