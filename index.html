@@ -8564,7 +8564,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       document.getElementById('userRoleDisplay').textContent=currentUser.role||(currentUser.tabs?'Custom':'')
       document.getElementById('changePwdLink').style.display=''
       var cul=document.getElementById('changeUserLink');if(cul)cul.style.display=''
-      document.getElementById('adminUserMgmtLink').style.display=currentUser.role==='admin'?'':'none'
+      document.getElementById('adminUserMgmtLink').style.display='none' // Only in Settings now
       hideLogin()
     }else{
       document.getElementById('userNameDisplay').textContent='Not logged in'
@@ -8919,11 +8919,11 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       <span class="s-label">Upload Logo</span>
     </div>
     <div class="s-divider"></div>
-    <div class="s-item" onclick="settingsBackup()">
+    <div class="s-item" id="sBackup" onclick="settingsBackup()">
       <i class="fas fa-download s-icon green"></i>
       <span class="s-label">Download Backup (.json file)</span>
     </div>
-    <div class="s-item" onclick="settingsRestore()">
+    <div class="s-item" id="sRestore" onclick="settingsRestore()">
       <i class="fas fa-upload s-icon orange"></i>
       <span class="s-label">Restore Data (from .json file)</span>
     </div>
@@ -9083,7 +9083,15 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   window.openSettings=function(){
     if(orig)return orig()
     var m=document.getElementById('settingsModal')
-    if(m)m.classList.add('show')
+    if(!m)return
+    // Apply role-based visibility
+    var isAdmin=window.currentUser&&currentUser.role==='admin'
+    var items={'sManageUsers':isAdmin,'sChangePwd':isAdmin,'sDarkMode':isAdmin,'sBgSettings':true,'sAiChat':isAdmin,'sLogo':true,'sBackup':isAdmin,'sRestore':isAdmin}
+    for(var id in items){
+      var el=document.getElementById(id)
+      if(el)el.style.display=items[id]?'':'none'
+    }
+    m.classList.add('show')
   }
 
   var fab=document.getElementById('mobFab')
@@ -9204,7 +9212,32 @@ try{
   var modal=document.getElementById('settingsModal')
   var btn=document.getElementById('sidebarSettingsBtn')
   if(!modal||!btn)return
-  btn.addEventListener('click',function(){modal.classList.add('show')})
+  btn.addEventListener('click',function(){
+    // Apply role-based visibility before showing
+    var isAdmin=window.currentUser&&currentUser.role==='admin'
+    var sManageUsers=document.getElementById('sManageUsers')
+    var sChangePwd=document.getElementById('sChangePwd')
+    var sDarkMode=document.getElementById('sDarkMode')
+    var sBgSettings=document.getElementById('sBgSettings')
+    var sAiChat=document.getElementById('sAiChat')
+    var sLogo=document.getElementById('sLogo')
+    // Regular users only see BG and Logo in settings
+    if(sManageUsers)sManageUsers.style.display=isAdmin?'':'none'
+    if(sChangePwd)sChangePwd.style.display=isAdmin?'':'none'
+    if(sDarkMode)sDarkMode.style.display=isAdmin?'':'none'
+    if(sBgSettings)sBgSettings.style.display=''
+    if(sAiChat)sAiChat.style.display=isAdmin?'':'none'
+    if(sLogo)sLogo.style.display=''
+    // Hide backup/restore for regular users
+    var sBackup=document.getElementById('sBackup')
+    var sRestore=document.getElementById('sRestore')
+    if(sBackup)sBackup.style.display=isAdmin?'':'none'
+    if(sRestore)sRestore.style.display=isAdmin?'':'none'
+    // Hide backup items for regular users
+    var dividers=modal.querySelectorAll('.s-divider')
+    // Show settings
+    modal.classList.add('show')
+  })
   document.getElementById('settingsCloseBtn').addEventListener('click',function(){modal.classList.remove('show')})
   modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('show')})
 
