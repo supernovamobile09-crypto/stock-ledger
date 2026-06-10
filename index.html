@@ -9873,7 +9873,7 @@ window.settingsRestore=function(){
       var normSD={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
       for(var i=existingFimex.length-1;i>=0;i--){
         var t=existingFimex[i];
-        var tk2=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(t.linkId||'')+'|'+t.date+'|'+(normSD[norm(t.specs)]||norm(t.specs));
+        var tk2=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(t.linkId||'')+'|'+t.date+'|'+(normSD[norm(t.specs)]||norm(t.specs))+'|'+t.quantity;
         var prev2=seen2.get(tk2);
         if(prev2){
           var keep2=(norm(t.specs)||!norm(prev2.specs))?t:prev2;
