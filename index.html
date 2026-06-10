@@ -2178,10 +2178,18 @@ const DB = {
     return txns.length;
   },
   deleteAll() { 
-    // Track all current IDs for deletion from Supabase
-    for(var i=0;i<this.db.length;i++){
-      if(this.db[i].id&&this._deletedIds.indexOf(this.db[i].id)<0)this._deletedIds.push(this.db[i].id);
-    }
+    // Delete from Supabase immediately
+    var self=this;
+    (async function(){
+      for(var i=0;i<self.db.length;i++){
+        if(!self.db[i].id)continue;
+        try{
+          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(self.db[i].id);
+          await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
+        }catch(e){}
+      }
+      console.log('[Supabase] Deleted '+self.db.length+' transactions via deleteAll');
+    })();
     this.db = []; 
     this.save(); 
   },
@@ -2189,9 +2197,15 @@ const DB = {
     var idx = -1;
     for (var i = 0; i < this.db.length; i++) { if (String(this.db[i].id) === String(id)) { idx = i; break; } }
     if (idx >= 0) {
-      // Track for Supabase deletion
-      if(this._deletedIds.indexOf(String(id))<0)this._deletedIds.push(String(id));
       this.db.splice(idx, 1);
+      // Delete from Supabase immediately
+      (async function(){
+        try{
+          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(String(id));
+          await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
+          console.log('[Supabase] Deleted transaction: '+id);
+        }catch(e){console.warn('[Supabase] Delete failed:',e.message)}
+      })();
     }
     this.save();
   },
@@ -2380,30 +2394,7 @@ async function loadFromSupabase(){
 
 async function syncToSupabase(){
   try{
-    // DELETE transactions marked for deletion
-    if(window.DB&&DB._deletedIds&&DB._deletedIds.length){
-      var delCount=DB._deletedIds.length;
-      console.log('[Supabase] Attempting to delete '+delCount+' transactions from cloud...');
-      for(var di=0;di<DB._deletedIds.length;di++){
-        var delId=DB._deletedIds[di];
-        try{
-          // Use direct fetch for DELETE to ensure it works
-          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(delId);
-          var delRes=await fetch(delUrl,{
-            method:'DELETE',
-            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
-          });
-          if(!delRes.ok){
-            console.warn('[Supabase] Delete failed for ID '+delId+': HTTP '+delRes.status);
-          }else{
-            console.log('[Supabase] Deleted transaction: '+delId);
-          }
-        }catch(e){console.warn('[Supabase] Delete error for ID '+delId+':',e.message)}
-      }
-      DB._deletedIds=[]; // Clear deletion queue
-      console.log('[Supabase] Deleted '+delCount+' transactions from cloud');
-    }
-    // UPLOAD transactions
+    // UPLOAD transactions (deletes happen immediately in DB.deleteById/deleteAll)
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
     if(db.length){for(var i=0;i<db.length;i+=100){
       var batch=db.slice(i,i+100).map(function(t){return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}})
