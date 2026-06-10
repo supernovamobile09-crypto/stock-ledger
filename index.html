@@ -4978,8 +4978,8 @@ async function saveToBackend(){
       let row={item_name:r.item||'',storage:r.storage||'',specs:r.specs||'',color:r.color||'',customer_vendor:r.vendor||'',quantity:parseInt(r.qty)||0,transaction_type:r.type||'',date:r.date||'',marks:r.marks||'',logistics:r.logistics||'',transaction_status:r.txnStatus||''}
       if(r.id&&DB.updateById(r.id,row)){saved++}
       else{
-        var _rk=String(row.item_name).toUpperCase()+'|'+String(row.storage).toUpperCase()+'|'+String(row.specs).toUpperCase()+'|'+String(row.color).toUpperCase()+'|'+String(row.date)+'|'+String(row.transaction_type).toUpperCase()+'|'+(Number(row.quantity)||0)
-        var _dup=DB.db.some(function(d){return String(d.item_name).toUpperCase()+'|'+String(d.storage).toUpperCase()+'|'+String(d.specs).toUpperCase()+'|'+String(d.color).toUpperCase()+'|'+String(d.date)+'|'+String(d.transaction_type).toUpperCase()+'|'+(Number(d.quantity)||0)===_rk})
+        var _rk=String(row.item_name).toUpperCase()+'|'+String(row.storage).toUpperCase()+'|'+String(row.specs).toUpperCase()+'|'+String(row.color).toUpperCase()+'|'+String(row.date)+'|'+String(row.transaction_type).toUpperCase()+'|'+(Number(row.quantity)||0)+'|'+String(row.customer_vendor).toUpperCase()
+        var _dup=DB.db.some(function(d){return String(d.item_name).toUpperCase()+'|'+String(d.storage).toUpperCase()+'|'+String(d.specs).toUpperCase()+'|'+String(d.color).toUpperCase()+'|'+String(d.date)+'|'+String(d.transaction_type).toUpperCase()+'|'+(Number(d.quantity)||0)+'|'+String(d.customer_vendor).toUpperCase()===_rk})
         if(!_dup){let res=await DB.addTransaction(row);if(res)saved++}else{skipped++}
       }
     }catch(e){errors++}
