@@ -2284,10 +2284,11 @@ async function loadFromSupabase(){
         var norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
         var contentMap={};
         merged.forEach(function(t){
-          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.date||'')+norm(t.transaction_type||'')+t.quantity;
+          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.date||'')+norm(t.transaction_type||'')+'|qty:'+t.quantity;
           if(!contentMap[contentKey]){
             contentMap[contentKey]=t;
           }else{
+            // Already exists, keep the one with newer timestamp
             var existing=contentMap[contentKey];
             var existingTs=existing.created_at?new Date(existing.created_at).getTime():0;
             var newTs=t.created_at?new Date(t.created_at).getTime():0;
@@ -2296,7 +2297,7 @@ async function loadFromSupabase(){
         });
         var deduped=Object.values(contentMap);
         if(typeof DB.db!=='undefined'&&DB.db){DB.db.splice(0,DB.db.length);deduped.forEach(function(t){DB.db.push(t)})}
-        localStorage.setItem('stockLedgerDB',JSON.stringify(deduped))
+        try{DB.save()}catch(e){}
         console.log('[Supabase] Transactions synced: '+deduped.length+' records (filtered from '+cloudTx.length+', last clear: '+(lastClear||'never')+')')
       }
     }catch(e){console.warn('[Supabase] Transaction sync:',e.message)}
