@@ -2184,7 +2184,6 @@ const DB = {
     }
     this.db = []; 
     this.save(); 
-    localStorage.setItem('_lastClearTime',new Date().toISOString()); 
   },
   deleteById(id) {
     var idx = -1;
@@ -2267,17 +2266,11 @@ window.clearSupabaseData=async function(){
       }
     }
     
-    // Clear local storage
-    localStorage.removeItem('stockLedgerDB');
-    localStorage.removeItem('_lastClearTime');
-    localStorage.removeItem('_deletedIds');
-    localStorage.removeItem('pricingPending');
-    localStorage.removeItem('pricingSubmittedKeys');
-    
     // Clear DB in memory
     if(window.DB&&DB.db)DB.db=[];
+    if(window.DB&&DB._deletedIds)DB._deletedIds=[];
     
-    console.log('[Supabase] ✅ All data cleared from cloud and local storage!');
+    console.log('[Supabase] ✅ All data cleared from cloud!');
     alert('✅ All data cleared! Refresh the page to start fresh.');
   }catch(e){
     console.error('[Supabase] Clear failed:',e);
@@ -2435,13 +2428,10 @@ function triggerCloudSync() {
   _cloudSyncPending = true
   syncToSupabase().then(function(){setTimeout(function(){_cloudSyncPending=false},1000)})
 }
-// Hook DB.save
+// Hook DB.save - no localStorage, all data in Supabase
 var _dbSave=DB.save.bind(DB)
 DB.save=function(){ 
   _dbSave(); 
-  try{localStorage.setItem('stockLedgerDB',JSON.stringify(DB.db.map(function(t){
-    return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
-  })))}catch(e){}
   triggerCloudSync(); 
 }
 // ===================== FULL BACKUP SYSTEM =====================
@@ -5777,12 +5767,9 @@ async function saveToBackend(){
     try{DB.deleteAll();showMsg('All balance data deleted');allSavedTx=[];balanceHistory=[];applyFilters();renderBalance()}catch(e){showMsg('Error deleting balance data','error')}
     refreshAllSections()
   })
-  // Load saved data and show initial tab
-  // Load from localStorage FIRST (instant), then try Supabase in background
+  // Load data from Supabase ONLY - no localStorage caching
   DB.init()
-  try{var cached=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]');if(cached.length){DB.db=cached}}catch(e){}
-  // Load deleted IDs from localStorage so they persist across page reloads
-  try{var deletedIds=JSON.parse(localStorage.getItem('_deletedIds')||'[]');if(deletedIds.length){DB._deletedIds=deletedIds}}catch(e){}
+  // loadFromSupabase() will fetch all data from cloud
   try{fetchHistory()}catch(e){}
   try{switchTab('entry')}catch(e){}
   dcRenderLists()
