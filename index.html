@@ -9993,22 +9993,19 @@ window.settingsRestore=function(){
       });
     });
 
-    // Cleanup: delete today's PLM transactions not in current snapshot
+    // Cleanup: only delete PLM-created transactions (with matching linkId) not in snapshot
+    // Manual FIMEX sales (no linkId) and other links are left untouched
     try{
       var linkIdVal=link&&link.id;
-      // Get ALL today's FIMEX transactions (both with and without linkId)
       var todayTx=allTx.filter(function(t){
-        // Include both: this link's transactions AND legacy (no linkId)
-        if(t.linkId&&t.linkId!==linkIdVal)return false;
+        // Only clean up this specific link's transactions
+        if(!t.linkId||t.linkId!==linkIdVal)return false;
         return String(t.customer_vendor||'').toUpperCase().trim()===FIMEX.toUpperCase()
           &&String(t.transaction_type||'').toLowerCase()==='selling'
           &&String(t.date||'').trim()===today;
       });
       var snapKeys=Object.keys(currentSnap);
       todayTx.forEach(function(tx){
-        // Keep: transactions that match current snapshot OR belong to another link
-        // But for safety, only clean up transactions with THIS linkId or no linkId
-        if(tx.linkId&&tx.linkId!==linkIdVal)return; // Don't touch other links
         var matchInSnap=snapKeys.some(function(k){
           var d=currentDetails&&currentDetails[k];
           if(!d)return false;
