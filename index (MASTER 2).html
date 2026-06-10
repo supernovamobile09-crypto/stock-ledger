@@ -8579,11 +8579,11 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   window.loginAs=function(username){
     var users=getUsers()
     if(!users[username])return false
-    currentUser={username:username,role:users[username].role,name:users[username].name||username}
+    currentUser=window.currentUser={username:username,role:users[username].role,name:users[username].name||username}
     updateUI()
     return true
   }
-  window.logout=function(){currentUser=null;updateUI();showLogin();var lp=document.getElementById('loginPass');if(lp)lp.value='';var lu=document.getElementById('loginUser');if(lu)lu.value='';var le=document.getElementById('loginError');if(le)le.textContent='';try{localStorage.removeItem('rememberedUser')}catch(e){}}
+  window.logout=function(){currentUser=null;window.currentUser=null;updateUI();showLogin();var lp=document.getElementById('loginPass');if(lp)lp.value='';var lu=document.getElementById('loginUser');if(lu)lu.value='';var le=document.getElementById('loginError');if(le)le.textContent='';try{localStorage.removeItem('rememberedUser')}catch(e){}}
   // Helper to bind safely
   function onId(id,ev,fn){var el=document.getElementById(id);if(el)el.addEventListener(ev,fn);else console.warn('Login: element #'+id+' not found')}
   // Ensure supernova exists
@@ -8610,7 +8610,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(!u||!u.username)return
       var users=getUsers()
       if(!users[u.username])return
-      currentUser={username:u.username,role:u.role,name:u.name||u.username}
+      currentUser=window.currentUser={username:u.username,role:u.role,name:u.name||u.username}
       var rm=document.getElementById('rememberMe')
       if(rm)rm.checked=true
       updateUI()
@@ -8655,7 +8655,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     if(!users[user]){if(el)el.textContent='User not found';return}
     if(users[user].password!==pass){if(el)el.textContent='Wrong password';return}
     if(el)el.textContent=''
-    currentUser={username:user,role:users[user].role,name:users[user].name||user}
+    currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user}
     updateUI()
     if(document.getElementById('rememberMe').checked){
       try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user}))}catch(e){}
