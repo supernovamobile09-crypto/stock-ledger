@@ -2291,7 +2291,7 @@ async function loadFromSupabase(){
     try{
       var cloudTx=await supabaseReq('transactions','GET','select=*')
       if(cloudTx&&cloudTx.length>0&&!window._supabaseDisabled){
-        var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():JSON.parse(localStorage.getItem('stockLedgerDB')||'[]')}catch(e){}
+        var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():[]}catch(e){}
         var map={};
         
         // First, add all local transactions to map
@@ -2432,11 +2432,7 @@ DB.save=function(){
 // ===================== FULL BACKUP SYSTEM =====================
 window.FULL_BACKUP_KEY='supernovaFullBackup'
 window.createFullBackup=function(){
-  // Fallback: if DB.db is empty, try loading from localStorage
   var dbData=(window.DB&&DB.db&&DB.db.length)?DB.db:[];
-  if(!dbData.length){
-    try{var cached=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]');if(cached.length)dbData=cached}catch(e){}
-  }
   var data={
     version:2,
     backedUpAt:new Date().toISOString(),
