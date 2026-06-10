@@ -9553,12 +9553,17 @@ window.settingsRestore=function(){
       if(bareNum)storage=bareNum[1]+'GB';
     }
 
-    const c=line.match(COLOR_RE);
-    if(c){
-      const rawColor=c[1];
-      const exact=RAW_COLORS.find(x=>x.toUpperCase()===rawColor.toUpperCase());
-      color=exact||rawColor.charAt(0).toUpperCase()+rawColor.slice(1).toLowerCase();
-    }
+     const c=line.match(COLOR_RE);
+     if(c){
+       const rawColor=c[1];
+       const exact=RAW_COLORS.find(x=>x.toUpperCase()===rawColor.toUpperCase());
+       color=exact||rawColor.charAt(0).toUpperCase()+rawColor.slice(1).toLowerCase();
+       // Normalize color: remove prefixes like Sky, Space, Midnight, Starlight
+       const colorNormMap={'sky blue':'Blue','space black':'Black','spase black':'Black','midnight black':'Black','midnight':'Black','starlight white':'White','white titanium':'White','natural titanium':'Titanium','black titanium':'Titanium','desert titanium':'Titanium'};
+       for(const[src,dst]of Object.entries(colorNormMap)){
+         if(color.toLowerCase()===src.toLowerCase()){color=dst;break}
+       }
+     }
 
     const qTag=line.match(/\b(?:qty|quantity|count)\s*[:\-]?\s*(\d{1,4})/i);
     if(qTag){qty=parseInt(qTag[1],10)}
