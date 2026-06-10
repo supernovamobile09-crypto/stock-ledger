@@ -9565,8 +9565,12 @@ window.settingsRestore=function(){
   async function fetchAndParsePDF(url){
     if(typeof pdfjsLib==='undefined')throw new Error('PDF.js not loaded');
     const proxyUrl='/api/proxy-pdf?url='+encodeURIComponent(url);
-    const loadingTask=pdfjsLib.getDocument({url:proxyUrl,corsMode:'cors',withCredentials:false});
-    const pdf=await loadingTask.promise;
+    let pdf;
+    try{
+      pdf=await pdfjsLib.getDocument({url,corsMode:'cors',withCredentials:false}).promise;
+    }catch(e){
+      pdf=await pdfjsLib.getDocument({url:proxyUrl,corsMode:'cors',withCredentials:false}).promise;
+    }
     const allParsed=[];
     let pendingItem=null;
     for(let p=1;p<=pdf.numPages;p++){
