@@ -9800,13 +9800,13 @@ window.settingsRestore=function(){
          return;
        }
 
-       if(match){
-         match.quantity=q;
-         if(!match.linkId)match.linkId=linkIdVal;
-         if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-         if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
-         try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}}
-       }else{
+        if(match){
+          match.quantity=q;
+          if(!match.linkId)match.linkId=linkIdVal;
+          if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
+          if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
+          try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+        }else{
          const newTx={
            date:today,
            transaction_type:'Selling',
