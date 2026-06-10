@@ -2249,11 +2249,14 @@ async function loadFromSupabase(){
         localTx.forEach(function(t){if(t.id)map[t.id]=t})
         // Only include cloud transactions created AFTER last clear time (or all if never cleared)
         cloudTx.forEach(function(ct){
-          if(lastClear&&ct.created_at){
+          // If we have a clear time, strictly filter - skip old/missing created_at
+          if(lastClear){
+            if(!ct.created_at)return; // No timestamp = old data, skip it
             var ctTime=new Date(ct.created_at).getTime();
             var clearTime=new Date(lastClear).getTime();
-            if(ctTime<clearTime)return; // Skip transactions before clear time
+            if(ctTime<=clearTime)return; // Skip transactions at or before clear time
           }
+          // Include this transaction in merge
           if(!map[ct.id]){
             map[ct.id]=ct
           }else{
