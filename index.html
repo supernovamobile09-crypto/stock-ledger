@@ -2335,15 +2335,26 @@ async function syncToSupabase(){
     // DELETE transactions marked for deletion
     if(window.DB&&DB._deletedIds&&DB._deletedIds.length){
       var delCount=DB._deletedIds.length;
+      console.log('[Supabase] Attempting to delete '+delCount+' transactions from cloud...');
       for(var di=0;di<DB._deletedIds.length;di++){
         var delId=DB._deletedIds[di];
         try{
-          await supabaseReq('transactions','DELETE','id=eq.'+delId);
-        }catch(e){console.warn('[Supabase] Delete failed for ID '+delId+':',e.message)}
+          // Use direct fetch for DELETE to ensure it works
+          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(delId);
+          var delRes=await fetch(delUrl,{
+            method:'DELETE',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
+          });
+          if(!delRes.ok){
+            console.warn('[Supabase] Delete failed for ID '+delId+': HTTP '+delRes.status);
+          }else{
+            console.log('[Supabase] Deleted transaction: '+delId);
+          }
+        }catch(e){console.warn('[Supabase] Delete error for ID '+delId+':',e.message)}
       }
       DB._deletedIds=[]; // Clear deletion queue
       localStorage.removeItem('_deletedIds'); // Clear from localStorage too
-      console.log('[Supabase] Deleted '+delCount+' transactions');
+      console.log('[Supabase] Deleted '+delCount+' transactions from cloud');
     }
     // UPLOAD transactions
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
