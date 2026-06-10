@@ -4225,12 +4225,17 @@ function loadDOData(customerName,mark){
   let dateFilter=window._doDateFilter||''
   let submittedKeys=getSubmittedKeys()
   function addItem(model,storage,specs,color,qty){
-    let key=(model||'')+'|'+(storage||'')+'|'+(specs||'')+'|'+(color||'')
+    // Normalize key to merge similar items (case-insensitive, no iPhone prefix, trimmed)
+    const normModel=String(model||'').replace(/^iPhone\s*/i,'').trim().toLowerCase()
+    const normStorage=String(storage||'').trim().toLowerCase()
+    const normSpecs=String(specs||'').trim().toLowerCase()
+    const normColor=String(color||'').trim().toLowerCase()
+    let key=normModel+'|'+normStorage+'|'+normSpecs+'|'+normColor
     let subKey=cn+'|'+(mk||'')+'|'+key
     let submittedQty=submittedKeys[subKey]||submittedKeys[cn+'|'+key]||0
     let available=qty-submittedQty
     if(available<=0)return
-    if(!byModel[key])byModel[key]={model,storage,specs,color,qty:0}
+    if(!byModel[key])byModel[key]={model:model,storage:storage,specs:specs,color:color,qty:0}
     byModel[key].qty+=available
   }
   let _dbgMatched=0,_dbgTotal=allSavedTx.length
@@ -4253,8 +4258,18 @@ function loadDOData(customerName,mark){
   let grouped={}
   Object.values(byModel).forEach(g=>{
     let hdr=(g.model+' '+g.storage+' '+g.specs).trim().replace(/^iPhone\s*/i,'')
-    if(!grouped[hdr])grouped[hdr]={name:hdr,colors:[]}
-    grouped[hdr].colors.push({color:g.color,qty:g.qty})
+    // Normalize header for case-insensitive matching
+    let hdrKey=hdr.toLowerCase().trim()
+    if(!grouped[hdrKey])grouped[hdrKey]={name:hdr,colors:[]}
+    // Check if color already exists in colors array (case-insensitive)
+    let colorKey=String(g.color||'').toLowerCase().trim()
+    let existingColor=grouped[hdrKey].colors.find(function(c){return String(c.color||'').toLowerCase().trim()===colorKey})
+    if(existingColor){
+      // Merge into existing color (sum qty)
+      existingColor.qty=(Number(existingColor.qty)||0)+(Number(g.qty)||0)
+    }else{
+      grouped[hdrKey].colors.push({color:g.color,qty:g.qty})
+    }
   })
   doProducts=Object.values(grouped).sort((a,b)=>a.name.localeCompare(b.name))
 }
@@ -9023,6 +9038,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       <span class="s-label">Upload Logo</span>
     </div>
     <div class="s-divider"></div>
+    <div class="s-item" id="sBackupFolder">
+      <i class="fas fa-folder-open s-icon"></i>
+      <span class="s-label">Choose Backup Folder</span>
+    </div>
     <div class="s-item" id="sBackup" onclick="settingsBackup()">
       <i class="fas fa-download s-icon green"></i>
       <span class="s-label">Download Backup (.json file)</span>
@@ -9190,7 +9209,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(!m)return
     // Apply role-based visibility
     var isAdmin=window.currentUser&&currentUser.role==='admin'
-    var items={'sManageUsers':isAdmin,'sChangePwd':isAdmin,'sDarkMode':isAdmin,'sBgSettings':true,'sAiChat':isAdmin,'sLogo':true,'sBackup':isAdmin,'sRestore':isAdmin}
+    var items={'sManageUsers':isAdmin,'sChangePwd':isAdmin,'sDarkMode':isAdmin,'sBgSettings':true,'sAiChat':isAdmin,'sLogo':true,'sBackup':isAdmin,'sRestore':isAdmin,'sBackupFolder':isAdmin}
     for(var id in items){
       var el=document.getElementById(id)
       if(el)el.style.display=items[id]?'':'none'
@@ -9335,8 +9354,10 @@ try{
     // Hide backup/restore for regular users
     var sBackup=document.getElementById('sBackup')
     var sRestore=document.getElementById('sRestore')
+    var sBackupFolder=document.getElementById('sBackupFolder')
     if(sBackup)sBackup.style.display=isAdmin?'':'none'
     if(sRestore)sRestore.style.display=isAdmin?'':'none'
+    if(sBackupFolder)sBackupFolder.style.display=isAdmin?'':'none'
     // Hide backup items for regular users
     var dividers=modal.querySelectorAll('.s-divider')
     // Show settings
@@ -9365,6 +9386,29 @@ try{
     p.style.left=Math.max(8,Math.min(window.innerWidth-300,(window.innerWidth-300)/2))+'px'
     p.style.top=Math.max(80,(window.innerHeight-380)/2)+'px'
     setTimeout(function(){p.style.display='block'},10)
+  })
+  bindClick('sBackupFolder',async function(){
+    if(!window.showDirectoryPicker){
+      if(modal)modal.classList.remove('show')
+      showMsg('Folder picker not supported in this browser. Use Chrome/Edge for folder selection.','error')
+      return
+    }
+    try{
+      var handle=await window.showDirectoryPicker()
+      window._backupDirHandle=handle
+      try{
+        window._backupFileHandle=await handle.getFileHandle('supernova_backup.json',{create:true})
+        localStorage.setItem('backupFolderName',handle.name)
+      }catch(e){}
+      var fn=byId('headerFolderName');if(fn)fn.textContent='📁 '+handle.name
+      modal.classList.remove('show')
+      showMsg('✅ Backup folder set: '+handle.name+'\n\nBackups will be saved here. (Chrome/Edge only)')
+    }catch(e){
+      if(e.name!=='AbortError'){
+        modal.classList.remove('show')
+        showMsg('Folder selection failed: '+e.message,'error')
+      }
+    }
   })
   // AI Chat
   var aiChatModal=document.getElementById('aiChatModal')
