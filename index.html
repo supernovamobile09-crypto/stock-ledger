@@ -2239,22 +2239,6 @@ function scheduleSync(){
 async function loadFromSupabase(){
   if(window._supabaseDisabled)return
   try{
-    var txns=await supabaseReq('transactions','GET','select=*')
-    if(txns&&txns.length>0&&!window._supabaseDisabled){
-      if(typeof DB!=='undefined'&&DB){
-        var localIds={},localSig={};for(var _li=0;_li<DB.db.length;_li++){localIds[DB.db[_li].id]=true;var _s=String(DB.db[_li].item_name||'').toUpperCase()+'|'+String(DB.db[_li].storage||'').toUpperCase()+'|'+String(DB.db[_li].specs||'').toUpperCase()+'|'+String(DB.db[_li].color||'').toUpperCase()+'|'+String(DB.db[_li].customer_vendor||'').toUpperCase()+'|'+String(DB.db[_li].date||'')+'|'+String(DB.db[_li].transaction_type||'').toUpperCase()+'|'+(Number(DB.db[_li].quantity)||0);localSig[_s]=true}
-        txns.forEach(function(t){
-          var _cs=String(t.item_name||'').toUpperCase()+'|'+String(t.storage||'').toUpperCase()+'|'+String(t.specs||'').toUpperCase()+'|'+String(t.color||'').toUpperCase()+'|'+String(t.customer_vendor||'').toUpperCase()+'|'+String(t.date||'')+'|'+String(t.transaction_type||'').toUpperCase()+'|'+(Number(t.quantity)||0)
-          if(!localIds[t.id]&&!localSig[_cs])DB.db.push({
-            id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()
-          })
-        })
-        var _dsig={},_dkeep=[];for(var _di=0;_di<DB.db.length;_di++){var _dk=String(DB.db[_di].item_name||'').toUpperCase()+'|'+String(DB.db[_di].storage||'').toUpperCase()+'|'+String(DB.db[_di].specs||'').toUpperCase()+'|'+String(DB.db[_di].color||'').toUpperCase()+'|'+String(DB.db[_di].customer_vendor||'').toUpperCase()+'|'+String(DB.db[_di].date||'')+'|'+String(DB.db[_di].transaction_type||'').toUpperCase()+'|'+(Number(DB.db[_di].quantity)||0);if(!_dsig[_dk]){_dsig[_dk]=true;_dkeep.push(DB.db[_di])}}if(_dkeep.length<DB.db.length)DB.db=_dkeep
-      }
-      localStorage.setItem('stockLedgerDB',JSON.stringify(DB.db.map(function(t){
-        return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
-      })))
-    }
     var pending=await supabaseReq('pricing_pending','GET','select=*')
     if(pending&&!window._supabaseDisabled){
       localStorage.setItem('pricingPending',JSON.stringify(pending.map(function(e){
