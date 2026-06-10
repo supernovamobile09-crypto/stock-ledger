@@ -2460,8 +2460,27 @@ async function loadFromSupabase(){
 
 async function syncToSupabase(){
   try{
-    // UPLOAD transactions (deletes happen immediately in DB.deleteById/deleteAll)
+    // DELETE transactions from Supabase that are NOT in local DB
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
+    var localIds={};
+    db.forEach(function(t){if(t.id)localIds[t.id]=true})
+    try{
+      var cloudTx=await supabaseReq('transactions','GET','select=*');
+      var delCount=0;
+      if(cloudTx&&cloudTx.length){
+        for(var i=0;i<cloudTx.length;i++){
+          if(!localIds[cloudTx[i].id]){
+            try{
+              var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(cloudTx[i].id);
+              var delRes=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
+              if(delRes.status===200||delRes.status===204)delCount++;
+            }catch(e){}
+          }
+        }
+      }
+      if(delCount>0)console.log('[Supabase] Deleted '+delCount+' transactions removed locally');
+    }catch(e){console.warn('[Supabase] Delete sync error:',e.message)}
+    // UPLOAD transactions
     if(db.length){for(var i=0;i<db.length;i+=100){
       var batch=db.slice(i,i+100).map(function(t){return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}})
       await supabaseReq('transactions','POST','',batch,'resolution=merge-duplicates')
