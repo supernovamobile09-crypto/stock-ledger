@@ -9939,6 +9939,11 @@ window.settingsRestore=function(){
       var normSD={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
       for(var i=existingFimex.length-1;i>=0;i--){
         var t=existingFimex[i];
+        // Skip manual transactions (no linkId) - they are NOT duplicates
+        if(!t.linkId){
+          // Manual sale: keep it, don't dedup
+          continue;
+        }
         var tk2=norm(t.item_name)+'|'+norm(t.storage)+'|'+norm(t.color)+'|'+(t.linkId||'')+'|'+t.date+'|'+(normSD[norm(t.specs)]||norm(t.specs))+'|'+t.quantity;
         var prev2=seen2.get(tk2);
         if(prev2){
@@ -10000,17 +10005,18 @@ window.settingsRestore=function(){
            if(ts&&ms&&ts!==ms)return false;
            return true;
          });
-         if(lenient){
-           match=lenient;
-           var lmChanged=false;
-           if(mappedColor&&!mappedExistingColor(match)){match.color=color;lmChanged=true}
-           if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
-           else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;lmChanged=true}
-           if(!match.linkId){match.linkId=linkIdVal;lmChanged=true}
-           if(lmChanged){
-             try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
-           }
-         }
+          if(lenient){
+            match=lenient;
+            var lmChanged=false;
+            if(mappedColor&&!mappedExistingColor(match)){match.color=color;lmChanged=true}
+            if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
+            else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;lmChanged=true}
+            // Only add linkId if this was already a PLM transaction (had linkId)
+            if(match.linkId){match.linkId=linkIdVal;lmChanged=true}
+            if(lmChanged){
+              try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
+            }
+          }
        }
 
        const matchQty=match?(parseInt(match.quantity)||0):0;
@@ -10023,12 +10029,16 @@ window.settingsRestore=function(){
        }
 
         if(match){
-          match.quantity=q;
-          if(!match.linkId)match.linkId=linkIdVal;
-          if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-          if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
-          try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
-        }else{
+           match.quantity=q;
+           // Only add linkId if this was originally a PLM transaction (had linkId)
+           // Don't convert manual sales into PLM-managed transactions
+           if(match.linkId){
+             if(match.linkId!==linkIdVal)match.linkId=linkIdVal;
+           }
+           if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
+           if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
+           try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+         }else{
          const newTx={
            date:today,
            transaction_type:'Selling',
