@@ -2243,6 +2243,33 @@ async function supabaseReq(table,method,query,body,prefer){
   return(ct&&ct.includes('json'))?res.json():null
 }
 
+// Clear ALL data from Supabase (transactions, pricing_pending, etc.)
+window.clearSupabaseData=async function(){
+  if(!confirm('⚠️ WARNING: This will DELETE ALL data from Supabase cloud! Continue?'))return;
+  try{
+    console.log('[Supabase] Clearing all data...');
+    // Delete all transactions
+    var delUrl=SUPABASE_URL+'/rest/v1/transactions';
+    var delRes=await fetch(delUrl,{
+      method:'DELETE',
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
+    });
+    console.log('[Supabase] Transactions DELETE status:', delRes.status);
+    // Clear local storage
+    localStorage.removeItem('stockLedgerDB');
+    localStorage.removeItem('_lastClearTime');
+    localStorage.removeItem('_deletedIds');
+    localStorage.removeItem('pricingPending');
+    localStorage.removeItem('pricingSubmittedKeys');
+    console.log('[Supabase] ✅ All data cleared from cloud and local storage!');
+    alert('✅ All data cleared! Refresh the page to start fresh.');
+    location.reload();
+  }catch(e){
+    console.error('[Supabase] Clear failed:',e);
+    alert('❌ Clear failed: '+e.message);
+  }
+};
+
 window._syncTimer=null
 function scheduleSync(){
   if(window._syncTimer)clearTimeout(window._syncTimer)
