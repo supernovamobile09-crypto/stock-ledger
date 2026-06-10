@@ -2239,15 +2239,29 @@ function scheduleSync(){
 async function loadFromSupabase(){
   if(window._supabaseDisabled)return
   try{
-    var txns=await supabaseReq('transactions','GET','select=*')
-    if(txns&&txns.length>0&&!window._supabaseDisabled){
-      if(typeof DB!=='undefined'&&DB){DB.db=txns.map(function(t){
-        return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
-      })}
-      localStorage.setItem('stockLedgerDB',JSON.stringify(txns.map(function(t){
-        return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
-      })))
-    }
+    // Merge transactions from Supabase (keep newer records by created_at)
+    try{
+      var cloudTx=await supabaseReq('transactions','GET','select=*')
+      if(cloudTx&&cloudTx.length>0&&!window._supabaseDisabled){
+        var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():JSON.parse(localStorage.getItem('stockLedgerDB')||'[]')}catch(e){}
+        var map={};
+        localTx.forEach(function(t){if(t.id)map[t.id]=t})
+        cloudTx.forEach(function(ct){
+          if(!map[ct.id]){
+            map[ct.id]=ct
+          }else{
+            var local=map[ct.id];
+            var localTs=local.created_at?new Date(local.created_at).getTime():0;
+            var cloudTs=ct.created_at?new Date(ct.created_at).getTime():0;
+            if(cloudTs>localTs)map[ct.id]=ct
+          }
+        })
+        var merged=Object.values(map);
+        if(typeof DB.db!=='undefined'&&DB.db){DB.db.splice(0,DB.db.length);merged.forEach(function(t){DB.db.push(t)})}
+        localStorage.setItem('stockLedgerDB',JSON.stringify(merged))
+        console.log('[Supabase] Transactions merged from cloud: '+merged.length+' total records')
+      }
+    }catch(e){console.warn('[Supabase] Transaction sync:',e.message)}
     var pending=await supabaseReq('pricing_pending','GET','select=*')
     if(pending&&!window._supabaseDisabled){
       localStorage.setItem('pricingPending',JSON.stringify(pending.map(function(e){
@@ -2271,6 +2285,10 @@ async function loadFromSupabase(){
       }
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
+    console.log('[Supabase] Data loaded from cloud (localStorage refreshed from cloud)')
+  }catch(e){console.warn('[Supabase] Load failed:',e.message)}
+  window._supabaseReady=true
+}
     console.log('[Supabase] Data loaded from cloud (localStorage refreshed from cloud)')
   }catch(e){console.warn('[Supabase] Load failed:',e.message)}
   window._supabaseReady=true
