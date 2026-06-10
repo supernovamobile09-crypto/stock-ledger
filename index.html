@@ -2248,30 +2248,44 @@ window.clearSupabaseData=async function(){
   try{
     console.log('[Supabase] Clearing all data...');
     
-    // Delete all transactions one by one to ensure it works
+    // Get all transactions first
     var cloudTx=await supabaseReq('transactions','GET','select=*');
-    console.log('[Supabase] Found '+cloudTx.length+' transactions to delete');
+    console.log('[Supabase] Found '+cloudTx.length+' transactions in cloud');
     
     if(cloudTx&&cloudTx.length>0){
+      var delCount=0;
       for(var i=0;i<cloudTx.length;i++){
         var delId=cloudTx[i].id;
         try{
           var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(delId);
           var delRes=await fetch(delUrl,{
             method:'DELETE',
-            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=representation'}
           });
-          console.log('[Supabase] Deleted: '+delId+' (status: '+delRes.status+')');
+          var delResult=await delRes.text();
+          console.log('[Supabase] Delete '+delId+' HTTP:'+delRes.status+' '+delResult);
+          if(delRes.status===200||delRes.status===204)delCount++;
         }catch(e){console.warn('[Supabase] Failed to delete '+delId+':',e)}
       }
+      console.log('[Supabase] Successfully deleted: '+delCount+'/'+cloudTx.length);
+    }
+    
+    // Verify deletion by re-fetching
+    var checkTx=await supabaseReq('transactions','GET','select=*');
+    console.log('[Supabase] After delete, cloud still has: '+checkTx.length+' transactions');
+    
+    if(checkTx.length>0){
+      console.warn('[Supabase] ⚠️ DELETE NOT WORKING! '+checkTx.length+' records remain. Check Supabase RLS policies.');
+      alert('⚠️ Warning: '+checkTx.length+' records could not be deleted from cloud.\n\nCheck browser console for details.\n\nYou may need to add DELETE permission in Supabase policies.');
+    }else{
+      console.log('[Supabase] ✅ All data cleared from cloud!');
+      alert('✅ All data cleared from Supabase cloud!');
     }
     
     // Clear DB in memory
     if(window.DB&&DB.db)DB.db=[];
     if(window.DB&&DB._deletedIds)DB._deletedIds=[];
     
-    console.log('[Supabase] ✅ All data cleared from cloud!');
-    alert('✅ All data cleared! Refresh the page to start fresh.');
   }catch(e){
     console.error('[Supabase] Clear failed:',e);
     alert('❌ Clear failed: '+e.message);
