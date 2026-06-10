@@ -2345,7 +2345,7 @@ async function loadFromSupabase(){
         var norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
         var contentMap={};
         merged.forEach(function(t){
-          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.date||'')+norm(t.transaction_type||'')+'|qty:'+t.quantity;
+          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.customer_vendor||'')+norm(t.date||'')+norm(t.transaction_type||'')+'|qty:'+t.quantity;
           if(!contentMap[contentKey]){
             contentMap[contentKey]=t;
           }else{
@@ -4912,8 +4912,8 @@ async function saveToBackend(){
       let row={item_name:r.item||'',storage:r.storage||'',specs:r.specs||'',color:r.color||'',customer_vendor:r.vendor||'',quantity:parseInt(r.qty)||0,transaction_type:r.type||'',date:r.date||'',marks:r.marks||'',logistics:r.logistics||'',transaction_status:r.txnStatus||''}
       if(r.id&&DB.updateById(r.id,row)){saved++}
       else{
-        var _rk=String(row.item_name).toUpperCase()+'|'+String(row.storage).toUpperCase()+'|'+String(row.specs).toUpperCase()+'|'+String(row.color).toUpperCase()+'|'+String(row.date)+'|'+String(row.transaction_type).toUpperCase()+'|'+(Number(row.quantity)||0)
-        var _dup=DB.db.some(function(d){return String(d.item_name).toUpperCase()+'|'+String(d.storage).toUpperCase()+'|'+String(d.specs).toUpperCase()+'|'+String(d.color).toUpperCase()+'|'+String(d.date)+'|'+String(d.transaction_type).toUpperCase()+'|'+(Number(d.quantity)||0)===_rk})
+        var _rk=String(row.item_name).toUpperCase()+'|'+String(row.storage).toUpperCase()+'|'+String(row.specs).toUpperCase()+'|'+String(row.color).toUpperCase()+'|'+String(row.customer_vendor).toUpperCase()+'|'+String(row.date)+'|'+String(row.transaction_type).toUpperCase()+'|'+(Number(row.quantity)||0)
+        var _dup=DB.db.some(function(d){return String(d.item_name).toUpperCase()+'|'+String(d.storage).toUpperCase()+'|'+String(d.specs).toUpperCase()+'|'+String(d.color).toUpperCase()+'|'+String(d.customer_vendor).toUpperCase()+'|'+String(d.date)+'|'+String(d.transaction_type).toUpperCase()+'|'+(Number(d.quantity)||0)===_rk})
         if(!_dup){let res=await DB.addTransaction(row);if(res)saved++}else{skipped++}
       }
     }catch(e){errors++}
