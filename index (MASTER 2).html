@@ -2279,24 +2279,20 @@ function scheduleSync(){
 async function loadFromSupabase(){
   if(window._supabaseDisabled)return
   try{
-    // Download transactions created AFTER the last clear time (cross-device sync)
+    // Download transactions and merge with local data
     try{
-      var lastClear=localStorage.getItem('_lastClearTime');
       var cloudTx=await supabaseReq('transactions','GET','select=*')
       if(cloudTx&&cloudTx.length>0&&!window._supabaseDisabled){
         var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():JSON.parse(localStorage.getItem('stockLedgerDB')||'[]')}catch(e){}
         var map={};
+        
+        // First, add all local transactions to map
         localTx.forEach(function(t){if(t.id)map[t.id]=t})
-        // Only include cloud transactions created AFTER last clear time (or all if never cleared)
+        
+        // Then merge cloud transactions - always download all, ignore _lastClearTime filter
         cloudTx.forEach(function(ct){
-          // If we have a clear time, strictly filter - skip old/missing created_at
-          if(lastClear){
-            if(!ct.created_at)return; // No timestamp = old data, skip it
-            var ctTime=new Date(ct.created_at).getTime();
-            var clearTime=new Date(lastClear).getTime();
-            if(ctTime<=clearTime)return; // Skip transactions at or before clear time
-          }
-          // Include this transaction in merge
+          // Always include cloud transactions (ignore clear time filter for cross-device sync)
+          // Merge: prefer newer version by timestamp
           if(!map[ct.id]){
             map[ct.id]=ct
           }else{
@@ -2306,7 +2302,9 @@ async function loadFromSupabase(){
             if(cloudTs>localTs)map[ct.id]=ct
           }
         })
+        
         var merged=Object.values(map);
+        
         // Dedup by content (item+storage+specs+color+date+type+qty)
         var norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
         var contentMap={};
@@ -2322,10 +2320,12 @@ async function loadFromSupabase(){
             if(newTs>existingTs)contentMap[contentKey]=t;
           }
         });
+        
         var deduped=Object.values(contentMap);
         if(typeof DB.db!=='undefined'&&DB.db){DB.db.splice(0,DB.db.length);deduped.forEach(function(t){DB.db.push(t)})}
         try{DB.save()}catch(e){}
-        console.log('[Supabase] Transactions synced: '+deduped.length+' records (filtered from '+cloudTx.length+', last clear: '+(lastClear||'never')+')')
+        
+        console.log('[Supabase] Transactions synced: '+deduped.length+' records from cloud')
       }
     }catch(e){console.warn('[Supabase] Transaction sync:',e.message)}
     var pending=await supabaseReq('pricing_pending','GET','select=*')
