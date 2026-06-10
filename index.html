@@ -2308,21 +2308,41 @@ window.clearSupabaseData=async function(){
 
 // Cleanup users: keep only admin, hasain, and supernova; delete rest
 window.cleanupUsers=async function(){
-  if(!confirm('⚠️ This will DELETE all users except: admin, hasain, supernova. Continue?'))return;
   try{
     console.log('[Cleanup] Fetching users from cloud...');
     var cloudUsers=await supabaseReq('users','GET','select=*');
     console.log('[Cleanup] Found '+cloudUsers.length+' users in cloud');
+    console.log('[Cleanup] All users:',cloudUsers.map(function(u){return u.username+' ('+u.role+')'}).join(', '));
     var keepUsernames=['admin','hasain','supernova'];
     var toDelete=cloudUsers.filter(function(u){return keepUsernames.indexOf(u.username)<0});
-    console.log('[Cleanup] Will delete: '+toDelete.map(function(u){return u.username}).join(', '));
+    var toKeep=cloudUsers.filter(function(u){return keepUsernames.indexOf(u.username)>=0});
+    console.log('[Cleanup] Will KEEP: '+toKeep.map(function(u){return u.username}).join(', '));
+    console.log('[Cleanup] Will DELETE: '+toDelete.map(function(u){return u.username}).join(', '));
+    if(toDelete.length===0){
+      console.log('[Cleanup] No users to delete!');
+      alert('✅ No extra users found. Already clean!');
+      return;
+    }
+    var confirmMsg='⚠️ DELETE '+toDelete.length+' user(s):\n\n'+toDelete.map(function(u){return '  ❌ '+u.username}).join('\n')+'\n\n✅ Will KEEP: '+toKeep.map(function(u){return u.username}).join(', ');
+    if(!confirm(confirmMsg+'\n\nContinue?'))return;
     var delCount=0;
+    var failed=[];
     for(var i=0;i<toDelete.length;i++){
       try{
         var delUrl=SUPABASE_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(toDelete[i].username);
-        var delRes=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
-        if(delRes.status===200||delRes.status===204)delCount++;
-      }catch(e){console.warn('[Cleanup] Delete failed for '+toDelete[i].username+':',e.message)}
+        var delRes=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=representation'}});
+        var result=await delRes.text();
+        if(delRes.status===200||delRes.status===204){
+          delCount++;
+          console.log('[Cleanup] ✅ Deleted: '+toDelete[i].username+' (HTTP '+delRes.status+')');
+        }else{
+          failed.push(toDelete[i].username+' (HTTP '+delRes.status+')');
+          console.warn('[Cleanup] ❌ Failed to delete '+toDelete[i].username+': HTTP '+delRes.status+' '+result);
+        }
+      }catch(e){
+        failed.push(toDelete[i].username+' (Error)');
+        console.warn('[Cleanup] ❌ Error deleting '+toDelete[i].username+':',e.message);
+      }
     }
     // Update localStorage to only keep admin/hasain/supernova
     try{
@@ -2334,9 +2354,18 @@ window.cleanupUsers=async function(){
       // Ensure supernova exists as default admin
       if(!newLocal.supernova)newLocal.supernova={password:'admin123',role:'admin',name:'Supernova Admin'};
       localStorage.setItem('loginUsers',JSON.stringify(newLocal));
+      console.log('[Cleanup] Updated localStorage');
+    }catch(e){console.warn('[Cleanup] localStorage update failed:',e.message)}
+    // Verify: re-fetch to confirm
+    try{
+      var verify=await supabaseReq('users','GET','select=username');
+      console.log('[Cleanup] After delete, cloud has: '+verify.map(function(u){return u.username}).join(', '));
     }catch(e){}
-    console.log('[Cleanup] ✅ Deleted '+delCount+' users, kept admin/hasain/supernova');
-    alert('✅ Cleanup done! Deleted '+delCount+' users.\nKept: admin, hasain, supernova\n\nRefresh the page.');
+    var msg='✅ Cleanup done!\n\nDeleted: '+delCount+'/'+toDelete.length;
+    if(failed.length>0)msg+='\n❌ Failed: '+failed.join(', ');
+    msg+='\n\nKept: admin, hasain, supernova\n\nRefresh the page to see changes.';
+    console.log('[Cleanup] '+msg);
+    alert(msg);
   }catch(e){
     console.error('[Cleanup] Error:',e);
     alert('❌ Cleanup failed: '+e.message);
