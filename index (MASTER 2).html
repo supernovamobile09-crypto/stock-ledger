@@ -2336,6 +2336,7 @@ async function syncToSupabase(){
   try{
     // DELETE transactions marked for deletion
     if(window.DB&&DB._deletedIds&&DB._deletedIds.length){
+      var delCount=DB._deletedIds.length;
       for(var di=0;di<DB._deletedIds.length;di++){
         var delId=DB._deletedIds[di];
         try{
@@ -2343,7 +2344,8 @@ async function syncToSupabase(){
         }catch(e){console.warn('[Supabase] Delete failed for ID '+delId+':',e.message)}
       }
       DB._deletedIds=[]; // Clear deletion queue
-      console.log('[Supabase] Deleted '+DB._deletedIds.length+' transactions');
+      localStorage.removeItem('_deletedIds'); // Clear from localStorage too
+      console.log('[Supabase] Deleted '+delCount+' transactions');
     }
     // UPLOAD transactions
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
@@ -5725,6 +5727,8 @@ async function saveToBackend(){
   // Load from localStorage FIRST (instant), then try Supabase in background
   DB.init()
   try{var cached=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]');if(cached.length){DB.db=cached}}catch(e){}
+  // Load deleted IDs from localStorage so they persist across page reloads
+  try{var deletedIds=JSON.parse(localStorage.getItem('_deletedIds')||'[]');if(deletedIds.length){DB._deletedIds=deletedIds}}catch(e){}
   try{fetchHistory()}catch(e){}
   try{switchTab('entry')}catch(e){}
   dcRenderLists()
