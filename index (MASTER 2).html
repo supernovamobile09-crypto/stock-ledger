@@ -2241,15 +2241,10 @@ async function loadFromSupabase(){
   try{
     var txns=await supabaseReq('transactions','GET','select=*')
     if(txns&&txns.length>0&&!window._supabaseDisabled){
-      if(typeof DB!=='undefined'&&DB){
-        var localIds={};for(var _li=0;_li<DB.db.length;_li++)localIds[DB.db[_li].id]=true
-        txns.forEach(function(t){
-          if(!localIds[t.id])DB.db.push({
-            id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()
-          })
-        })
-      }
-      localStorage.setItem('stockLedgerDB',JSON.stringify(DB.db.map(function(t){
+      if(typeof DB!=='undefined'&&DB){DB.db=txns.map(function(t){
+        return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
+      })}
+      localStorage.setItem('stockLedgerDB',JSON.stringify(txns.map(function(t){
         return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}
       })))
     }
