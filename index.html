@@ -9728,94 +9728,88 @@ window.settingsRestore=function(){
       const color=String(det.color||'');
       const nItem=norm(itemName),nStorage=norm(storage),nSpecs=norm(specs),nColor=norm(color);
 
-      const normSpecsMap={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
-      const mappedSpecs=normSpecsMap[nSpecs]||nSpecs;
-      const mappedExisting=function(t){
-        var ts=norm(t.specs);
-        return normSpecsMap[ts]||ts;
-      };
+       const normSpecsMap={'de':'euro','germany':'euro','it':'euro','italy':'euro','eu':'euro','europe':'euro'};
+       const normColorMap={'sky blue':'blue','spece black':'black','spase black':'black','space black':'black','midnight black':'black','midnight':'black','starlight white':'white','white titanium':'white','natural titanium':'titanium','black titanium':'titanium','desert titanium':'titanium'};
+       const mappedSpecs=normSpecsMap[nSpecs]||nSpecs;
+       const mappedColor=normColorMap[nColor]||nColor;
+       const mappedExisting=function(t){
+         var ts=norm(t.specs);
+         return normSpecsMap[ts]||ts;
+       };
+       const mappedExistingColor=function(t){
+         var tc=norm(t.color||'');
+         return normColorMap[tc]||tc;
+       };
 
-      var linkIdVal=link&&link.id;
-      let match=existingFimex.find(function(t){
-        const d=String(t.date||'').trim();
-        if(d!==today)return false;
-        if(t.linkId&&t.linkId!==linkIdVal)return false;
-        return norm(t.item_name)===nItem&&norm(t.storage)===nStorage&&mappedExisting(t)===mappedSpecs&&norm(t.color)===nColor;
-      });
+       var linkIdVal=link&&link.id;
+       let match=existingFimex.find(function(t){
+         const d=String(t.date||'').trim();
+         if(d!==today)return false;
+         if(t.linkId&&t.linkId!==linkIdVal)return false;
+         return norm(t.item_name)===nItem&&norm(t.storage)===nStorage&&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor;
+       });
 
-      if(!match){
-        const lenient=existingFimex.find(function(t){
-          const d=String(t.date||'').trim();
-          if(d!==today)return false;
-          if(t.linkId&&t.linkId!==linkIdVal)return false;
-          if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage)return false;
-          var ts=mappedExisting(t);
-          var ms=mappedSpecs;
-          if(ts&&ms&&ts!==ms)return false;
-          return true;
-        });
-        if(lenient){
-          match=lenient;
-          var lmChanged=false;
-          if(nColor&&!norm(match.color)){match.color=color;lmChanged=true}
-          if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
-          else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;lmChanged=true}
-          if(!match.linkId){match.linkId=linkIdVal;lmChanged=true}
-          if(lmChanged){
-            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
-          }
-        }
-      }
+       if(!match){
+         const lenient=existingFimex.find(function(t){
+           const d=String(t.date||'').trim();
+           if(d!==today)return false;
+           if(t.linkId&&t.linkId!==linkIdVal)return false;
+           if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage)return false;
+           var ts=mappedExisting(t);
+           var ms=mappedSpecs;
+           if(ts&&ms&&ts!==ms)return false;
+           return true;
+         });
+         if(lenient){
+           match=lenient;
+           var lmChanged=false;
+           if(mappedColor&&!mappedExistingColor(match)){match.color=color;lmChanged=true}
+           if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
+           else if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;lmChanged=true}
+           if(!match.linkId){match.linkId=linkIdVal;lmChanged=true}
+           if(lmChanged){
+             try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
+           }
+         }
+       }
 
-      const matchQty=match?(parseInt(match.quantity)||0):0;
+       const matchQty=match?(parseInt(match.quantity)||0):0;
 
-      if(match&&matchQty===q){
-        if(!match.linkId){match.linkId=linkIdVal;try{DB.updateById(match.id,match)}catch(e){}}
-        if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;try{DB.updateById(match.id,match)}catch(e){}}
-        return;
-      }
+       if(match&&matchQty===q){
+         if(!match.linkId){match.linkId=linkIdVal;try{DB.updateById(match.id,match)}catch(e){}}
+         if(nSpecs&&norm(match.specs)!==nSpecs){match.specs=specs;try{DB.updateById(match.id,match)}catch(e){}}
+         if(mappedColor&&mappedExistingColor(match)!==mappedColor){match.color=color;try{DB.updateById(match.id,match)}catch(e){}}
+         return;
+       }
 
-      if(match){
-        match.quantity=q;
-        if(!match.linkId)match.linkId=linkIdVal;
-        if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-        try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
-      }else{
-        // Last resort: check ANY Fimex selling across all dates for same item+storage (ignore color/specs)
-        var anyMatch=allTx.find(function(tx){
-          if(tx.linkId&&tx.linkId!==linkIdVal)return false;
-          return String(tx.customer_vendor||'').toUpperCase().trim()===FIMEX.toUpperCase()
-            &&String(tx.transaction_type||'').toLowerCase()==='selling'
-            &&norm(tx.item_name)===nItem&&norm(tx.storage)===nStorage;
-        });
-        if(anyMatch){
-          match=anyMatch;match.date=today;match.quantity=q;
-          if(!match.linkId)match.linkId=linkIdVal;
-          if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-          try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById fallback:',e)}
-        }else{
-          const newTx={
-            date:today,
-            transaction_type:'Selling',
-            customer_vendor:FIMEX,
-            marks:'NO MARK',
-            item_name:itemName,
-            storage:storage,
-            specs:specs,
-            color:color,
-            quantity:q,
-            transaction_status:'Order In Hand',
-            logistics:FIMEX,
-            linkId:linkIdVal,
-            linkName:link&&link.name,
-            created_at:new Date().toISOString()
-          };
-          try{
-            if(typeof DB.insertTransactions==='function'){DB.insertTransactions([newTx])}
-            else{if(Array.isArray(DB.db))DB.db.push(newTx);if(typeof DB.save==='function')DB.save()}
-          }catch(e){console.warn('[PLM] insert error:',e)}
-        }
-      }
+       if(match){
+         match.quantity=q;
+         if(!match.linkId)match.linkId=linkIdVal;
+         if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
+         if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
+         try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}}
+       }else{
+         const newTx={
+           date:today,
+           transaction_type:'Selling',
+           customer_vendor:FIMEX,
+           marks:'NO MARK',
+           item_name:itemName,
+           storage:storage,
+           specs:specs,
+           color:color,
+           quantity:q,
+           transaction_status:'Order In Hand',
+           logistics:FIMEX,
+           linkId:linkIdVal,
+           linkName:link&&link.name,
+           created_at:new Date().toISOString()
+         };
+         try{
+           if(typeof DB.insertTransactions==='function'){DB.insertTransactions([newTx])}
+           else{if(Array.isArray(DB.db))DB.db.push(newTx);if(typeof DB.save==='function')DB.save()}
+         }catch(e){console.warn('[PLM] insert error:',e)}
+       }
 
       changes.push({
         id:uid(),timestamp:new Date().toISOString(),
