@@ -8429,6 +8429,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   function getUsers(){
     try{return JSON.parse(localStorage.getItem(USERS_KEY))||{}}catch(e){return {}}
   }
+  window.getUsers=getUsers
   function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){}}
   var defaultUsers={
     supernova:{password:'admin123',role:'admin',name:'Supernova Admin'}
@@ -8587,6 +8588,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       c.appendChild(e)
     }
   })()
+});
   onId('loginBtn','click',function(){
     var user=document.getElementById('loginUser').value.trim().toLowerCase()
     var pass=document.getElementById('loginPass').value
@@ -8827,7 +8829,6 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   // Show login overlay on page load (after everything loaded)
   updateUI()
   if(!currentUser)showLogin()
-  })
 })();
 </script>
 
