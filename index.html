@@ -2524,7 +2524,7 @@ window.FULL_BACKUP_KEY='supernovaFullBackup'
 window.createFullBackup=function(){
   var dbData=(window.DB&&DB.db&&DB.db.length)?DB.db:[];
   var data={
-    version:2,
+    version:3,
     backedUpAt:new Date().toISOString(),
     database:dbData,
     pricingPending:[],
@@ -2534,13 +2534,29 @@ window.createFullBackup=function(){
   try{data.pricingPending=JSON.parse(localStorage.getItem('pricingPending')||'[]')}catch(e){console.warn('[BACKUP] read pricingPending:',e.message)}
   try{data.pricingSubmittedKeys=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')}catch(e){console.warn('[BACKUP] read pricingSubmittedKeys:',e.message)}
   try{data.users=Object.entries(JSON.parse(localStorage.getItem('loginUsers')||'{}')).map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})}catch(e){console.warn('[BACKUP] read users:',e.message)}
-  var keys=['vendorList','logisticsList','marksList','itemList','colorList','salesmen',
+  // Backup ALL localStorage keys except system internals
+  // This covers every tab (Data Entry, Balance, DO, Pricing, Approval, Warehouse, Invoice,
+  // Customs Report, Packing List Monitor, AI Chat, ERP/Accounting, Settings, etc.)
+  var excludeKeys=['stockLedgerBackup','supernovaFullBackup','_lastClearTime','_deletedIds','rememberedUser','supernovaFullBackup_v2'];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&excludeKeys.indexOf(k)<0){
+        try{var v=localStorage.getItem(k);if(v!==null)data.localStorage[k]=v}catch(e){}
+      }
+    }
+  }catch(e){console.warn('[BACKUP] enumerate localStorage:',e.message)}
+  // Also backup specific named keys (legacy keys) for safety
+  var legacyKeys=['vendorList','logisticsList','marksList','itemList','colorList','salesmen',
     'backupFolder','pdfFolderName','companyLogo','invoiceCounter','lastInvoiceNo',
     'specsList','vendor_custom','marks_custom','logistics_custom','learnedItems',
     'plm_links_v1','plm_notif_v1','plm_settings_v1',
-    'acctJournalEntries','darkMode','autoFixTypos','bgImage','bgOpacity','bgBlur','cardOpacity']
-  keys.forEach(function(k){
-    try{var v=localStorage.getItem(k);if(v)data.localStorage[k]=v}catch(e){}
+    'acctJournalEntries','darkMode','autoFixTypos','bgImage','bgOpacity','bgBlur','cardOpacity',
+    'aiApiKey','aiProvider','aiEducationNotes']
+  legacyKeys.forEach(function(k){
+    if(data.localStorage[k]===undefined){
+      try{var v=localStorage.getItem(k);if(v)data.localStorage[k]=v}catch(e){}
+    }
   })
   try{localStorage.setItem(window.FULL_BACKUP_KEY,JSON.stringify(data,null,2))}catch(e){console.warn('[BACKUP] write FULL_BACKUP_KEY:',e.message)}
   return data
