@@ -2248,22 +2248,37 @@ window.clearSupabaseData=async function(){
   if(!confirm('⚠️ WARNING: This will DELETE ALL data from Supabase cloud! Continue?'))return;
   try{
     console.log('[Supabase] Clearing all data...');
-    // Delete all transactions
-    var delUrl=SUPABASE_URL+'/rest/v1/transactions';
-    var delRes=await fetch(delUrl,{
-      method:'DELETE',
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
-    });
-    console.log('[Supabase] Transactions DELETE status:', delRes.status);
+    
+    // Delete all transactions one by one to ensure it works
+    var cloudTx=await supabaseReq('transactions','GET','select=*');
+    console.log('[Supabase] Found '+cloudTx.length+' transactions to delete');
+    
+    if(cloudTx&&cloudTx.length>0){
+      for(var i=0;i<cloudTx.length;i++){
+        var delId=cloudTx[i].id;
+        try{
+          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(delId);
+          var delRes=await fetch(delUrl,{
+            method:'DELETE',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}
+          });
+          console.log('[Supabase] Deleted: '+delId+' (status: '+delRes.status+')');
+        }catch(e){console.warn('[Supabase] Failed to delete '+delId+':',e)}
+      }
+    }
+    
     // Clear local storage
     localStorage.removeItem('stockLedgerDB');
     localStorage.removeItem('_lastClearTime');
     localStorage.removeItem('_deletedIds');
     localStorage.removeItem('pricingPending');
     localStorage.removeItem('pricingSubmittedKeys');
+    
+    // Clear DB in memory
+    if(window.DB&&DB.db)DB.db=[];
+    
     console.log('[Supabase] ✅ All data cleared from cloud and local storage!');
     alert('✅ All data cleared! Refresh the page to start fresh.');
-    location.reload();
   }catch(e){
     console.error('[Supabase] Clear failed:',e);
     alert('❌ Clear failed: '+e.message);
