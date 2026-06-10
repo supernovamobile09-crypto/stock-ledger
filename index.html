@@ -4803,15 +4803,19 @@ async function saveToBackend(){
   if(editingHistoryId){DB.deleteById(editingHistoryId);editingHistoryId=null}
   // Note: editingHistoryId is for legacy single-row delete-then-add flow.
   // New flow uses updateById when row.id is present, so no delete needed.
-  let saved=0,errors=0
+  let saved=0,errors=0,skipped=0
   for(let r of data){
     try{
       let row={item_name:r.item||'',storage:r.storage||'',specs:r.specs||'',color:r.color||'',customer_vendor:r.vendor||'',quantity:parseInt(r.qty)||0,transaction_type:r.type||'',date:r.date||'',marks:r.marks||'',logistics:r.logistics||'',transaction_status:r.txnStatus||''}
       if(r.id&&DB.updateById(r.id,row)){saved++}
-      else{let res=await DB.addTransaction(row);if(res)saved++}
+      else{
+        var _rk=String(row.item_name).toUpperCase()+'|'+String(row.storage).toUpperCase()+'|'+String(row.specs).toUpperCase()+'|'+String(row.color).toUpperCase()+'|'+String(row.customer_vendor).toUpperCase()+'|'+String(row.date)+'|'+String(row.transaction_type).toUpperCase()+'|'+(Number(row.quantity)||0)
+        var _dup=DB.db.some(function(d){return String(d.item_name).toUpperCase()+'|'+String(d.storage).toUpperCase()+'|'+String(d.specs).toUpperCase()+'|'+String(d.color).toUpperCase()+'|'+String(d.customer_vendor).toUpperCase()+'|'+String(d.date)+'|'+String(d.transaction_type).toUpperCase()+'|'+(Number(d.quantity)||0)===_rk})
+        if(!_dup){let res=await DB.addTransaction(row);if(res)saved++}else{skipped++}
+      }
     }catch(e){errors++}
   }
-  showMsg('Saved: '+saved+' rows'+(errors?', Errors: '+errors:''))
+  showMsg('Saved: '+saved+' rows'+(skipped?', Skipped: '+skipped+' duplicate(s)':''))
   if(errors)return
   // Sync qty changes to pricingPending entries
   try{
