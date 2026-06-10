@@ -2407,11 +2407,11 @@ async function loadFromSupabase(){
         
         var merged=Object.values(map);
         
-        // Dedup by content (item+storage+specs+color+date+type+qty)
+        // Dedup by content (item+storage+specs+color+date+type+qty+customer)
         var norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
         var contentMap={};
         merged.forEach(function(t){
-          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.date||'')+norm(t.transaction_type||'')+'|qty:'+t.quantity;
+          var contentKey=norm(t.item_name||'')+norm(t.storage||'')+norm(t.specs||'')+norm(t.color||'')+norm(t.date||'')+norm(t.transaction_type||'')+'|qty:'+t.quantity+'|customer:'+norm(t.customer_vendor||'');
           if(!contentMap[contentKey]){
             contentMap[contentKey]=t;
           }else{
