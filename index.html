@@ -2731,6 +2731,38 @@ function yp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean),n=[],r=null,
 function bp(e){return[...new Set(e.map(e=>e.trim()).filter(Boolean))].sort()}
 function today(){return new Date().toISOString().split('T')[0]}
 function formatItemName(m){if(!m)return'';if(/^(Apple|iPhone|iMac|MacBook|iPad|AirPods?|AirTag)/i.test(m))return m;let w=m.split(' '),n=w[0],r=w.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');return r?n+' '+r:n}
+// Add icon/emoji to item name based on product type
+function addItemIcon(m){if(!m)return m;let s=String(m).toLowerCase();
+// Headphones/Audio
+if(/marshall|airpods?|airpod\s*pro|airpod\s*max|beats|earbud|headphone|headset|earphone|audio/.test(s))return m+' 🎧';
+// Apple Watch
+if(/iwatch|apple\s*watch/.test(s))return m+' ⌚';
+// iPad
+if(/ipad/.test(s))return m+' 📱';
+// MacBook
+if(/macbook|mac\s*book|mac\s*mini|mac\s*studio|mac\s*pro|imac/.test(s))return m+' 💻';
+// iPhone (default)
+if(/iphone/.test(s))return m+' 📱';
+// AirTag
+if(/airtag/.test(s))return m+' 📍';
+// Apple Pencil/TV
+if(/pencil/.test(s))return m+' ✏️';
+if(/apple\s*tv/.test(s))return m+' 📺';
+// PlayStation/Console
+if(/play\s*station|ps5|ps4|xbox|nintendo|switch/.test(s))return m+' 🎮';
+// Samsung Galaxy
+if(/samsung|galaxy/.test(s))return m+' 📱';
+// Honor
+if(/honor/.test(s))return m+' 📱';
+// Pixel
+if(/pixel/.test(s))return m+' 📱';
+// Fold/Flip
+if(/fold|flip/.test(s))return m+' 📱';
+// Magic Keyboard
+if(/magic\s*keyboard/.test(s))return m+' ⌨️';
+// Starlink
+if(/starlink/.test(s))return m+' 🛰️';
+return m}
 function formatColor(c){if(!c)return'';let k=c.toUpperCase().replace(/\s+/g,' '),M={'WHITE':'White','BLACK':'Black','BLUE':'Blue','LAVENDER':'Lavender','GREEN':'Sage','GOLD':'Gold','ORANGE':'Orange','PINK':'Pink','PURPLE':'Lavender','SILVER':'Silver','BROWN':'Brown','CREAM':'Cream','TEAL':'Teal','SAGE':'Sage','RED':'Red','ROSE GOLD':'Rose Gold','SPACE BLACK':'Space Black','SPACE GRAY':'Space Gray','SKY BLUE':'Sky Blue','JET BLACK':'Jet Black','STARLIGHT':'Starlight','MIDNIGHT':'Midnight','INDIGO':'Indigo','CITRUS':'Citrus','LIGHT BLUE':'Light Blue','DEEP BLUE':'Deep Blue'};return M[k]||c}
 function formatSpecs(c){if(!c)return'';let k=c.toUpperCase().trim(),M={'HONG KONG':'HK','KOREA':'Korea','JAPAN':'Japan','INDIA':'India','USA':'USA','CHINA':'China','EURO':'Euro'};if(k.includes('/')||/^[A-Z]{2,}(?:\s*-\s*[A-Z]+)?$/.test(k))return k;return M[k]||c.split(' ').map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' ')}
 
@@ -3823,6 +3855,8 @@ function finishParse(result,text,type,overrideLogistics,overrideMarks,overrideVe
     if(/PRO|MAX/i.test(item)&&/^white$/i.test(color))color='Silver'
     let specsVal=r.country?formatSpecs(r.country):''
     if(isEsim)specsVal='Japan'
+    // Add icon/emoji for product type (headphones, watches, etc.)
+    if(typeof addItemIcon==='function')item=addItemIcon(item)
     return {
       id:genId(),date:today(),type:type,
       vendor:overrideVendor||r.vendor||'',marks:overrideMarks||r.marks||'',item:item,
