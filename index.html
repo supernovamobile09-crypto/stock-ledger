@@ -2627,10 +2627,39 @@ const _p={MWUV3:{model:'iMac 24" M4 Chip',storage:'16GB/512GB'},MHFA4:{model:'Ma
 const AW={MEV44:{model:'Apple Watch S11 46mm'},MWWE3:{model:'Apple Watch S10 42mm'},MWWH3:{model:'Apple Watch S10 42mm'},MEHQ4:{model:'Apple Watch SE 3 44mm'},MEPJ4:{model:'Apple Watch SE 3 44mm GPS+Cell'},MXEJ3:{model:'Apple Watch SE 2 44mm'},MXEK3:{model:'Apple Watch SE 2 44mm'},MXEP3:{model:'Apple Watch SE 2 44mm'},MXG23:{model:'Apple Watch SE 2 44mm GPS+Cell'},MF0J4:{model:'Apple Watch Ultra 3'},MEU04:{model:'Apple Watch'},MEV04:{model:'Apple Watch'}}
 let gp={}
 
-function npClean(e){let t=e.toUpperCase().replace(/^IPHONE/,'');t=t.replace(/(17AIR|17E|17PROMAX|17PRO|17MAX|16AIR|16PROMAX|16PRO|16MAX|16E|15PROMAX|15PRO|15|14PROMAX|14PRO|14PLUS|14|13PROMAX|13PRO|13MINI|13|12PROMAX|12PRO|12MINI|12|11PROMAX|11PRO|11|SE)(2TB|1TB|2048|1024|512|256|128|64)/g,'$1 $2');t=t.replace(/(2TB|1TB|2048|1024|512|256|128|64)(LV|V|WH|BK|BU|OR|GN|GE|GD|LA|SI|PK|PU|GO)$/g,'$1 $2');return t}
+function npClean(e){
+  let t=e.toUpperCase().replace(/^IPHONE/,'');
+  // Handle 2TB first (before 1TB) in storage alternation
+  t=t.replace(/(17AIR|17E|17PROMAX|17PRO|17MAX|16AIR|16PROMAX|16PRO|16MAX|16E|15PROMAX|15PRO|15|14PROMAX|14PRO|14PLUS|14|13PROMAX|13PRO|13MINI|13|12PROMAX|12PRO|12MINI|12|11PROMAX|11PRO|11|SE)(2TB|1TB|2048|1024|512|256|128|64)/g,'$1 $2');
+  t=t.replace(/(2TB|1TB|2048|1024|512|256|128|64)(LV|V|WH|BK|BU|OR|GN|GE|GD|LA|SI|PK|PU|GO)$/g,'$1 $2');
+  return t
+}
 function rp(e){let t=e.replace(/\*/g,'').replace(/@[\d.]+/g,'').trim();t=t.replace(/\(([^)]+)\)\/(\w+)/g,(e,t,n)=>t+' '+n);t=t.replace(/(\d+)\/(\d+)/g,'$1 $2');t=t.replace(/[-–"—]/g,' ');t=t.replace(/\t/g,' ');t=t.replace(/\b(2TB|1TB|2048|1024|512GB|256GB|128GB|64GB|512|256|128|64)(LV|V|WH|BK|BU|OR|GN|GE|GD|LA|SI|PK|PU|GO|WHITE|BLACK|BLUE|GOLD|SILVER|GREEN|PINK|PURPLE|ORANGE|BROWN|CREAM|SAGE|TEAL|LAVENDER)\b/gi,'$1 $2');t=t.replace(/\b(JP|KR|HK|IN|KH)(\d+)/gi,'$1 $2');t=t.replace(/(\d+)(JP|KR|HK|IN|KH)\b/gi,'$1 $2');return t.split(/[\s,]+/).filter(Boolean).map(e=>/^(IPHONE)?(17|16|15|14|13|12|11|SE)/i.test(e)?npClean(e):e.toUpperCase()).join(' ').replace(/\s+/g,' ').trim()}
 function ip(e){e=e.replace(/IPHONE/g,'');const models=[{re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b17\b/,model:'17'},{re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b16\b/,model:'16'},{re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b15\b/,model:'15'},{re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b14\b/,model:'14'},{re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b13\b/,model:'13'},{re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b12\b/,model:'12'},{re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\b11\b/,model:'11'},{re:/\bSE\b/,model:'SE'}];for(let{re:t,model:n}of models)if(t.test(e))return n;return null}
-function ap(e){let t=e.match(/\b(2\s*TB|1\s*TB|512\s*GB|256\s*GB|128\s*GB|64\s*GB)\b/i);if(t){let e=t[1].replace(/\s/g,'').toUpperCase();if(e==='2TB')return'2TB';if(e==='1TB')return'1TB';if(e==='512GB')return'512GB';if(e==='256GB')return'256GB';if(e==='128GB')return'128GB';if(e==='64GB')return'64GB'}let n=e.match(/\b(2048|1024|512|256|128)\b/);if(n){if(n[1]==='2048')return'2TB';if(n[1]==='1024')return'1TB';if(n[1]==='512')return'512GB';if(n[1]==='256')return'256GB';if(n[1]==='128')return'128GB'}return null}
+function ap(e){
+  // Check for 2TB FIRST (before 1TB) to prevent mis-match
+  let t2=e.match(/\b(2\s*TB)\b/i);
+  if(t2)return'2TB';
+  let t1=e.match(/\b(1\s*TB)\b/i);
+  if(t1)return'1TB';
+  let g512=e.match(/\b(512\s*GB)\b/i);
+  if(g512)return'512GB';
+  let g256=e.match(/\b(256\s*GB)\b/i);
+  if(g256)return'256GB';
+  let g128=e.match(/\b(128\s*GB)\b/i);
+  if(g128)return'128GB';
+  let g64=e.match(/\b(64\s*GB)\b/i);
+  if(g64)return'64GB';
+  let n=e.match(/\b(2048|1024|512|256|128)\b/);
+  if(n){
+    if(n[1]==='2048')return'2TB';
+    if(n[1]==='1024')return'1TB';
+    if(n[1]==='512')return'512GB';
+    if(n[1]==='256')return'256GB';
+    if(n[1]==='128')return'128GB';
+  }
+  return null
+}
 function op(e){
   for(let[t,n]of Object.entries(Zf))if(RegExp('\\b'+t+'\\b','i').test(e))return n
   for(let s of Zs)if(RegExp('\\b'+s.replace(/[-\/]/g,'[-\/]')+'\\b','i').test(e))return s
