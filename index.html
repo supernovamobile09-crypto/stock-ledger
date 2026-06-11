@@ -4298,7 +4298,8 @@ function getWtsWhatsAppText(){
     let specsKey=String(grp.specs||'').toUpperCase();
     if(lastSpecs&&lastSpecs!==specsKey)lines.push('─────────────');
     lastSpecs=specsKey;
-    let headerWithSpecs=grp.header+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
+    let itemName=typeof addItemIcon==='function'?addItemIcon(grp.header):grp.header;
+    let headerWithSpecs=itemName+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
     lines.push('*'+headerWithSpecs+'*');
     grp.colors.forEach(g=>{total+=g.qty;lines.push(g.color+' '+g.qty)});
     lines.push('');
@@ -4316,7 +4317,8 @@ function getWtbWhatsAppText(){
     let specsKey=String(grp.specs||'').toUpperCase();
     if(lastSpecs&&lastSpecs!==specsKey)lines.push('─────────────');
     lastSpecs=specsKey;
-    let headerWithSpecs=grp.header+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
+    let itemName=typeof addItemIcon==='function'?addItemIcon(grp.header):grp.header;
+    let headerWithSpecs=itemName+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
     lines.push('*'+headerWithSpecs+'*');
     grp.colors.forEach(g=>{let p=Math.abs(g.qty);total+=p;lines.push(g.color+' '+p)});
     lines.push('');
