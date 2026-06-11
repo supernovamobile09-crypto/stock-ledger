@@ -3379,6 +3379,9 @@ function parseBalanceFormat(text,type){
   for(let line of lines){
     let t=line.trim()
     if(!t)continue
+    // Strip trailing price ($1395, $1,395) so parseInt on last part works
+    t=t.replace(/\s*\$['']?\d+(?:[.,]\d+)?\s*$/,'').trim()
+    if(!t)continue
     // Handle marks prefix (may appear anywhere in text)
     let markM=t.match(/^(?:mark|maek|mrak)\s*[:：\s-]?\s*(.+)/i)
     if(markM){balanceMarks=markM[1].trim();applyPendingFields();continue}
