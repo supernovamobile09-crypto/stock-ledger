@@ -4147,6 +4147,12 @@ function renderEditable(){
       transactions[idx][field]=this.value
       let autoFill=document.getElementById('autoFillToggle')
       let fillAll=autoFill&&autoFill.checked
+      // auto-fill all date columns when 1 date changes
+      if(field==='date'&&this.value){
+        tbody.querySelectorAll('input[data-field="date"]').forEach(inp=>{
+          let i=parseInt(inp.dataset.idx);inp.value=this.value;transactions[i].date=this.value
+        })
+      }
       // auto-set txnStatus when type changes
       if(field==='type'){
         let st=autoStatus(this.value)
