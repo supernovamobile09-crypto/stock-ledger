@@ -1574,6 +1574,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <option value="za_type">Z-A (Type)</option>
 <option value="az_cv">A-Z (Customer/Vendor)</option>
 <option value="za_cv">Z-A (Customer/Vendor)</option>
+<option value="az_item">A-Z (Item)</option>
+<option value="za_item">Z-A (Item)</option>
 </select>
 <button id="clearFilterBtn" class="btn" style="font-size:0.65rem;padding:4px 10px" onclick="clearHistoryFilters()"><i class="fas fa-times-circle"></i> CLEAR FILTER</button>
 <button id="editSelectedBtn" class="btn" style="font-size:0.65rem;padding:4px 10px;display:none"><i class="fas fa-edit"></i> EDIT SELECTED</button>
@@ -5540,6 +5542,18 @@ async function saveToBackend(){
       rows=rows.slice().sort(function(a,b){return (a.customer_vendor||'').localeCompare(b.customer_vendor||'')})
     }else if(sortType==='za_cv'){
       rows=rows.slice().sort(function(a,b){return (b.customer_vendor||'').localeCompare(a.customer_vendor||'')})
+    }else if(sortType==='az_item'){
+      rows=rows.slice().sort(function(a,b){
+        var ia=(a.item_name||'')+' '+(a.storage||'')+' '+(a.color||'')
+        var ib=(b.item_name||'')+' '+(b.storage||'')+' '+(b.color||'')
+        return ia.localeCompare(ib)
+      })
+    }else if(sortType==='za_item'){
+      rows=rows.slice().sort(function(a,b){
+        var ia=(a.item_name||'')+' '+(a.storage||'')+' '+(a.color||'')
+        var ib=(b.item_name||'')+' '+(b.storage||'')+' '+(b.color||'')
+        return ib.localeCompare(ia)
+      })
     }else if(sortType==='oldest'){
       rows=rows.slice().sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))})
     }else{
