@@ -2851,22 +2851,30 @@ function fuzzyMatchSpecs(raw){
     if(type==='storage')return ['64GB','128GB','256GB','512GB','1TB','2TB','8GB/256GB','8GB/512GB','16GB/256GB','16GB/512GB','16GB/1TB','24GB/1TB','24GB/2TB']
     return []
   }
-  function filterACList(list,query){
+  function filterACList(list,query,aliases){
     if(!query)return list.slice(0,50)
     var q=query.toLowerCase()
-    var exact=[],starts=[],contains=[],fuzzy=[]
+    var exact=[],alias=[],starts=[],contains=[],fuzzy=[]
     for(var i=0;i<list.length;i++){
       var v=list[i],vl=v.toLowerCase()
-      if(vl===q)exact.push(v)
-      else if(vl.indexOf(q)===0)starts.push(v)
+      if(vl===q){exact.push(v);continue}
+      // Check if query matches an alias key that points to this value
+      if(aliases){
+        for(var a in aliases){
+          if(a.toLowerCase()===q&&aliases[a]===v){alias.push(v);break}
+          // Also check partial alias key match
+          if(q.length>=2&&a.toLowerCase().indexOf(q)===0&&aliases[a]===v){alias.push(v);break}
+        }
+      }
+      if(vl.indexOf(q)===0)starts.push(v)
       else if(vl.indexOf(q)!==-1)contains.push(v)
       else if(q.length>=3){
         var qi=0
-        for(var ci=0;ci<vl.length&&qi<q.length;ci++){if(vl[ci]===q[qi])qi++}
+        for(var ci=0;ci<vl.length&&qi<q.length;ci++){if(vl[ci]===q[ci])qi++}
         if(qi===q.length)fuzzy.push(v)
       }
     }
-    return exact.concat(starts,contains,fuzzy).slice(0,40)
+    return exact.concat(alias,starts,contains,fuzzy).slice(0,40)
   }
   var acDropdown=null
   function getDropdown(){
@@ -2919,8 +2927,13 @@ function fuzzyMatchSpecs(raw){
     }
   }
   function refreshAC(input){
-    var list=getACList(input.dataset.aclist)
-    var items=filterACList(list,input.value)
+    var type=input.dataset.aclist
+    var list=getACList(type)
+    var aliases=null
+    if(type==='vendor')aliases=VENDOR_ALIASES
+    else if(type==='logistics')aliases=LOGISTICS_ALIASES
+    else if(type==='marks')aliases=MARKS_ALIASES
+    var items=filterACList(list,input.value,aliases)
     if(items.length>0)showAC(input,items,-1)
     else hideAC()
   }
