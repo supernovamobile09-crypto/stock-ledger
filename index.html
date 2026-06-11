@@ -1652,6 +1652,18 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <div id="dcSpecsList" style="max-height:200px;overflow-y:auto;font-size:0.7rem"></div>
 </div>
 </div>
+<!-- Learned Models section -->
+<div style="margin-top:16px;border:1px solid var(--glass-border);border-radius:10px;padding:12px">
+<h4 style="font-size:0.8rem;margin-bottom:8px;color:#ff9f0a"><i class="fas fa-graduation-cap"></i> Learned Models <span style="font-weight:400;font-size:0.65rem;color:#666">(auto-saved from product headers)</span></h4>
+<div style="margin-bottom:8px;display:flex;gap:4px">
+<input type="text" id="dcLearnedFilter" placeholder="Filter prefix..." oninput="dcLearnedRender()" style="flex:1;padding:5px 8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.7rem;background:var(--input-bg);color:var(--text-body)">
+<button class="btn" style="padding:4px 10px;font-size:0.65rem;background:#ff3b30;color:#fff" onclick="dcLearnedClear()"><i class="fas fa-trash"></i> Clear All</button>
+</div>
+<div style="display:flex;font-size:0.65rem;padding:4px 8px;background:#f5f5f5;border-radius:4px;margin-bottom:4px;font-weight:600">
+<span style="flex:0 0 40px">Prefix</span><span style="flex:1">Item Name</span><span style="flex:0 0 80px">Storage</span><span style="flex:0 0 30px"></span>
+</div>
+<div id="dcLearnedList" style="max-height:250px;overflow-y:auto;font-size:0.7rem"></div>
+</div>
 </div>
 </div>
 
@@ -2774,13 +2786,15 @@ function yp(e){
     let _cc=(_rp.code||'')+' ' +(_rp.color||'');
     if(r){
       gp[i]={model:r.model,storage:r.storage};
-      _row={model:r.model,storage:r.storage,country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''}
+      _row={model:r.model,storage:r.storage,country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''};
+      try{var _lm=JSON.parse(localStorage.getItem('learnedModels')||'{}');_lm[i.slice(0,3)]={model:r.model,storage:r.storage};localStorage.setItem('learnedModels',JSON.stringify(_lm))}catch(_le){}
     }else{
       let e=gp[i]||_p[i]||AW[i];
       if(!e&&_rp.parenCode){
         let n=hp(_rp.parenCode);
         e=gp[n]||_p[n]||AW[n]
       }
+      if(!e){try{var _lm=JSON.parse(localStorage.getItem('learnedModels')||'{}'),_k=i.slice(0,3);if(_lm[_k])e=_lm[_k]}catch(_le){}}
       if(e)_row={model:e.model,storage:e.storage,country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''};
       else _row={model:'',storage:'',country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''}
     }
@@ -5418,7 +5432,8 @@ async function saveToBackend(){
       var el=byId(ids[k]);if(!el)return
       var arr=getDCList(k)
       el.innerHTML=arr.map(function(v,i){return '<div style="padding:2px 0;font-size:0.7rem;border-bottom:1px solid #eee;display:flex;justify-content:space-between"><span>'+esc(v)+'</span><span style="cursor:pointer;color:#ff3b30" onclick="dcRemove(\''+k+'\','+i+')">&times;</span></div>'}).join('')
-    })
+    });
+    if(typeof dcLearnedRender==='function')dcLearnedRender()
   }
   // Data Control: add item
   window.dcAdd=function(type){
@@ -5450,6 +5465,30 @@ async function saveToBackend(){
       if(!el){el=document.createElement('datalist');el.id=id;document.body.appendChild(el)}
       el.innerHTML=dlMap[id].map(function(v){return '<option value="'+esc(v)+'">'}).join('')
     })
+  }
+  // Data Control: render learned models
+  window.dcLearnedRender=function(){
+    var el=byId('dcLearnedList');if(!el)return;
+    try{
+      var lm=JSON.parse(localStorage.getItem('learnedModels')||'{}'),keys=Object.keys(lm);
+      if(!keys.length){el.innerHTML='<div style="color:#999;padding:8px;font-size:0.7rem">No learned models yet. Paste a product header (e.g. MacBook Pro 24GB Memory 512GB) above model codes to auto-learn.</div>';return}
+      var filter=(byId('dcLearnedFilter')||{}).value||'';
+      el.innerHTML=keys.sort().filter(function(k){return!filter||k.toUpperCase().includes(filter.toUpperCase())}).map(function(k){
+        return '<div style="display:flex;gap:4px;padding:4px 8px;border-bottom:1px solid #eee;font-size:0.7rem;align-items:center">'
+          +'<span style="flex:0 0 40px;font-weight:600;color:#1e3c72">'+esc(k)+'</span>'
+          +'<span style="flex:1">'+esc(lm[k].model)+'</span>'
+          +'<span style="flex:0 0 80px;color:#666">'+esc(lm[k].storage)+'</span>'
+          +'<span style="cursor:pointer;color:#ff3b30;margin-left:8px;font-size:0.85rem" onclick="dcLearnedRemove(\''+k+'\')" title="Remove">&times;</span>'
+          +'</div>'
+      }).join('')
+    }catch(e){el.innerHTML='<div style="color:red;padding:4px">Error loading learned models</div>'}
+  }
+  window.dcLearnedRemove=function(key){
+    try{var lm=JSON.parse(localStorage.getItem('learnedModels')||'{}');delete lm[key];localStorage.setItem('learnedModels',JSON.stringify(lm));dcLearnedRender();showMsg('Removed prefix "'+key+'"')}catch(e){}
+  }
+  window.dcLearnedClear=function(){
+    if(!confirm('Clear all learned models?'))return;
+    try{localStorage.removeItem('learnedModels');dcLearnedRender();showMsg('All learned models cleared')}catch(e){}
   }
   // History: fetch all data and render
   window.fetchHistory=function(){
