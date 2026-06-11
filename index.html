@@ -2635,7 +2635,7 @@ function npClean(e){
   return t
 }
 function rp(e){let t=e.replace(/\*/g,'').replace(/@[\d.]+/g,'').trim();t=t.replace(/\(([^)]+)\)\/(\w+)/g,(e,t,n)=>t+' '+n);t=t.replace(/(\d+)\/(\d+)/g,'$1 $2');t=t.replace(/[-–"—]/g,' ');t=t.replace(/\t/g,' ');t=t.replace(/\b(2TB|1TB|2048|1024|512GB|256GB|128GB|64GB|512|256|128|64)(LV|V|WH|BK|BU|OR|GN|GE|GD|LA|SI|PK|PU|GO|WHITE|BLACK|BLUE|GOLD|SILVER|GREEN|PINK|PURPLE|ORANGE|BROWN|CREAM|SAGE|TEAL|LAVENDER)\b/gi,'$1 $2');t=t.replace(/\b(JP|KR|HK|IN|KH)(\d+)/gi,'$1 $2');t=t.replace(/(\d+)(JP|KR|HK|IN|KH)\b/gi,'$1 $2');return t.split(/[\s,]+/).filter(Boolean).map(e=>/^(IPHONE)?(17|16|15|14|13|12|11|SE)/i.test(e)?npClean(e):e.toUpperCase()).join(' ').replace(/\s+/g,' ').trim()}
-function ip(e){e=e.replace(/IPHONE/g,'');const models=[{re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\bSE\b/,model:'SE'}];for(let{re:t,model:n}of models)if(t.test(e))return n;return null}
+function ip(e){e=e.replace(/IPHONE/g,'');const models=[{re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b17\b/,model:'17'},{re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b16\b/,model:'16'},{re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b15\b/,model:'15'},{re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b14\b/,model:'14'},{re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b13\b/,model:'13'},{re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b12\b/,model:'12'},{re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\b11\b/,model:'11'},{re:/\bSE\b/,model:'SE'}];for(let{re:t,model:n}of models)if(t.test(e))return n;return null}
 function ap(e){
   // Check for 2TB FIRST (before 1TB) to prevent mis-match
   let t2=e.match(/\b(2\s*TB)\b/i);
@@ -3329,7 +3329,7 @@ async function aiPostProcess(rows){
 function isBalanceFormat(text){
   let lines=text.split('\n').map(l=>l.trim()).filter(Boolean)
   if(lines.length===0)return false
-  let starLines=lines.filter(l=>/^\*[^*]+\*$/.test(l))
+  let starLines=lines.filter(l=>/^\*[^*]+\*/.test(l))
   if(starLines.length===0)return false
   // First star line must be a product header (starts with digit) - not a vendor name
   if(starLines.length>0 && !/^\*\d/.test(starLines[0]))return false
@@ -3355,18 +3355,34 @@ function parseBalanceHeader(header){
 }
 
 function parseBalanceFormat(text,type){
-  let lines=text.split('\n'),rows=[],currentHeader=null
+  let lines=text.split('\n'),rows=[],currentHeader=null,balanceVendor='',balanceMarks='',balanceLogistics=''
+  // Helper to apply pending marks/logistics/vendor to all existing rows
+  function applyPendingFields(){
+    if(balanceVendor)rows.forEach(function(r){if(!r.vendor)r.vendor=balanceVendor})
+    if(balanceMarks)rows.forEach(function(r){if(!r.marks)r.marks=balanceMarks})
+    if(balanceLogistics)rows.forEach(function(r){if(!r.logistics)r.logistics=balanceLogistics})
+  }
   for(let line of lines){
     let t=line.trim()
     if(!t)continue
+    // Handle marks prefix (may appear anywhere in text)
+    let markM=t.match(/^(?:mark|maek|mrak)\s*[:：\s-]?\s*(.+)/i)
+    if(markM){balanceMarks=markM[1].trim();applyPendingFields();continue}
     let hm=t.match(/^\*([^*]+)\*/)
     if(hm){currentHeader=parseBalanceHeader(hm[1].trim());continue}
-    if(!currentHeader)continue
+    // Capture vendor/logistics name from lines before first header
+    if(!currentHeader&&t.length>1&&!/^(total|delivery|monday|tuesday|wednesday|thursday|friday|add|order|spec|emirates|\*)/i.test(t)){
+      let lm=typeof fuzzyMatchLogistics==='function'?fuzzyMatchLogistics(t):null
+      if(lm&&lm!==t&&LOGISTICS_LIST.some(v=>v.toUpperCase()===lm.toUpperCase())){balanceLogistics=lm;applyPendingFields();continue}
+      let vm=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(t):null
+      if(vm&&vm!==t&&VENDOR_LIST.some(v=>v.toUpperCase()===vm.toUpperCase())){balanceVendor=vm;applyPendingFields();continue}
+      balanceVendor=t;applyPendingFields();continue
+    }
     // Try dash-separated color-qty: COLOR-20, COLOR -20, COLOR - 20, COLOR\t-20
     let dashM=t.match(/^\s*(\w+(?:\s+\w+)?)\s*[-–]\s*(\d+)\s*$/);
     if(dashM){
       let cl=fp(dashM[1])||dashM[1].charAt(0).toUpperCase()+dashM[1].slice(1).toLowerCase();
-      rows.push({model:currentHeader.model||'',storage:currentHeader.storage||'',country:currentHeader.specs||'',color:cl,qty:parseInt(dashM[2]),vendor:'',marks:'',logistics:''});
+      rows.push({model:currentHeader.model||'',storage:currentHeader.storage||'',country:currentHeader.specs||'',color:cl,qty:parseInt(dashM[2]),vendor:balanceVendor||'',marks:balanceMarks||'',logistics:balanceLogistics||''});
       continue
     }
     let parts
@@ -3375,11 +3391,12 @@ function parseBalanceFormat(text,type){
     if(!parts||parts.length<2){let sp=t.split(/\s+/);if(sp.length>=2)parts=[sp.slice(0,-1).join(' '),sp[sp.length-1]]}
     if(!parts||parts.length<2)continue
     let colorOrCode=parts.slice(0,parts.length-1).join(' '),qty=Math.abs(parseInt(parts[parts.length-1]))||0
+    if(qty===0)continue
     let cm=colorOrCode.match(/^([A-Z0-9]+)$/),lk=cm?hp(cm[1]):null,lu=lk?(_p[lk]||gp[lk]):null
     if(lu){
-      rows.push({model:lu.model,storage:lu.storage,country:currentHeader.specs||'',color:lu.storage?'':colorOrCode,qty:qty,vendor:'',marks:'',logistics:''})
+      rows.push({model:lu.model,storage:lu.storage,country:currentHeader.specs||'',color:lu.storage?'':colorOrCode,qty:qty,vendor:balanceVendor||'',marks:balanceMarks||'',logistics:balanceLogistics||''})
     }else{
-      rows.push({model:currentHeader.model||'',storage:currentHeader.storage||'',country:currentHeader.specs||'',color:colorOrCode,qty:qty,vendor:'',marks:'',logistics:''})
+      rows.push({model:currentHeader.model||'',storage:currentHeader.storage||'',country:currentHeader.specs||'',color:colorOrCode,qty:qty,vendor:balanceVendor||'',marks:balanceMarks||'',logistics:balanceLogistics||''})
     }
   }
   return{rows}
