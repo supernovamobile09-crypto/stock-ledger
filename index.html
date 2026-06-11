@@ -1933,6 +1933,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   <input type="text" class="form-input" id="plmNameInput" placeholder="Link Name" style="max-width:180px">
   <button class="btn btn-primary" id="plmAddBtn"><i class="fas fa-plus"></i> Add Monitor</button>
   <button class="btn" id="plmRefreshAllBtn"><i class="fas fa-sync"></i> Refresh All</button>
+  <button class="btn" id="plmResyncAllBtn" title="Re-parse all PDFs from scratch (clears old transactions for each link and recreates)"><i class="fas fa-redo"></i> Re-sync All (Fresh)</button>
   <button class="btn btn-excel" id="plmExportBtn"><i class="fas fa-file-excel"></i> Export History</button>
   <span class="plm-rowcount" id="plmRowCount">0 links</span>
 </div>
@@ -2464,26 +2465,12 @@ async function loadFromSupabase(){
 
 async function syncToSupabase(){
   try{
-    // DELETE transactions from Supabase that are NOT in local DB
+    // NOTE: Do NOT delete cloud records that aren't in local DB.
+    // This is a multi-device shared data store — each device may have a
+    // partial view. Explicit deletes are handled by DB.deleteById/deleteAll
+    // which send immediate DELETE calls. Cloud records that are orphaned
+    // (e.g. from another device) are preserved and re-merged on next load.
     var db=typeof DB!=='undefined'&&DB&&DB.db?DB.db:[]
-    var localIds={};
-    db.forEach(function(t){if(t.id)localIds[t.id]=true})
-    try{
-      var cloudTx=await supabaseReq('transactions','GET','select=*');
-      var delCount=0;
-      if(cloudTx&&cloudTx.length){
-        for(var i=0;i<cloudTx.length;i++){
-          if(!localIds[cloudTx[i].id]){
-            try{
-              var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(cloudTx[i].id);
-              var delRes=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
-              if(delRes.status===200||delRes.status===204)delCount++;
-            }catch(e){}
-          }
-        }
-      }
-      if(delCount>0)console.log('[Supabase] Deleted '+delCount+' transactions removed locally');
-    }catch(e){console.warn('[Supabase] Delete sync error:',e.message)}
     // UPLOAD transactions
     if(db.length){for(var i=0;i<db.length;i+=100){
       var batch=db.slice(i,i+100).map(function(t){return{id:t.id,date:t.date||'',transaction_type:t.transaction_type||'',customer_vendor:t.customer_vendor||'',marks:t.marks||'',item_name:t.item_name||'',storage:t.storage||'',specs:t.specs||'',color:t.color||'',quantity:Number(t.quantity)||0,transaction_status:t.transaction_status||'',logistics:t.logistics||'',linkId:t.linkId||'',linkName:t.linkName||'',created_at:t.created_at||new Date().toISOString()}})
@@ -2770,7 +2757,7 @@ function pp(e){let t=e.replace(/\$[`']?\d+(?:\.\d+)?/g,'').trim(),n=t.match(/^(.
 function mp(e){let t=e.trim();t=t.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();let n=null,r=null,i=t,a=t.match(/^([A-Z0-9]+\/[A-Z]+)\s*\(([A-Z0-9]+\/[A-Z]+)\)/i);if(a)n=a[2],r=a[1],i=t.slice(a[0].length).trim();else if(a=t.match(/^([A-Z0-9]+\/[A-Z]+)/i)){n=a[1],i=t.slice(a[0].length).trim();let e=i.match(/^\(([A-Z0-9]+\/[A-Z]+)\)/i);e&&(r=e[1],i=i.replace(e[0],'').trim())}else{let e=t.match(/\(([A-Z0-9]+\/[A-Z]+)\)/i);if(e)n=e[1],i=t.replace(e[0],'').trim().replace(/^[A-Z0-9]+\s+/,'').trim();else{let e=t.match(/([A-Z0-9]+\/[A-Z]+)/i);e&&(n=e[1],i=t.replace(e[0],'').trim())}}if(!n)return null;let o='';/LL\/A$/i.test(n)?o='USA':/HN\/A$/i.test(n)?o='INDIA':r&&/LL\/A$/i.test(r)?o='USA':r&&/HN\/A$/i.test(r)&&(o='INDIA');let s=i.match(/(\d+)\s*-?\s*Pack\s*-?\s*(\d+)/i);if(s)return{code:n,specs:o,color:'WHITE',qty:parseInt(s[2]),parenCode:r};let c=[...i.matchAll(/[-]\s*(\d+)/g)];if(c.length===0){let e=i.trim().length>0?fp(i.trim())||i.trim():'WHITE';return{code:n,specs:o,color:e,qty:1,parenCode:r}}let l=c[c.length-1],u=parseInt(l[1]),d=i.slice(0,l.index).replace(/[-]\s*$/,'').trim();d=d.replace(/\s+(S\/M|M\/L|S|M|L)\s*$/i,'').trim();let f='WHITE';return d.length>0&&(f=fp(d)||d),{code:n,specs:o,color:f,qty:u,parenCode:r}}
 function hp(e){let t=e.match(/^([A-Z0-9]+?)(?:LL|HN|LW|AM)\/A$/i);if(t)return t[1].toUpperCase();let n=e.match(/^([A-Z0-9]+?)\/[A-Z]+$/i);return n?n[1].toUpperCase():e.toUpperCase().replace(/\/.*/,'')}
 function vp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean);if(t.length===0)return false;let n=0,r=0;for(let e of t)(/Memory/.test(e)||/^\$[`']/.test(e.trim())||/^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(e))&&n++,/^[A-Z0-9]+\/[A-Z]+/.test(e.trim())&&r++,/\([A-Z0-9]+\/[A-Z]+\)/.test(e.trim())&&r++;return n>=1||r>=1}
-function yp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean),n=[],r=null,_pendingVendor='',_pendingPhone='';for(let _li=0;_li<t.length;_li++){let e=t[_li];if(/^-{3,}$/.test(e))continue;let productLine=e.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();if(/Memory|^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(productLine)||/\b\d+\s*(GB|TB)\b.*\b\d+\s*(GB|TB)\b/i.test(productLine)&&!/^[A-Z0-9]+\/[A-Z]+/.test(productLine)){r=pp(e);continue}let _w=wp(e);if(_w){n.push({model:_w.model,storage:_w.storage,country:'',color:_w.color,qty:_w.qty,vendor:'',marks:'',logistics:''});r=null;continue}let t=mp(e);if(!t)continue;let i=hp(t.code);let _row;if(r){gp[i]={model:r.model,storage:r.storage};_row={model:r.model,storage:r.storage,country:t.specs,color:t.color||'',qty:t.qty,vendor:'',marks:'',logistics:''}}else{let e=gp[i]||_p[i]||AW[i];if(!e&&t.parenCode){let n=hp(t.parenCode);e=gp[n]||_p[n]||AW[n]}if(e)_row={model:e.model,storage:e.storage,country:t.specs,color:t.color||'',qty:t.qty,vendor:'',marks:'',logistics:''};else _row={model:'',storage:'',country:t.specs,color:t.color||'',qty:t.qty,vendor:'',marks:'',logistics:''}}let _vm=e.match(/\*([^*\d][^*]*)\*/);if(_vm){let _v=_vm[1].trim();let _mv=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(_v):_v;if(_mv&&_mv!==_v)_row.vendor=_mv;else if(VENDOR_LIST.some(function(v){return v.toUpperCase()===_v.toUpperCase()}))_row.vendor=_v;else _row.vendor=_v}if(_row.vendor)_pendingVendor='';let _pm=e.match(/\b(\d{10,})\b/);if(_pm)_pendingPhone=_pm[1];if(_pendingPhone){_row.logistics=_pendingPhone;_pendingPhone=''}n.push(_row)}return{rows:n}}
+function yp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean),n=[],r=null,_pendingVendor='',_pendingPhone='';for(let _li=0;_li<t.length;_li++){let e=t[_li];if(/^-{3,}$/.test(e))continue;let productLine=e.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();if(/Memory|^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(productLine)||/\b\d+\s*(GB|TB)\b.*\b\d+\s*(GB|TB)\b/i.test(productLine)&&!/^[A-Z0-9]+\/[A-Z]+/.test(productLine)){r=pp(e);continue}let _rp=mp(e);if(!_rp)continue;let i=hp(_rp.code);let _row;if(r){gp[i]={model:r.model,storage:r.storage};_row={model:r.model,storage:r.storage,country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''}}else{let e=gp[i]||_p[i]||AW[i];if(!e&&_rp.parenCode){let n=hp(_rp.parenCode);e=gp[n]||_p[n]||AW[n]}if(e)_row={model:e.model,storage:e.storage,country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''};else _row={model:'',storage:'',country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''}}let _vm=e.match(/\*([^*\d][^*]*)\*/);if(_vm){let _v=_vm[1].trim();let _mv=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(_v):_v;if(_mv&&_mv!==_v)_row.vendor=_mv;else if(VENDOR_LIST.some(function(v){return v.toUpperCase()===_v.toUpperCase()}))_row.vendor=_v;else _row.vendor=_v}if(_row.vendor)_pendingVendor='';let _pm=e.match(/\b(\d{10,})\b/);if(_pm)_pendingPhone=_pm[1];if(_pendingPhone){_row.logistics=_pendingPhone;_pendingPhone=''}n.push(_row)}return{rows:n}}
 function bp(e){return[...new Set(e.map(e=>e.trim()).filter(Boolean))].sort()}
 function today(){return new Date().toISOString().split('T')[0]}
 function formatItemName(m){if(!m)return'';if(/^(Apple|iPhone|iMac|MacBook|iPad|AirPods?|AirTag)/i.test(m))return m;let w=m.split(' '),n=w[0],r=w.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');return r?n+' '+r:n}
@@ -3898,6 +3885,7 @@ function doParse(text,type,overrideLogistics,overrideMarks,overrideVendor){
   localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideVendor)
 }
 function localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideVendor){
+  try{
   // Pre-process: if single line with model codes, add newlines
   if(text.indexOf('\n')===-1 && /[A-Z0-9]{4,}\/[A-Z]+/.test(text)){
     text=text.replace(/(MacBook|iPad|Apple\s*Watch|Watch\s+(?:SE|Ultra)\s*\d*\s*\d*\s*\w*|AirPod|AirTag|iMac)/gi,'\n$1')
@@ -3953,6 +3941,10 @@ function localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideV
     showMsg('No rows found in text','error');return
   }
   finishParse(result,text,type,overrideLogistics,overrideMarks,overrideVendor)
+  }catch(e){
+    console.error('[localParseAndFinish ERROR]',e);
+    showMsg('Parse failed: '+e.message,'error');
+  }
 }
 function finishParse(result,text,type,overrideLogistics,overrideMarks,overrideVendor){
   // Rule: if message contains "eSIM" or "esim", force specs to Japan
@@ -5852,12 +5844,24 @@ async function saveToBackend(){
   if(el=byId('copyEntryExcelBtnTop'))el.addEventListener('click',function(){var eb=byId('copyEntryExcelBtn');if(eb)eb.click()})
   if(el=byId('clearAllBtn'))el.addEventListener('click',function(){if(confirm('Clear all rows?')){transactions=[emptyRow()];renderEditable()}})
   if(el=byId('mainParseBtn'))el.addEventListener('click',function(){
-    var txt=byId('mainParseText');if(!txt||!txt.value.trim()){showMsg('Paste text first','error');return}
-    var type=(byId('parseTypeSelect')||{}).value||'Buying'
-    var vendor=(byId('parseVendorSelect')||{}).value||''
-    var logistics=(byId('parseLogisticsSelect')||{}).value||''
-    var marks=(byId('parseMarksSelect')||{}).value||''
-    parseText(txt.value,type,logistics,marks,vendor)
+    try{
+      var txt=byId('mainParseText');if(!txt||!txt.value.trim()){showMsg('Paste text first','error');return}
+      var type=(byId('parseTypeSelect')||{}).value||'Buying'
+      var vendor=(byId('parseVendorSelect')||{}).value||''
+      var logistics=(byId('parseLogisticsSelect')||{}).value||''
+      var marks=(byId('parseMarksSelect')||{}).value||''
+      console.log('[PARSE] text length:', txt.value.length, 'type:', type);
+      var textVal = txt.value;
+      // Quick test: does vp() detect this text?
+      console.log('[PARSE] vp() test:', typeof vp === 'function' ? vp(textVal) : 'vp NOT FOUND');
+      console.log('[PARSE] yp() exists:', typeof yp === 'function');
+      console.log('[PARSE] mp() exists:', typeof mp === 'function');
+      console.log('[PARSE] pp() exists:', typeof pp === 'function');
+      parseText(textVal,type,logistics,marks,vendor)
+    }catch(e){
+      console.error('[PARSE ERROR]',e);
+      showMsg('Parse error: '+e.message,'error');
+    }
   })
   if(el=byId('saveToBackendBtn'))el.addEventListener('click',saveToBackend)
   ;(function(){
@@ -6181,6 +6185,47 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   if(typeof window.loginRefreshDropdown==='function')try{window.loginRefreshDropdown()}catch(e){}
   console.log('[Supabase] Data load callback complete')
 })
+
+// ===== CROSS-DEVICE REAL-TIME SYNC =====
+// Periodic re-fetch from cloud so changes made on another device appear within ~30s
+;(function setupCrossDeviceSync(){
+  if(window._crossDeviceSyncSet)return;window._crossDeviceSyncSet=true;
+  var REFRESH_MS=30000;
+  var lastCloudCount=-1,lastCloudHash='';
+  async function doRefresh(reason){
+    if(window._supabaseDisabled)return;
+    if(typeof loadFromSupabase!=='function')return;
+    try{
+      // Snapshot cloud count + a content hash BEFORE refresh
+      var before=await supabaseReq('transactions','GET','select=id,created_at,quantity,item_name,storage,specs,color,customer_vendor');
+      var beforeCount=(before||[]).length;
+      var beforeHash=JSON.stringify((before||[]).map(function(t){return[t.id,t.quantity,t.item_name,t.storage,t.specs,t.color,t.customer_vendor].join('|')}).sort());
+      await loadFromSupabase();
+      // After load, re-snapshot
+      var after=await supabaseReq('transactions','GET','select=id,created_at,quantity,item_name,storage,specs,color,customer_vendor');
+      var afterCount=(after||[]).length;
+      var afterHash=JSON.stringify((after||[]).map(function(t){return[t.id,t.quantity,t.item_name,t.storage,t.specs,t.color,t.customer_vendor].join('|')}).sort());
+      if(beforeHash!==afterHash||beforeCount!==afterCount){
+        console.log('[CrossDevice] Cloud changed ('+reason+'): '+beforeCount+'→'+afterCount+'. Re-rendering.');
+        try{fetchHistory()}catch(e){}
+        try{renderBalance()}catch(e){}
+        try{renderHistory&&renderHistory()}catch(e){}
+        try{if(typeof window.renderNotifs==='function')window.renderNotifs()}catch(e){}
+        try{if(typeof window.refreshApprovalView==='function')window.refreshApprovalView()}catch(e){}
+        try{if(typeof window.refreshPricingView==='function')window.refreshPricingView()}catch(e){}
+      }
+    }catch(e){console.warn('[CrossDevice] refresh:',e.message)}
+  }
+  // Periodic refresh
+  setInterval(function(){doRefresh('timer')},REFRESH_MS);
+  // Re-fetch when user comes back to tab
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible')doRefresh('visibility');
+  });
+  // Re-fetch on window focus
+  window.addEventListener('focus',function(){doRefresh('focus')});
+  console.log('[CrossDevice] Real-time sync enabled (every '+(REFRESH_MS/1000)+'s + on tab focus)');
+})();
   // Base tab switcher
   if(typeof window.switchTab !== 'function'){
     window.switchTab=function(tab){
@@ -10344,19 +10389,22 @@ window.settingsRestore=function(){
          return norm(t.item_name)===nItem&&norm(t.storage)===nStorage&&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor;
        });
 
-       if(!match){
-         const lenient=existingFimex.find(function(t){
-           const d=String(t.date||'').trim();
-           if(d!==today)return false;
-           if(t.linkId&&t.linkId!==linkIdVal)return false;
-           if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage)return false;
-           var ts=mappedExisting(t);
-           var ms=mappedSpecs;
-           if(ts&&ms&&ts!==ms)return false;
-           return true;
-         });
-          if(lenient){
-            match=lenient;
+        if(!match){
+          // Lenient match without color check — but remove matched tx from pool so
+          // another item (e.g. different color) doesn't match the same existing tx
+          var li=existingFimex.findIndex(function(t){
+            const d=String(t.date||'').trim();
+            if(d!==today)return false;
+            if(t.linkId&&t.linkId!==linkIdVal)return false;
+            if(norm(t.item_name)!==nItem||norm(t.storage)!==nStorage)return false;
+            var ts=mappedExisting(t);
+            var ms=mappedSpecs;
+            if(ts&&ms&&ts!==ms)return false;
+            return true;
+          });
+          if(li>=0){
+            match=existingFimex[li];
+            existingFimex.splice(li,1);  // remove so another color doesn't match same tx
             var lmChanged=false;
             if(mappedColor&&!mappedExistingColor(match)){match.color=color;lmChanged=true}
             if(nSpecs&&!norm(match.specs)){match.specs=specs;lmChanged=true}
@@ -10367,7 +10415,7 @@ window.settingsRestore=function(){
               try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById lenient:',e)}
             }
           }
-       }
+        }
 
        const matchQty=match?(parseInt(match.quantity)||0):0;
 
@@ -10443,9 +10491,13 @@ window.settingsRestore=function(){
 
     // Cleanup: only delete PLM-created transactions (with matching linkId) not in snapshot
     // Manual FIMEX sales (no linkId) and other links are left untouched
+    // IMPORTANT: Reload current DB state — allTx was captured at function start
+    // and has STALE data (e.g. color="" before lenient match updated it).
     try{
+      var currentDb=[];
+      try{currentDb=typeof DB.getTransactions==='function'?DB.getTransactions():[]}catch(e){}
       var linkIdVal=link&&link.id;
-      var todayTx=allTx.filter(function(t){
+      var todayTx=currentDb.filter(function(t){
         // Only clean up this specific link's transactions
         if(!t.linkId||t.linkId!==linkIdVal)return false;
         return String(t.customer_vendor||'').toUpperCase().trim()===FIMEX.toUpperCase()
@@ -10517,6 +10569,7 @@ window.settingsRestore=function(){
   async function checkLink(link,opts){
     if(!link)return;
     const showUi=opts&&opts.showUi;
+    const freshSync=opts&&opts.freshSync;
     link.lastError=null;
     if(showUi)renderLinks();
     try{
@@ -10526,10 +10579,30 @@ window.settingsRestore=function(){
       const prev=link.currentSnapshot||{};
       link._allItems=result.allItems;
 
+      // For freshSync: delete ALL FIMEX transactions for this link on this date
+      // and re-create from PDF. Used to recover from data loss.
+      if(freshSync){
+        try{
+          var todayFs=(document.getElementById('plmOrderDate')&&document.getElementById('plmOrderDate').value)||new Date().toISOString().split('T')[0];
+          var allTxFs=(typeof DB.getTransactions==='function')?DB.getTransactions():[];
+          for(var fi=allTxFs.length-1;fi>=0;fi--){
+            var ft=allTxFs[fi];
+            if(ft.linkId===link.id
+              &&String(ft.customer_vendor||'').toUpperCase().trim()==='FIMEX FZCO'
+              &&String(ft.date||'').trim()===todayFs){
+              try{DB.deleteById(ft.id)}catch(e){}
+            }
+          }
+        }catch(e){console.warn('[PLM fresh] cleanup:',e.message)}
+      }
+
       // Detect snapshot changes first — only sync to DB when qty actually differs
       var snapChanged=false;
       for(var k in prev){if(prev[k]!==(newSnap[k]||0)){snapChanged=true;break}}
       if(!snapChanged){for(var k in newSnap){if(newSnap[k]!==(prev[k]||0)){snapChanged=true;break}}}
+
+      // For freshSync, force snapChanged=true so syncPLMTransactions runs
+      if(freshSync)snapChanged=true;
 
       var changes=[];
       if(snapChanged){
@@ -10945,6 +11018,23 @@ window.settingsRestore=function(){
     $('plmUrlInput').addEventListener('keydown',e=>{if(e.key==='Enter')handleAdd()});
     $('plmNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')handleAdd()});
     $('plmRefreshAllBtn').onclick=()=>refreshAll(true);
+    $('plmResyncAllBtn').onclick=async function(){
+      if(checking){toast('Already checking...','error');return}
+      if(!LINKS.filter(l=>l.status==='active').length){toast('No active links','error');return}
+      if(!confirm('Re-sync All (Fresh) will:\n\n1. Delete ALL FIMEX transactions for each active link on the current order date\n2. Re-parse the PDF from scratch\n3. Create fresh transactions\n\nUse this to recover from data loss (e.g. missing colors). Continue?'))return;
+      checking=true;
+      const active=LINKS.filter(l=>l.status==='active');
+      for(const l of active){
+        l._busy=true;renderLinks();
+        try{await checkLink(l,{showUi:false,freshSync:true})}catch(e){console.warn(e)}
+        l._busy=false;renderLinks();
+      }
+      checking=false;
+      renderDashboard();renderStatus();
+      try{fetchHistory()}catch(e){}
+      try{if(typeof DB.save==='function')DB.save()}catch(e){}
+      toast('Re-synced '+active.length+' link'+(active.length===1?'':'s')+' (fresh)');
+    };
     $('plmExportBtn').onclick=exportHistory;
     $('plmAutoToggle').onchange=(e)=>{SETTINGS.autoRefresh=e.target.checked;persistSettings();renderStatus();if(SETTINGS.autoRefresh)startMonitor();else stopMonitor()};
     $('plmIntervalSel').onchange=(e)=>{SETTINGS.globalInterval=parseInt(e.target.value,10);persistSettings();renderStatus();if(SETTINGS.autoRefresh){startMonitor()}};
