@@ -5270,13 +5270,13 @@ async function saveDOasPDF(){
       pdf.addImage(imgData,'JPEG',margin,-srcY*imgW/canvas.width,imgW,imgH)
     }
     var pdfBlob=pdf.output('blob')
-    if(window.pdfDirHandle){
+    if(pdfDirHandle){
       try{
-        var fileHandle=await window.pdfDirHandle.getFileHandle(fname,{create:true})
+        var fileHandle=await pdfDirHandle.getFileHandle(fname,{create:true})
         var writable=await fileHandle.createWritable()
         await writable.write(pdfBlob)
         await writable.close()
-        showMsg('PDF saved to '+window.pdfDirHandle.name+'!')
+        showMsg('PDF saved to '+pdfDirHandle.name+'!')
         if(ps)ps.textContent='PDF saved'
       }catch(e){
         showMsg('Folder save: '+e.message+'. Downloading instead.','error')
