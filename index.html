@@ -3331,9 +3331,9 @@ function isBalanceFormat(text){
   if(lines.length===0)return false
   let starLines=lines.filter(l=>/^\*[^*]+\*/.test(l))
   if(starLines.length===0)return false
-  // First star line must be a product header (starts with digit) - not a vendor name
-  if(starLines.length>0 && !/^\*\d/.test(starLines[0]))return false
-  return starLines.some(l=>/\b(17|16|15)\b/.test(l)||/\b(\d+\s*(GB|TB))\b/i.test(l))
+  // Check there is at least one product header *...* line (starts with digit, has storage/model)
+  let hasProductStar=starLines.some(l=>/^\*\d/.test(l)&&(/\b(17|16|15)\b/.test(l)||/\b(\d+\s*(GB|TB))\b/i.test(l)))
+  return hasProductStar
 }
 
 function parseBalanceHeader(header){
