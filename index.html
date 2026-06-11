@@ -3369,7 +3369,18 @@ function parseBalanceFormat(text,type){
     let markM=t.match(/^(?:mark|maek|mrak)\s*[:：\s-]?\s*(.+)/i)
     if(markM){balanceMarks=markM[1].trim();applyPendingFields();continue}
     let hm=t.match(/^\*([^*]+)\*/)
-    if(hm){currentHeader=parseBalanceHeader(hm[1].trim());continue}
+    if(hm){
+      let content=hm[1].trim()
+      // Check if this *...* is a vendor name (no model/storage/specs) or a product header
+      let hasStorage=/\b(\d+\s*(GB|TB))\b/i.test(content)
+      let hasModel=/\b(17|16|15|14|13|12|11|SE)\b/i.test(content)
+      let hasSpecs=/\b(JAPAN|KOREA|HONG\s*KONG|INDIA|HK|JP|KR|IN|KH|USA|CHINA|AE)\b/i.test(content)
+      if(!hasStorage&&!hasModel&&!hasSpecs&&content.length>1){
+        // Treat as vendor name
+        balanceVendor=content;applyPendingFields();continue
+      }
+      currentHeader=parseBalanceHeader(content);continue
+    }
     // Capture vendor/logistics name from lines before first header
     if(!currentHeader&&t.length>1&&!/^(total|delivery|monday|tuesday|wednesday|thursday|friday|add|order|spec|emirates|\*)/i.test(t)){
       let lm=typeof fuzzyMatchLogistics==='function'?fuzzyMatchLogistics(t):null
@@ -3389,7 +3400,32 @@ function parseBalanceFormat(text,type){
     if(t.includes('\t'))parts=t.split('\t').map(p=>p.trim()).filter(Boolean)
     else parts=t.split(/\s{2,}/).map(p=>p.trim()).filter(Boolean)
     if(!parts||parts.length<2){let sp=t.split(/\s+/);if(sp.length>=2)parts=[sp.slice(0,-1).join(' '),sp[sp.length-1]]}
-    if(!parts||parts.length<2)continue
+    if(!parts||parts.length<2){
+      // Line doesn't look like color+qty — treat as vendor/logistics if not a product line
+      if(t.length>1&&!/^(total|delivery|monday|tuesday|wednesday|thursday|friday|add|order|spec|emirates)/i.test(t)){
+        let lm2=typeof fuzzyMatchLogistics==='function'?fuzzyMatchLogistics(t):null
+        if(lm2&&lm2!==t&&LOGISTICS_LIST.some(v=>v.toUpperCase()===lm2.toUpperCase())){balanceLogistics=lm2;applyPendingFields();continue}
+        let vm2=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(t):null
+        if(vm2&&vm2!==t&&VENDOR_LIST.some(v=>v.toUpperCase()===vm2.toUpperCase())){balanceVendor=vm2;applyPendingFields();continue}
+        if(!balanceVendor&&!/\d/.test(t)){balanceVendor=t;applyPendingFields();continue}
+        if(!balanceLogistics&&!/\d/.test(t)){balanceLogistics=t;applyPendingFields();continue}
+      }
+      continue
+    }
+    // If last part is not a number, this is not a color+qty line — treat as vendor/logistics
+    let lastNum=parseInt(parts[parts.length-1])
+    if(isNaN(lastNum)||lastNum===0){
+      let fullLine=parts.join(' ')
+      if(fullLine.length>1&&!/^(total|delivery|monday|tuesday|wednesday|thursday|friday|add|order|spec|emirates)/i.test(fullLine)){
+        let lm3=typeof fuzzyMatchLogistics==='function'?fuzzyMatchLogistics(fullLine):null
+        if(lm3&&lm3!==fullLine&&LOGISTICS_LIST.some(v=>v.toUpperCase()===lm3.toUpperCase())){balanceLogistics=lm3;applyPendingFields();continue}
+        let vm3=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(fullLine):null
+        if(vm3&&vm3!==fullLine&&VENDOR_LIST.some(v=>v.toUpperCase()===vm3.toUpperCase())){balanceVendor=vm3;applyPendingFields();continue}
+        if(!balanceVendor&&!/\d/.test(fullLine)){balanceVendor=fullLine;applyPendingFields();continue}
+        if(!balanceLogistics&&!/\d/.test(fullLine)){balanceLogistics=fullLine;applyPendingFields();continue}
+      }
+      continue
+    }
     let colorOrCode=parts.slice(0,parts.length-1).join(' '),qty=Math.abs(parseInt(parts[parts.length-1]))||0
     if(qty===0)continue
     let cm=colorOrCode.match(/^([A-Z0-9]+)$/),lk=cm?hp(cm[1]):null,lu=lk?(_p[lk]||gp[lk]):null
