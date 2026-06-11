@@ -3571,8 +3571,8 @@ function parseHanchongFormat(text){
     if(storageUnit){
       let numStr=storageUnit[1].toUpperCase();
       let unit=(storageUnit[2]||'GB').toUpperCase();
-      if(numStr==='1TB'||numStr==='2TB'){storage='1TB';}
-      else{storage=numStr+unit;}
+      if(/^\d+$/.test(numStr)){storage=numStr+unit;}
+      else{storage=numStr;}
       rest=rest.slice(storageUnit[0].length);
     }
     let colorAbbr=rest;
