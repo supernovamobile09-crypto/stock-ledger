@@ -5180,9 +5180,17 @@ function initDO(){
   }
 }
 let pdfDirHandle=null
-function selectPDFFolder(){
+async function selectPDFFolder(){
   if(!window.showDirectoryPicker){showMsg('Folder picker not supported','error');return}
-  window.showDirectoryPicker().then(function(dir){pdfDirHandle=dir;let inp=document.getElementById('pdfFolderInput');if(inp)inp.value=dir.name;try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){};showMsg('PDF folder: '+dir.name)}).catch(function(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')})
+  try{
+    var dir=await window.showDirectoryPicker()
+    var perm=await dir.requestPermission({mode:'readwrite'})
+    if(perm!=='granted'){showMsg('Folder permission denied','error');return}
+    pdfDirHandle=dir
+    var inp=document.getElementById('pdfFolderInput');if(inp)inp.value=dir.name
+    try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){}
+    showMsg('PDF folder: '+dir.name)
+  }catch(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')}
 }
 ;(function(){let s='';try{s=localStorage.getItem('pdfFolderName')||''}catch(e){};let inp=document.getElementById('pdfFolderInput');if(inp&&s)inp.value=s})()
 function printDO(){
@@ -5272,6 +5280,10 @@ async function saveDOasPDF(){
     var pdfBlob=pdf.output('blob')
     if(pdfDirHandle){
       try{
+        if(pdfDirHandle.queryPermission&&pdfDirHandle.queryPermission({mode:'readwrite'})!=='granted'){
+          var perm=await pdfDirHandle.requestPermission({mode:'readwrite'})
+          if(perm!=='granted')throw new Error('Permission denied')
+        }
         var fileHandle=await pdfDirHandle.getFileHandle(fname,{create:true})
         var writable=await fileHandle.createWritable()
         await writable.write(pdfBlob)
@@ -6121,12 +6133,15 @@ async function saveToBackend(){
       reader.readAsText(ev.target.files[0])
     };input.click()
   })
-  if(el=byId('browsePDFFolderBtn'))el.addEventListener('click',function(){
+  if(el=byId('browsePDFFolderBtn'))el.addEventListener('click',async function(){
     if(!window.showDirectoryPicker){showMsg('Folder picker not supported','error');return}
-    window.showDirectoryPicker().then(function(dir){
+    try{
+      var dir=await window.showDirectoryPicker()
+      var perm=await dir.requestPermission({mode:'readwrite'})
+      if(perm!=='granted'){showMsg('Folder permission denied','error');return}
       pdfDirHandle=dir;var inp=byId('pdfFolderInput');if(inp)inp.value=dir.name
       try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){};showMsg('PDF folder: '+dir.name)
-    }).catch(function(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')})
+    }catch(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')}
   })
   if(el=byId('clearPDFFolderBtn'))el.addEventListener('click',function(){
     pdfDirHandle=null;var inp=byId('pdfFolderInput');if(inp)inp.value=''
