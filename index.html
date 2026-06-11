@@ -2757,7 +2757,52 @@ function pp(e){let t=e.replace(/\$[`']?\d+(?:\.\d+)?/g,'').trim(),n=t.match(/^(.
 function mp(e){let t=e.trim();t=t.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();let n=null,r=null,i=t,a=t.match(/^([A-Z0-9]+\/[A-Z]+)\s*\(([A-Z0-9]+\/[A-Z]+)\)/i);if(a)n=a[2],r=a[1],i=t.slice(a[0].length).trim();else if(a=t.match(/^([A-Z0-9]+\/[A-Z]+)/i)){n=a[1],i=t.slice(a[0].length).trim();let e=i.match(/^\(([A-Z0-9]+\/[A-Z]+)\)/i);e&&(r=e[1],i=i.replace(e[0],'').trim())}else{let e=t.match(/\(([A-Z0-9]+\/[A-Z]+)\)/i);if(e)n=e[1],i=t.replace(e[0],'').trim().replace(/^[A-Z0-9]+\s+/,'').trim();else{let e=t.match(/([A-Z0-9]+\/[A-Z]+)/i);e&&(n=e[1],i=t.replace(e[0],'').trim())}}if(!n)return null;let o='';/LL\/A$/i.test(n)?o='USA':/HN\/A$/i.test(n)?o='INDIA':r&&/LL\/A$/i.test(r)?o='USA':r&&/HN\/A$/i.test(r)&&(o='INDIA');let s=i.match(/(\d+)\s*-?\s*Pack\s*-?\s*(\d+)/i);if(s)return{code:n,specs:o,color:'WHITE',qty:parseInt(s[2]),parenCode:r};let c=[...i.matchAll(/[-]\s*(\d+)/g)];if(c.length===0){let e=i.trim().length>0?fp(i.trim())||i.trim():'WHITE';return{code:n,specs:o,color:e,qty:1,parenCode:r}}let l=c[c.length-1],u=parseInt(l[1]),d=i.slice(0,l.index).replace(/[-]\s*$/,'').trim();d=d.replace(/\s+(S\/M|M\/L|S|M|L)\s*$/i,'').trim();let f='WHITE';return d.length>0&&(f=fp(d)||d),{code:n,specs:o,color:f,qty:u,parenCode:r}}
 function hp(e){let t=e.match(/^([A-Z0-9]+?)(?:LL|HN|LW|AM)\/A$/i);if(t)return t[1].toUpperCase();let n=e.match(/^([A-Z0-9]+?)\/[A-Z]+$/i);return n?n[1].toUpperCase():e.toUpperCase().replace(/\/.*/,'')}
 function vp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean);if(t.length===0)return false;let n=0,r=0;for(let e of t)(/Memory/.test(e)||/^\$[`']/.test(e.trim())||/^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(e))&&n++,/^[A-Z0-9]+\/[A-Z]+/.test(e.trim())&&r++,/\([A-Z0-9]+\/[A-Z]+\)/.test(e.trim())&&r++;return n>=1||r>=1}
-function yp(e){let t=e.split('\n').map(e=>e.trim()).filter(Boolean),n=[],r=null,_pendingVendor='',_pendingPhone='';for(let _li=0;_li<t.length;_li++){let e=t[_li];if(/^-{3,}$/.test(e))continue;let productLine=e.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();if(/Memory|^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(productLine)||/\b\d+\s*(GB|TB)\b.*\b\d+\s*(GB|TB)\b/i.test(productLine)&&!/^[A-Z0-9]+\/[A-Z]+/.test(productLine)){r=pp(e);continue}let _rp=mp(e);if(!_rp)continue;let i=hp(_rp.code);let _row;if(r){gp[i]={model:r.model,storage:r.storage};_row={model:r.model,storage:r.storage,country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''}}else{let e=gp[i]||_p[i]||AW[i];if(!e&&_rp.parenCode){let n=hp(_rp.parenCode);e=gp[n]||_p[n]||AW[n]}if(e)_row={model:e.model,storage:e.storage,country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''};else _row={model:'',storage:'',country:_rp.specs,color:_rp.color||'',qty:_rp.qty,vendor:'',marks:'',logistics:''}}let _vm=e.match(/\*([^*\d][^*]*)\*/);if(_vm){let _v=_vm[1].trim();let _mv=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(_v):_v;if(_mv&&_mv!==_v)_row.vendor=_mv;else if(VENDOR_LIST.some(function(v){return v.toUpperCase()===_v.toUpperCase()}))_row.vendor=_v;else _row.vendor=_v}if(_row.vendor)_pendingVendor='';let _pm=e.match(/\b(\d{10,})\b/);if(_pm)_pendingPhone=_pm[1];if(_pendingPhone){_row.logistics=_pendingPhone;_pendingPhone=''}n.push(_row)}return{rows:n}}
+function yp(e){
+  let t=e.split('\n').map(e=>e.trim()).filter(Boolean),n=[],r=null,_pendingVendor='',_pendingPhone='';
+  for(let _li=0;_li<t.length;_li++){
+    let e=t[_li];
+    if(/^-{3,}$/.test(e))continue;
+    let productLine=e.replace(/\s*\$[`']?\d+(?:\.\d+)?\s*$/,'').trim();
+    if(/Memory|^(iMac|MacBook|Apple\s+(Watch|Pencil|TV)|AirPods?|AirTag|iPad)\b/i.test(productLine)||/\b\d+\s*(GB|TB)\b.*\b\d+\s*(GB|TB)\b/i.test(productLine)&&!/^[A-Z0-9]+\/[A-Z]+/.test(productLine)){
+      r=pp(e);
+      continue
+    }
+    let _rp=mp(e);
+    if(!_rp)continue;
+    let i=hp(_rp.code);
+    let _row;
+    let _cc=(_rp.code||'')+' ' +(_rp.color||'');
+    if(r){
+      gp[i]={model:r.model,storage:r.storage};
+      _row={model:r.model,storage:r.storage,country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''}
+    }else{
+      let e=gp[i]||_p[i]||AW[i];
+      if(!e&&_rp.parenCode){
+        let n=hp(_rp.parenCode);
+        e=gp[n]||_p[n]||AW[n]
+      }
+      if(e)_row={model:e.model,storage:e.storage,country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''};
+      else _row={model:'',storage:'',country:_rp.specs,color:_cc,qty:_rp.qty,vendor:'',marks:'',logistics:''}
+    }
+    let _vm=e.match(/\*([^*\d][^*]*)\*/);
+    if(_vm){
+      let _v=_vm[1].trim();
+      let _mv=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(_v):_v;
+      if(_mv&&_mv!==_v)_row.vendor=_mv;
+      else if(VENDOR_LIST.some(function(v){return v.toUpperCase()===_v.toUpperCase()}))_row.vendor=_v;
+      else _row.vendor=_v
+    }
+    if(_row.vendor)_pendingVendor='';
+    let _pm=e.match(/\b(\d{10,})\b/);
+    if(_pm)_pendingPhone=_pm[1];
+    if(_pendingPhone){
+      _row.logistics=_pendingPhone;
+      _pendingPhone=''
+    }
+    n.push(_row)
+  }
+  return{rows:n}
+}
 function bp(e){return[...new Set(e.map(e=>e.trim()).filter(Boolean))].sort()}
 function today(){return new Date().toISOString().split('T')[0]}
 function formatItemName(m){if(!m)return'';if(/^(Apple|iPhone|iMac|MacBook|iPad|AirPods?|AirTag)/i.test(m))return m;let w=m.split(' '),n=w[0],r=w.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');return r?n+' '+r:n}
