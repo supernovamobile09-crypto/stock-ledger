@@ -2635,7 +2635,7 @@ function npClean(e){
   return t
 }
 function rp(e){let t=e.replace(/\*/g,'').replace(/@[\d.]+/g,'').trim();t=t.replace(/\(([^)]+)\)\/(\w+)/g,(e,t,n)=>t+' '+n);t=t.replace(/(\d+)\/(\d+)/g,'$1 $2');t=t.replace(/[-–"—]/g,' ');t=t.replace(/\t/g,' ');t=t.replace(/\b(2TB|1TB|2048|1024|512GB|256GB|128GB|64GB|512|256|128|64)(LV|V|WH|BK|BU|OR|GN|GE|GD|LA|SI|PK|PU|GO|WHITE|BLACK|BLUE|GOLD|SILVER|GREEN|PINK|PURPLE|ORANGE|BROWN|CREAM|SAGE|TEAL|LAVENDER)\b/gi,'$1 $2');t=t.replace(/\b(JP|KR|HK|IN|KH)(\d+)/gi,'$1 $2');t=t.replace(/(\d+)(JP|KR|HK|IN|KH)\b/gi,'$1 $2');return t.split(/[\s,]+/).filter(Boolean).map(e=>/^(IPHONE)?(17|16|15|14|13|12|11|SE)/i.test(e)?npClean(e):e.toUpperCase()).join(' ').replace(/\s+/g,' ').trim()}
-function ip(e){e=e.replace(/IPHONE/g,'');const models=[{re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b17\b/,model:'17'},{re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b16\b/,model:'16'},{re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b15\b/,model:'15'},{re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b14\b/,model:'14'},{re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b13\b/,model:'13'},{re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b12\b/,model:'12'},{re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\b11\b/,model:'11'},{re:/\bSE\b/,model:'SE'}];for(let{re:t,model:n}of models)if(t.test(e))return n;return null}
+function ip(e){e=e.replace(/IPHONE/g,'');const models=[{re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\bSE\b/,model:'SE'}];for(let{re:t,model:n}of models)if(t.test(e))return n;return null}
 function ap(e){
   // Check for 2TB FIRST (before 1TB) to prevent mis-match
   let t2=e.match(/\b(2\s*TB)\b/i);
@@ -9868,14 +9868,14 @@ window.settingsRestore=function(){
   const COUNTRY_RE=new RegExp('\\b('+COUNTRY_KEYS.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b','i');
   const IPHONE_MODELS=[
     {re:/\b17\s*PRO\s*MAX\b/,model:'17 PRO MAX'},{re:/\b17\s*PROMAX\b/,model:'17 PRO MAX'},{re:/\b17\s*MAX\b/,model:'17 PRO MAX'},
-    {re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},{re:/\b17\b/,model:'17'},
+    {re:/\b17\s*PRO\b/,model:'17 PRO'},{re:/\b17\s*AIR\b/,model:'17 AIR'},{re:/\b17E\b/,model:'17E'},
     {re:/\b16\s*PRO\s*MAX\b/,model:'16 PRO MAX'},{re:/\b16\s*PROMAX\b/,model:'16 PRO MAX'},{re:/\b16\s*MAX\b/,model:'16 PRO MAX'},
-    {re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},{re:/\b16\b/,model:'16'},
-    {re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},{re:/\b15\b/,model:'15'},
-    {re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},{re:/\b14\b/,model:'14'},
-    {re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},{re:/\b13\b/,model:'13'},
-    {re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},{re:/\b12\b/,model:'12'},
-    {re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},{re:/\b11\b/,model:'11'},
+    {re:/\b16\s*PRO\b/,model:'16 PRO'},{re:/\b16\s*AIR\b/,model:'16 AIR'},{re:/\b16E\b/,model:'16E'},
+    {re:/\b15\s*PRO\s*MAX\b/,model:'15 PRO MAX'},{re:/\b15\s*PRO\b/,model:'15 PRO'},
+    {re:/\b14\s*PRO\s*MAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PROMAX\b/,model:'14 PRO MAX'},{re:/\b14\s*PRO\b/,model:'14 PRO'},{re:/\b14\s*PLUS\b/,model:'14 PLUS'},
+    {re:/\b13\s*PRO\s*MAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PROMAX\b/,model:'13 PRO MAX'},{re:/\b13\s*PRO\b/,model:'13 PRO'},{re:/\b13\s*MINI\b/,model:'13 MINI'},
+    {re:/\b12\s*PRO\s*MAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PROMAX\b/,model:'12 PRO MAX'},{re:/\b12\s*PRO\b/,model:'12 PRO'},{re:/\b12\s*MINI\b/,model:'12 MINI'},
+    {re:/\b11\s*PRO\s*MAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PROMAX\b/,model:'11 PRO MAX'},{re:/\b11\s*PRO\b/,model:'11 PRO'},
     {re:/\bSE\b/,model:'SE'}
   ];
 
