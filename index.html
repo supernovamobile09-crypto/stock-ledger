@@ -4511,7 +4511,7 @@ function loadDOData(customerName,mark){
     let hdr=(g.model+' '+g.storage+' '+g.specs).trim().replace(/^iPhone\s*/i,'')
     // Normalize header for case-insensitive matching
     let hdrKey=hdr.toLowerCase().trim()
-    if(!grouped[hdrKey])grouped[hdrKey]={name:hdr,colors:[]}
+    if(!grouped[hdrKey])grouped[hdrKey]={name:hdr,modelName:g.model,storage:g.storage,specs:g.specs,colors:[]}
     // Check if color already exists in colors array (case-insensitive)
     let colorKey=String(g.color||'').toLowerCase().trim()
     let existingColor=grouped[hdrKey].colors.find(function(c){return String(c.color||'').toLowerCase().trim()===colorKey})
@@ -4522,7 +4522,15 @@ function loadDOData(customerName,mark){
       grouped[hdrKey].colors.push({color:g.color,qty:g.qty})
     }
   })
-  doProducts=Object.values(grouped).sort((a,b)=>a.name.localeCompare(b.name))
+  doProducts=Object.values(grouped).sort(function(a,b){
+    var rs=typeof specsRank==='function'?specsRank(a.specs)-specsRank(b.specs):0
+    if(rs!==0)return rs
+    var rm=typeof modelRank==='function'?modelRank(a.modelName)-modelRank(b.modelName):0
+    if(rm!==0)return rm
+    var rst=typeof storageRank==='function'?storageRank(a.storage)-storageRank(b.storage):0
+    if(rst!==0)return rst
+    return (a.name||'').localeCompare(b.name||'')
+  })
 }
 
 function renderDOTable(){
@@ -4900,10 +4908,18 @@ function loadDOAllMarks(customerName){
   let grouped={}
   Object.values(byModel).forEach(function(g){
     let hdr=(g.model+' '+g.storage+' '+g.specs).trim().replace(/^iPhone\s*/i,'')
-    if(!grouped[hdr])grouped[hdr]={name:hdr,colors:[]}
+    if(!grouped[hdr])grouped[hdr]={name:hdr,modelName:g.model,storage:g.storage,specs:g.specs,colors:[]}
     grouped[hdr].colors.push({color:g.color,qty:g.qty})
   })
-  doProducts=Object.values(grouped).sort(function(a,b){return a.name.localeCompare(b.name)})
+  doProducts=Object.values(grouped).sort(function(a,b){
+    var rs=typeof specsRank==='function'?specsRank(a.specs)-specsRank(b.specs):0
+    if(rs!==0)return rs
+    var rm=typeof modelRank==='function'?modelRank(a.modelName)-modelRank(b.modelName):0
+    if(rm!==0)return rm
+    var rst=typeof storageRank==='function'?storageRank(a.storage)-storageRank(b.storage):0
+    if(rst!==0)return rst
+    return (a.name||'').localeCompare(b.name||'')
+  })
 }
 function refreshDOCustomers(){
   var dateFilter=window._doDateFilter||''
