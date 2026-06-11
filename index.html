@@ -3381,10 +3381,8 @@ function parseBalanceFormat(text,type){
       }
       currentHeader=parseBalanceHeader(content);continue
     }
-    // Capture vendor/logistics name from lines before first header
+    // Capture vendor name from lines before first *...* product header (logistics comes AFTER header/items)
     if(!currentHeader&&t.length>1&&!/^(total|delivery|monday|tuesday|wednesday|thursday|friday|add|order|spec|emirates|\*)/i.test(t)){
-      let lm=typeof fuzzyMatchLogistics==='function'?fuzzyMatchLogistics(t):null
-      if(lm&&lm!==t&&LOGISTICS_LIST.some(v=>v.toUpperCase()===lm.toUpperCase())){balanceLogistics=lm;applyPendingFields();continue}
       let vm=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(t):null
       if(vm&&vm!==t&&VENDOR_LIST.some(v=>v.toUpperCase()===vm.toUpperCase())){balanceVendor=vm;applyPendingFields();continue}
       balanceVendor=t;applyPendingFields();continue
