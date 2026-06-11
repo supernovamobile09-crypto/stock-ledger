@@ -10221,8 +10221,19 @@ window.settingsRestore=function(){
          return;
        }
 
-        if(match){
-           match.quantity=q;
+         if(match){
+           // Check for manual FIMEX sales of same item (no linkId) on same date
+           // Add their qty to PLM transaction so balance accounts for both
+           var manualSalesQty=0;
+           existingFimex.forEach(function(t){
+             if(t.id!==match.id&&!t.linkId
+               &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
+               &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
+               &&String(t.date||'').trim()===today){
+               manualSalesQty+=parseInt(t.quantity)||0;
+             }
+           });
+           match.quantity=q+manualSalesQty;
            // Only add linkId if this was originally a PLM transaction (had linkId)
            // Don't convert manual sales into PLM-managed transactions
            if(match.linkId){
@@ -10231,17 +10242,28 @@ window.settingsRestore=function(){
            if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
            if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+           if(manualSalesQty>0)console.log('[PLM] Added '+manualSalesQty+' manual sales to PLM qty ('+q+'+'+manualSalesQty+'='+(q+manualSalesQty)+')');
          }else{
-         const newTx={
-           date:today,
-           transaction_type:'Selling',
-           customer_vendor:FIMEX,
-           marks:'NO MARK',
-           item_name:itemName,
-           storage:storage,
-           specs:specs,
-           color:color,
-           quantity:q,
+          // No existing PLM transaction - check for manual sales to merge
+          var manualSalesQty2=0;
+          existingFimex.forEach(function(t){
+            if(!t.linkId
+               &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
+               &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
+               &&String(t.date||'').trim()===today){
+               manualSalesQty2+=parseInt(t.quantity)||0;
+            }
+          });
+          const newTx={
+            date:today,
+            transaction_type:'Selling',
+            customer_vendor:FIMEX,
+            marks:'NO MARK',
+            item_name:itemName,
+            storage:storage,
+            specs:specs,
+            color:color,
+            quantity:q+manualSalesQty2,
            transaction_status:'Order In Hand',
            logistics:FIMEX,
            linkId:linkIdVal,
