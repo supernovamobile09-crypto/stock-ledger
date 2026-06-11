@@ -3944,7 +3944,7 @@ function renderEditable(){
 <td><select data-idx="${i}" data-field="type">${typeOpts}</select></td>
 <td><input type="text" value="${esc(r.vendor)}" placeholder="Vendor..." data-idx="${i}" data-field="vendor" class="ac-input" data-aclist="vendor" autocomplete="off"></td>
 <td><input type="text" value="${esc(r.marks)}" placeholder="Mark..." data-idx="${i}" data-field="marks" class="ac-input" data-aclist="marks" autocomplete="off"></td>
-<td><input type="text" value="${esc(r.item)}" placeholder="17 PRO MAX..." data-idx="${i}" data-field="item" class="ac-input" data-aclist="item" autocomplete="off"></td>
+<td><input type="text" value="${esc(typeof addItemIcon==='function'?addItemIcon(r.item):r.item)}" placeholder="17 PRO MAX..." data-idx="${i}" data-field="item" class="ac-input" data-aclist="item" autocomplete="off"></td>
 <td><select data-idx="${i}" data-field="storage">${storageOpts}</select></td>
 <td><input type="text" value="${esc(r.specs)}" placeholder="KR / JAPAN..." data-idx="${i}" data-field="specs" class="ac-input" data-aclist="specs" autocomplete="off"></td>
 <td><input type="text" value="${esc(r.color)}" placeholder="Silver..." data-idx="${i}" data-field="color" class="ac-input" data-aclist="color" autocomplete="off"></td>
@@ -4235,7 +4235,7 @@ function renderBalance(){
   }
   let html='<div style="margin-bottom:6px;font-size:0.7rem;color:#007aff">Items you have in stock — ready to sell</div>';
   groups.forEach(grp=>{
-    let displayHeader=grp.header+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
+    let displayHeader=(typeof addItemIcon==='function'?addItemIcon(grp.header):grp.header)+(grp.specs?(' '+String(grp.specs).toUpperCase()):'');
     html+=`<div class="summary-card"><h3>${esc(displayHeader)}</h3>`;
     grp.colors.forEach(g=>{
       html+=`<div class="summary-row"><span>${esc(g.color)}</span><span class="summary-qty qty-positive">${g.qty}</span></div>`;
