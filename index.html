@@ -3191,10 +3191,9 @@ async function aiFixTypos(text){
 }
 let aiCache={}
 async function aiPostProcess(rows){
-  let toggle=document.getElementById('aiToggle')
-  if(!toggle||!toggle.checked)return
   if(!rows||!rows.length)return
   let apiKey=(localStorage.getItem('aiApiKey')||'').trim()
+  let aiEnabled=!!(document.getElementById('aiToggle')&&document.getElementById('aiToggle').checked)
   let vendorVals=new Set(),marksVals=new Set(),logiVals=new Set(),specsVals=new Set()
   let specsList=window.SPECS_LIST||[]
   for(let r of rows){
@@ -3210,7 +3209,7 @@ async function aiPostProcess(rows){
   if(!vendorVals.size&&!marksVals.size&&!logiVals.size&&!specsVals.size)return
   let aiMatched=0
   let tasks=[],taskMap=[]
-  if(apiKey){
+  if(apiKey&&aiEnabled){
     for(let v of vendorVals){if(!aiCache['vendor::'+v]){tasks.push(aiMatch(v,'FIRST check if this name EXACTLY matches any vendor in the list. If exact match found, return that. Otherwise find closest match. If nothing relevant, return original. Vendors: '+VENDOR_LIST.join(', ')+'\nName to match: '+v));taskMap.push({type:'vendor',val:v})}}
     for(let v of marksVals){if(!aiCache['marks::'+v]){tasks.push(aiMatch(v,'FIRST check if this marks/lot EXACTLY matches any in the list. If exact match found, return that. Otherwise find closest match. If nothing relevant, return original. Marks list: '+MARKS_LIST.join(', ')+'\nMark to match: '+v));taskMap.push({type:'marks',val:v})}}
     for(let v of logiVals){if(!aiCache['logistics::'+v]){tasks.push(aiMatch(v,'FIRST check if this logistics name EXACTLY matches any in the list. If exact match found, return that. Otherwise find closest match. If nothing relevant, return original. Logistics: '+LOGISTICS_LIST.join(', ')+'\nName to match: '+v));taskMap.push({type:'logistics',val:v})}}
@@ -4082,9 +4081,21 @@ function renderEditable(){
       // fuzzy-match vendor/marks/logistics to canonical name (internal only, input not replaced here)
       if((field==='vendor'||field==='marks'||field==='logistics')&&this.value){
         var matched=null
-        if(field==='logistics')matched=fuzzyMatchLogistics(this.value)
-        else if(field==='vendor')matched=fuzzyMatchVendor(this.value)
-        else if(field==='marks')matched=fuzzyMatchMarks(this.value)
+        // Check aliases first
+        var qv=this.value.toUpperCase()
+        var aliasMap2=null
+        if(field==='vendor')aliasMap2=VENDOR_ALIASES
+        else if(field==='marks')aliasMap2=MARKS_ALIASES
+        else if(field==='logistics')aliasMap2=LOGISTICS_ALIASES
+        if(aliasMap2){
+          var ak2=Object.keys(aliasMap2).find(function(k){return k.toUpperCase()===qv})
+          if(ak2)matched=aliasMap2[ak2]
+        }
+        if(!matched){
+          if(field==='logistics')matched=fuzzyMatchLogistics(this.value)
+          else if(field==='vendor')matched=fuzzyMatchVendor(this.value)
+          else if(field==='marks')matched=fuzzyMatchMarks(this.value)
+        }
         if(matched&&matched!==this.value){
           transactions[idx][field]=matched
         }
@@ -4118,6 +4129,23 @@ function renderEditable(){
       if(ex){
         if(ex!==q){transactions[idx][field]=ex;this.value=ex}
         return
+      }
+      // Check aliases
+      var aliasVal=null
+      var aliasMap=null
+      if(field==='vendor')aliasMap=VENDOR_ALIASES
+      else if(field==='marks')aliasMap=MARKS_ALIASES
+      else if(field==='logistics')aliasMap=LOGISTICS_ALIASES
+      if(aliasMap){
+        var av=Object.values(aliasMap).find(function(v){return v.toUpperCase()===qu})
+        if(av)aliasVal=av
+        if(!aliasVal){
+          var ak=Object.keys(aliasMap).find(function(k){return k.toUpperCase()===qu})
+          if(ak)aliasVal=aliasMap[ak]
+        }
+        if(aliasVal&&aliasVal!==q){
+          transactions[idx][field]=aliasVal;this.value=aliasVal;return
+        }
       }
       var matched=null
       if(field==='vendor')matched=fuzzyMatchVendor(q)
