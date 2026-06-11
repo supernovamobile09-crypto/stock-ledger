@@ -3154,30 +3154,91 @@ async function aiPostProcess(rows){
   }
   let learned=0
   for(let r of rows){
+    // Vendor: AI match → exact match → fuzzy match → learn
     let kv='vendor::'+r.vendor
-    if(aiCache[kv]){r.vendor=aiCache[kv]}else if(r.vendor&&!VENDOR_LIST.some(v=>v.toUpperCase()===r.vendor.toUpperCase())&&!Object.values(VENDOR_ALIASES||{}).some(v=>v.toUpperCase()===r.vendor.toUpperCase())){
-      let m=fuzzyMatchVendor(r.vendor)
-      if(m&&m!==r.vendor){r.vendor=m;learned++}
-      else{VENDOR_LIST.push(r.vendor);addLearnedItem(r.vendor,'Vendor');learned++}
+    if(aiCache[kv]){
+      r.vendor=aiCache[kv]
+    }else if(r.vendor){
+      // Always try to find exact case match first (normalizes casing)
+      let exactMatch=VENDOR_LIST.find(v=>v.toUpperCase()===r.vendor.toUpperCase())
+      if(exactMatch){
+        r.vendor=exactMatch
+      }else{
+        // Try alias match
+        let aliasMatch=Object.values(VENDOR_ALIASES||{}).find(v=>v.toUpperCase()===r.vendor.toUpperCase())
+        if(aliasMatch){
+          r.vendor=aliasMatch
+        }else{
+          // Try fuzzy match
+          let m=fuzzyMatchVendor(r.vendor)
+          if(m&&m!==r.vendor){
+            r.vendor=m
+            learned++
+          }else{
+            VENDOR_LIST.push(r.vendor);addLearnedItem(r.vendor,'Vendor');learned++
+          }
+        }
+      }
     }
+    // Marks: similar
     let km='marks::'+r.marks
-    if(aiCache[km]){r.marks=aiCache[km]}else if(r.marks&&!/^NO\s*MARK$/i.test(r.marks)&&!MARKS_LIST.some(m=>m.toUpperCase()===r.marks.toUpperCase())){
-      let m=fuzzyMatchMarks(r.marks)
-      if(m&&m!==r.marks){r.marks=m;learned++}
-      else{MARKS_LIST.push(r.marks);addLearnedItem(r.marks,'Marks');learned++}
+    if(aiCache[km]){
+      r.marks=aiCache[km]
+    }else if(r.marks&&!/^NO\s*MARK$/i.test(r.marks)){
+      let exactMatch=MARKS_LIST.find(v=>v.toUpperCase()===r.marks.toUpperCase())
+      if(exactMatch){
+        r.marks=exactMatch
+      }else{
+        let m=fuzzyMatchMarks(r.marks)
+        if(m&&m!==r.marks){
+          r.marks=m
+          learned++
+        }else{
+          MARKS_LIST.push(r.marks);addLearnedItem(r.marks,'Marks');learned++
+        }
+      }
     }
+    // Logistics: AI match → exact match → alias match → fuzzy match → learn
     let kl='logistics::'+r.logistics
-    if(aiCache[kl]){r.logistics=aiCache[kl]}else if(r.logistics&&!LOGISTICS_LIST.some(l=>l.toUpperCase()===r.logistics.toUpperCase())&&!Object.values(LOGISTICS_ALIASES||{}).some(v=>v.toUpperCase()===r.logistics.toUpperCase())){
-      let m=fuzzyMatchLogistics(r.logistics)
-      if(m&&m!==r.logistics){r.logistics=m;learned++}
-      else{LOGISTICS_LIST.push(r.logistics);addLearnedItem(r.logistics,'Logistics');learned++}
+    if(aiCache[kl]){
+      r.logistics=aiCache[kl]
+    }else if(r.logistics){
+      let exactMatch=LOGISTICS_LIST.find(l=>l.toUpperCase()===r.logistics.toUpperCase())
+      if(exactMatch){
+        r.logistics=exactMatch
+      }else{
+        let aliasMatch=Object.values(LOGISTICS_ALIASES||{}).find(v=>v.toUpperCase()===r.logistics.toUpperCase())
+        if(aliasMatch){
+          r.logistics=aliasMatch
+        }else{
+          let m=fuzzyMatchLogistics(r.logistics)
+          if(m&&m!==r.logistics){
+            r.logistics=m
+            learned++
+          }else{
+            LOGISTICS_LIST.push(r.logistics);addLearnedItem(r.logistics,'Logistics');learned++
+          }
+        }
+      }
     }
+    // Specs (country): AI match → exact match → fuzzy match → learn
     let ks='specs::'+r.country
     let specsList=window.SPECS_LIST||[]
-    if(aiCache[ks]){r.country=aiCache[ks]}else if(r.country&&!specsList.some(s=>s.toUpperCase()===r.country.toUpperCase())){
-      let m=fuzzyMatchSpecs(r.country)
-      if(m&&m!==r.country){r.country=m;learned++}
-      else{specsList.push(r.country);window.SPECS_LIST=specsList;addLearnedItem(r.country,'Specs');learned++;try{localStorage.setItem('specsList',JSON.stringify(specsList))}catch(e){}}
+    if(aiCache[ks]){
+      r.country=aiCache[ks]
+    }else if(r.country){
+      let exactMatch=specsList.find(s=>s.toUpperCase()===r.country.toUpperCase())
+      if(exactMatch){
+        r.country=exactMatch
+      }else{
+        let m=fuzzyMatchSpecs(r.country)
+        if(m&&m!==r.country){
+          r.country=m
+          learned++
+        }else{
+          specsList.push(r.country);window.SPECS_LIST=specsList;addLearnedItem(r.country,'Specs');learned++;try{localStorage.setItem('specsList',JSON.stringify(specsList))}catch(e){}
+        }
+      }
     }
   }
   if(learned>0){
