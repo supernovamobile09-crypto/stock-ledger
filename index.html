@@ -728,6 +728,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <div class="header-inner">
 <h1>SUPERNOVA STOCK LEDGER</h1>
 <span id="userBadge"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Guest</span> <span class="user-role" id="userRoleDisplay"></span> <a id="changePwdLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Password</a> <a id="changeUserLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Username</a> <a id="logoutLink" style="margin-left:6px;cursor:pointer;color:var(--danger);font-size:0.65rem">Logout</a> <a id="adminUserMgmtLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Manage Users</a></span>
+<button id="syncSupabaseBtn" style="margin-left:8px;background:#4ade80;color:#000;border:none;border-radius:6px;padding:4px 10px;font-size:0.65rem;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
+<span id="syncStatus" style="margin-left:6px;font-size:0.65rem;color:var(--text-muted,#888)"></span>
 <span id="themeLabel" style="display:none">Dark</span>
 <input type="file" id="logoFileInput" accept="image/*" style="display:none">
 <input type="file" id="bgFileInput" accept="image/*" style="display:none">
@@ -2471,6 +2473,7 @@ async function loadFromSupabase(){
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
     console.log('[Supabase] Data loaded from cloud')
+    var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Loaded '+new Date().toLocaleTimeString()
   }catch(e){console.warn('[Supabase] Load failed:',e.message)}
   window._supabaseReady=true
 }
@@ -2506,7 +2509,13 @@ async function syncToSupabase(){
     var uRes=await fetch(uUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(uBody)})
     if(!uRes.ok&&uRes.status!==409&&uRes.status!==201)console.warn('[Supabase] users sync:',uRes.status)}
     console.log('[Supabase] Data synced to cloud')
-  }catch(e){console.warn('[Supabase] Sync failed:',e.message)}
+    var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
+    if(typeof showMsg==='function')showMsg('✅ Cloud sync successful!')
+  }catch(e){
+    console.warn('[Supabase] Sync failed:',e.message)
+    var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✗ Sync failed'
+    if(typeof showMsg==='function')showMsg('Cloud sync failed: '+e.message,'error')
+  }
 }
 
 // Cloud sync engine — syncs to Supabase when DB changes
