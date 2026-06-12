@@ -9697,6 +9697,17 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var m=document.getElementById('changeUserModal');if(m)m.style.display='none'
     alert('Username/email updated successfully!')
   })
+  window.resetUsersToDefault=function(){
+    var defaultUsers={
+      supernova:{password:'admin123',role:'admin',name:'Supernova Admin'},
+      warehouse:{password:'admin123',role:'warehouse',name:'Warehouse',tabs:['warehouse']}
+    }
+    localStorage.setItem('stockLedgerUsers',JSON.stringify(defaultUsers))
+    var m=document.getElementById('adminUserModal');if(m)m.style.display='none'
+    var settingsModal=document.getElementById('settingsModal');if(settingsModal)settingsModal.classList.remove('show')
+    alert('Users reset! Only Admin + Warehouse remain.')
+    location.reload()
+  }
   // Admin User Management
   onId('adminUserMgmtLink','click',function(){
     clearUserForm()
@@ -9812,6 +9823,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     <div class="s-item" id="sManageUsers">
       <i class="fas fa-users-cog s-icon green"></i>
       <span class="s-label">Manage Users</span>
+    </div>
+    <div class="s-item" id="sResetUsers" onclick="resetUsersToDefault()" style="color:#ff6b6b;cursor:pointer">
+      <i class="fas fa-trash-alt s-icon" style="color:#ff6b6b"></i>
+      <span class="s-label">Reset Users (Admin + Warehouse)</span>
     </div>
     <div class="s-divider"></div>
     <div class="s-item" id="sDarkMode">
@@ -10002,7 +10017,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(!m)return
     // Apply role-based visibility
     var isAdmin=window.currentUser&&currentUser.role==='admin'
-    var items={'sManageUsers':isAdmin,'sChangePwd':isAdmin,'sDarkMode':isAdmin,'sBgSettings':true,'sAiChat':isAdmin,'sLogo':true,'sBackup':isAdmin,'sRestore':isAdmin,'sBackupFolder':isAdmin}
+    var items={'sManageUsers':isAdmin,'sChangePwd':isAdmin,'sDarkMode':isAdmin,'sBgSettings':true,'sAiChat':isAdmin,'sLogo':true,'sBackup':isAdmin,'sRestore':isAdmin,'sBackupFolder':isAdmin,'sResetUsers':isAdmin}
     for(var id in items){
       var el=document.getElementById(id)
       if(el)el.style.display=items[id]?'':'none'
