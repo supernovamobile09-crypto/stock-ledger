@@ -2816,11 +2816,32 @@ async function loadFromSupabase(){
     }catch(e){console.warn('[Supabase] Transaction sync:',e.message)}
     var pending=await supabaseReq('pricing_pending','GET','select=*')
     if(pending&&!window._supabaseDisabled){
-      localStorage.setItem('pricingPending',JSON.stringify(pending.map(function(e){
-        var items=typeof e.items==='string'?JSON.parse(e.items):(e.items||[])
-        var pricing=typeof e.pricing==='string'?JSON.parse(e.pricing):(e.pricing||[])
-        return{id:e.id,customer:e.customer,week:e.week,status:e.status,date:e.date,logistics:e.logistics,marks:e.marks,items:items,completed:!!e.completed,approved:e.approved===null?undefined:e.approved,warehousePacked:!!e.warehouse_packed,cashReleased:!!e.cash_released,pricing:pricing,currency:e.currency||'USD'}
-      })))
+      // Merge cloud and local pricingPending - prefer local if exists and newer
+      var localPending=[];
+      try{localPending=JSON.parse(localStorage.getItem('pricingPending')||'[]')}catch(e){}
+      var localMap={};localPending.forEach(function(p){if(p.id)localMap[p.id]=p})
+      pending.forEach(function(p){
+        var items=typeof p.items==='string'?JSON.parse(p.items):(p.items||[])
+        var pricing=typeof p.pricing==='string'?JSON.parse(p.pricing):(p.pricing||[])
+        var cloudEntry={id:p.id,customer:p.customer,week:p.week,status:p.status,date:p.date,logistics:p.logistics,marks:p.marks,items:items,completed:!!p.completed,approved:p.approved===null?undefined:p.approved,warehousePacked:!!p.warehouse_packed,cashReleased:!!p.cash_released,pricing:pricing,currency:p.currency||'USD'}
+        if(localMap[p.id]){
+          // Keep local if it has salesman or prices that cloud doesn't have
+          var local=localMap[p.id];
+          if(local.salesman&&!cloudEntry.salesman)cloudEntry.salesman=local.salesman;
+          if(local.items&&local.items.some(function(it){return it.unitPrice>0})){
+            // Local has prices - check if we should keep local
+            var cloudHasPrices=cloudEntry.items&&cloudEntry.items.some(function(it){return it.unitPrice>0})
+            if(!cloudHasPrices){
+              // Cloud has no prices, keep local
+              cloudEntry.items=local.items;
+              cloudEntry.pricing=local.pricing||[];
+            }
+          }
+        }
+        localMap[p.id]=cloudEntry;
+      })
+      var merged=Object.values(localMap);
+      localStorage.setItem('pricingPending',JSON.stringify(merged))
     }
     var keys=await supabaseReq('pricing_submitted_keys','GET','select=*')
     if(keys&&!window._supabaseDisabled){
@@ -7989,11 +8010,13 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       if(!entry.salesman||entry.salesman==='none'||entry.salesman===''){
         showMsg('Please select a Salesman first','error');return
       }
-      // Validate: at least one price must be set
-      var pricing=entry.pricing||[]
-      var hasPrice=pricing.some(function(p){return p.price>0})
+      // Validate: at least one price must be set (check items, not pricing)
+      var items=entry.items||[]
+      var hasPrice=items.some(function(p){return parseFloat(p.unitPrice)>0})
+      var priceCount=items.filter(function(p){return parseFloat(p.unitPrice)>0}).length
       if(!hasPrice){
-        showMsg('Please enter unit prices for items first','error');return
+        showMsg('Please enter prices for at least one item ('+items.length+' items need pricing)','error');return
+      }
       }
       if(!confirm('Submit this pricing? It will go to DO Approval.'))return
       for(var i=0;i<pending.length;i++){
