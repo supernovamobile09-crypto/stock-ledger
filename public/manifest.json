@@ -1,0 +1,23 @@
+{
+  "name": "Supernova Stock Ledger",
+  "short_name": "Stock Ledger",
+  "description": "Stock management app",
+  "start_url": "https://stock-ledger-app.vercel.app/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%233b82f6' width='512' height='512' rx='80'/><text x='256' y='340' font-size='280' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'>S</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b82f6' width='192' height='192' rx='30'/><text x='96' y='128' font-size='105' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'>S</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
