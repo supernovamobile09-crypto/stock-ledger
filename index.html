@@ -592,7 +592,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   border-radius:0;
   background:transparent;
   border:none;
-  color:rgba(255,255,255,0.5);
+  color:rgba(255,255,255,0.75);
   font-size:0.55rem;
   font-weight:600;
   cursor:pointer;
@@ -675,51 +675,36 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 .table-wrap{overflow:visible!important}
 
 /* --- BALANCE STOCK → CARDS --- */
-#balanceTableWrap{overflow:visible!important}
-#balanceTable,#balanceTable thead,#balanceTable tbody,#balanceTable tr,#balanceTable th,#balanceTable td{display:block!important}
-#balanceTable thead tr{position:absolute!important;top:-9999px!important;left:-9999px!important}
-.balance-card{
+#balanceContent{overflow:visible!important}
+.summary-card{
   background:var(--card-bg,#1e293b);
   border:1px solid rgba(255,255,255,0.1);
   border-radius:12px;
   margin-bottom:10px;
   overflow:hidden;
   box-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-.balance-card-header{
   padding:12px;
-  background:rgba(59,130,246,0.12);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  cursor:pointer;
 }
-.balance-card-header .item-name{font-weight:700;font-size:0.85rem;color:#fff}
-.balance-card-header .total-badge{
-  background:var(--accent,#3b82f6);
-  color:#fff;
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:0.7rem;
+.summary-card h3{
   font-weight:700;
+  font-size:0.85rem;
+  color:#fff;
+  margin:0 0 10px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
-.balance-card-body{
-  padding:8px 12px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px;
-}
-.color-row{
+.summary-row{
   display:flex;
   justify-content:space-between;
-  padding:6px 8px;
-  background:rgba(255,255,255,0.05);
-  border-radius:6px;
-  font-size:0.75rem;
+  padding:8px 6px;
+  font-size:0.8rem;
+  border-bottom:1px solid rgba(255,255,255,0.05);
 }
-.color-row .color-name{color:rgba(255,255,255,0.7)}
-.color-row .color-qty{font-weight:700;color:#fff}
+.summary-row:last-child{border-bottom:none}
+.summary-row span:first-child{color:rgba(255,255,255,0.7)}
+.summary-row .summary-qty{font-weight:700;color:#fff}
+.summary-row .qty-positive{color:#22c55e!important}
+.summary-row .qty-negative{color:#ef4444!important}
 
 /* --- DELIVERY ORDERS → CARDS --- */
 #do-list,#do-all-marks-list{overflow:visible!important}
