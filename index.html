@@ -10005,7 +10005,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
 
 <script>
 (function(){
-  if (typeof switchTab !== 'function') {
+  if (typeof window.switchTab !== 'function') {
     console.error('switchTab not defined');
     return;
   }
@@ -10302,6 +10302,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
 // Settings Modal
 ;(function(){
 try{
+  function bindClick(id,fn){var el=document.getElementById(id);if(el)el.addEventListener('click',fn)}
   var modal=document.getElementById('settingsModal')
   var btn=document.getElementById('sidebarSettingsBtn')
   if(!modal||!btn)return
@@ -10333,10 +10334,9 @@ try{
     // Show settings
     modal.classList.add('show')
   })
-  document.getElementById('settingsCloseBtn').addEventListener('click',function(){modal.classList.remove('show')})
+  var closeBtn=document.getElementById('settingsCloseBtn')
+  if(closeBtn)closeBtn.addEventListener('click',function(){modal.classList.remove('show')})
   modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('show')})
-
-  function bindClick(id,fn){var el=document.getElementById(id);if(el)el.addEventListener('click',fn)}
 
   bindClick('sChangePwd',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('changePwdLink');if(el)el.click()},100)})
   bindClick('sManageUsers',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('adminUserMgmtLink');if(el)el.click()},100)})
