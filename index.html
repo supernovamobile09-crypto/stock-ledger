@@ -9697,12 +9697,27 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var m=document.getElementById('changeUserModal');if(m)m.style.display='none'
     alert('Username/email updated successfully!')
   })
-  window.resetUsersToDefault=function(){
+  window.resetUsersToDefault=async function(){
+    var keepUsers={supernova:1,warehouse:1}
     var defaultUsers={
       supernova:{password:'admin123',role:'admin',name:'Supernova Admin'},
       warehouse:{password:'admin123',role:'warehouse',name:'Warehouse',tabs:['warehouse']}
     }
     localStorage.setItem('loginUsers',JSON.stringify(defaultUsers))
+    // Also delete old users from Supabase so they don't come back
+    try{
+      if(typeof supabaseReq==='function'&&!window._supabaseDisabled){
+        var cloudUsers=await supabaseReq('users','GET','select=*')
+        if(cloudUsers&&cloudUsers.length>0){
+          for(var i=0;i<cloudUsers.length;i++){
+            var cu=cloudUsers[i]
+            if(!keepUsers[cu.username]){
+              try{await supabaseReq('users','DELETE','username=eq.'+encodeURIComponent(cu.username))}catch(ed){}
+            }
+          }
+        }
+      }
+    }catch(e){console.warn('[ResetUsers] Cloud sync:',e.message)}
     var m=document.getElementById('adminUserModal');if(m)m.style.display='none'
     var settingsModal=document.getElementById('settingsModal');if(settingsModal)settingsModal.classList.remove('show')
     alert('Users reset! Only Admin + Warehouse remain.')
