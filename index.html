@@ -3150,7 +3150,8 @@ if(deliveryMatch){
   for(let e=0;e<n.length;e++)n[e].logistics||(n[e].logistics=lg)
   continue
 }
-let firstWord=u.split(' ')[0];let startsWithColor=sp(firstWord,null)!==null;let f=startsWithColor?null:ip(u);if(f&&/\bIPHONE\b/.test(u))f='iPhone '+f;let p=ap(u),m=op(u),h=sp(u,f||r),g=cp(u,h);if(!f&&/[A-Z0-9]{4,}\/[A-Z]+/.test(u))continue;if(!f&&!p&&!m&&!h&&/^[A-Z]{2,}\/\d+[A-Za-z]?$/.test(u)){s=t;for(let e=Math.max(0,l);e<n.length;e++)(!n[e].marks||n[e].marks==='NO MARK')&&(n[e].marks=s);l=n.length;continue}if(!f&&!p&&!m&&!h&&/^[A-Z]{2,}(?:\s+\d{2,}|\d{2,})$/.test(u)){s=t;for(let e=Math.max(0,l);e<n.length;e++)(!n[e].marks||n[e].marks==='NO MARK')&&(n[e].marks=s);l=n.length;continue}if(lp(u)){let raw=t.replace(/(?:\s+(?:ORDER|CO|LTD|LLC|INC|FZCO))+\s*$/i,'').trim();let lm=fuzzyMatchLogistics(raw);let isLog=lm!==raw||LOGISTICS_LIST.some(v=>v.toUpperCase()===raw.toUpperCase());if(isLog){lg=isLog?lm:raw;for(let e=Math.max(0,c);e<n.length;e++)n[e].logistics||(n[e].logistics=lg)}else{let _mv=fuzzyMatchVendor(raw);o=_mv!==raw||VENDOR_LIST.some(v=>v.toUpperCase()===raw.toUpperCase())?_mv:t;for(let e=Math.max(0,c);e<n.length;e++)n[e].vendor||(n[e].vendor=o);c=n.length;r=null;i=null;a=null}continue}if(f&&(r=f),p&&(i=p),m&&(a=m),h&&g!==null){let e=f||r;e&&n.push({model:e,storage:p||i||'',country:m||a||'',color:h,qty:g,vendor:o,marks:s||'NO MARK',logistics:lg||''})}}return{rows:n}}
+let firstWord=u.split(' ')[0];let startsWithColor=sp(firstWord,null)!==null;let f=startsWithColor?null:ip(u);
+let p=ap(u),m=op(u),h=sp(u,f||r),g=cp(u,h);if(!f&&/[A-Z0-9]{4,}\/[A-Z]+/.test(u))continue;if(!f&&!p&&!m&&!h&&/^[A-Z]{2,}\/\d+[A-Za-z]?$/.test(u)){s=t;for(let e=Math.max(0,l);e<n.length;e++)(!n[e].marks||n[e].marks==='NO MARK')&&(n[e].marks=s);l=n.length;continue}if(!f&&!p&&!m&&!h&&/^[A-Z]{2,}(?:\s+\d{2,}|\d{2,})$/.test(u)){s=t;for(let e=Math.max(0,l);e<n.length;e++)(!n[e].marks||n[e].marks==='NO MARK')&&(n[e].marks=s);l=n.length;continue}if(lp(u)){let raw=t.replace(/(?:\s+(?:ORDER|CO|LTD|LLC|INC|FZCO))+\s*$/i,'').trim();let lm=fuzzyMatchLogistics(raw);let isLog=lm!==raw||LOGISTICS_LIST.some(v=>v.toUpperCase()===raw.toUpperCase());if(isLog){lg=isLog?lm:raw;for(let e=Math.max(0,c);e<n.length;e++)n[e].logistics||(n[e].logistics=lg)}else{let _mv=fuzzyMatchVendor(raw);o=_mv!==raw||VENDOR_LIST.some(v=>v.toUpperCase()===raw.toUpperCase())?_mv:t;for(let e=Math.max(0,c);e<n.length;e++)n[e].vendor||(n[e].vendor=o);c=n.length;r=null;i=null;a=null}continue}if(f&&(r=f),p&&(i=p),m&&(a=m),h&&g!==null){let e=f||r;e&&n.push({model:e,storage:p||i||'',country:m||a||'',color:h,qty:g,vendor:o,marks:s||'NO MARK',logistics:lg||''})}}return{rows:n}}
 
 function fp(e){for(let{re:t,name:n}of npColors)if(t.test(e))return n;return null}
 function pp(e){let t=e.replace(/\$[`']?\d+(?:\.\d+)?/g,'').trim(),n=t.match(/^(.+?)\s+(\d+)\s*GB\s+Memory\s+(\d+)\s*(GB|TB)\b/i);if(n)return{model:n[1].trim(),storage:n[2]+'GB/'+n[3]+n[4].toUpperCase()};let r=t.match(/^(.+?)\s+(\d+)\s*GB\s*\/\s*(\d+)\s*(GB|TB)\b/i);if(r)return{model:r[1].trim(),storage:r[2]+'GB/'+r[3]+r[4].toUpperCase()};let i='',a=t,o=t.match(/\b(\d+)\s*(GB|TB)\b/i);return o&&(i=o[1]+o[2].toUpperCase(),a=t.replace(/\b\d+\s*(?:GB|TB)\b/i,'').trim(),a=a.replace(/\s+/g,' ').trim()),{model:a.replace(/[,.]$/,'').trim(),storage:i}}
@@ -3218,8 +3219,8 @@ if(/iwatch|apple\s*watch/.test(s))return m+' ⌚';
 if(/ipad/.test(s))return m+' 📱';
 // MacBook
 if(/macbook|mac\s*book|mac\s*mini|mac\s*studio|mac\s*pro|imac/.test(s))return m+' 💻';
-// iPhone (default)
-if(/iphone/.test(s))return m+' 📱';
+// iPhone (no icon)
+if(/iphone/.test(s))return m;
 // AirTag
 if(/airtag/.test(s))return m+' 📍';
 // Apple Pencil/TV
