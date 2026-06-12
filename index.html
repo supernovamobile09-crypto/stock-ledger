@@ -1163,7 +1163,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <button class="tab-btn" data-tab="history"><i class="fas fa-clock"></i> Transaction History</button>
 <button class="tab-btn" data-tab="datacontrol"><i class="fas fa-database"></i> Data Control</button>
 <button class="tab-btn" data-tab="reports"><i class="fas fa-chart-line"></i> Reports</button>
-<button class="tab-btn" data-tab="customs" onclick="try{switchTab('customs')}catch(e){console.error(e)}"><i class="fas fa-file-invoice"></i> Customs</button>
+<button class="tab-btn" data-tab="customs" id="custTabBtn"><i class="fas fa-file-invoice"></i> Customs</button>
 
 </div>
 <button class="settings-btn" id="sidebarSettingsBtn"><i class="fas fa-cog"></i> Settings</button>
@@ -10302,7 +10302,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
 // Settings Modal
 ;(function(){
 try{
-  function bindClick(id,fn){var el=document.getElementById(id);if(el)el.addEventListener('click',fn)}
   var modal=document.getElementById('settingsModal')
   var btn=document.getElementById('sidebarSettingsBtn')
   if(!modal||!btn)return
@@ -10338,48 +10337,63 @@ try{
   if(closeBtn)closeBtn.addEventListener('click',function(){modal.classList.remove('show')})
   modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('show')})
 
-  bindClick('sChangePwd',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('changePwdLink');if(el)el.click()},100)})
-  bindClick('sManageUsers',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('adminUserMgmtLink');if(el)el.click()},100)})
-  bindClick('sDarkMode',function(){
-    modal.classList.remove('show')
-    document.body.classList.toggle('dark-mode')
-    var icon,label
-    if(document.body.classList.contains('dark-mode')){document.getElementById('themeLabel').textContent='Dark'}else{document.getElementById('themeLabel').textContent='Light'}
-    try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
-  })
-  bindClick('sBgSettings',function(e){
-    if(e&&e.stopPropagation)e.stopPropagation()
-    modal.classList.remove('show')
-    var p=document.getElementById('bgPanel')
-    if(!p)return
-    if(p.style.display==='block'){p.style.display='none';return}
-    p.style.left=Math.max(8,Math.min(window.innerWidth-300,(window.innerWidth-300)/2))+'px'
-    p.style.top=Math.max(80,(window.innerHeight-380)/2)+'px'
-    setTimeout(function(){p.style.display='block'},10)
-  })
-  bindClick('sBackupFolder',async function(){
-    if(!window.showDirectoryPicker){
-      if(modal)modal.classList.remove('show')
-      showMsg('Folder picker not supported in this browser. Use Chrome/Edge for folder selection.','error')
-      return
-    }
-    try{
-      var handle=await window.showDirectoryPicker()
-      window._backupDirHandle=handle
-      try{
-        window._backupFileHandle=await handle.getFileHandle('supernova_backup.json',{create:true})
-        localStorage.setItem('backupFolderName',handle.name)
-      }catch(e){}
-      var fn=byId('headerFolderName');if(fn)fn.textContent='📁 '+handle.name
+  ;(function(){
+    var el=document.getElementById('sChangePwd')
+    if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('changePwdLink');if(el)el.click()},100)})
+  })()
+  ;(function(){
+    var el=document.getElementById('sManageUsers')
+    if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('adminUserMgmtLink');if(el)el.click()},100)})
+  })()
+  ;(function(){
+    var el=document.getElementById('sDarkMode')
+    if(el)el.addEventListener('click',function(){
       modal.classList.remove('show')
-      showMsg('✅ Backup folder set: '+handle.name+'\n\nBackups will be saved here. (Chrome/Edge only)')
-    }catch(e){
-      if(e.name!=='AbortError'){
-        modal.classList.remove('show')
-        showMsg('Folder selection failed: '+e.message,'error')
+      document.body.classList.toggle('dark-mode')
+      var icon,label
+      if(document.body.classList.contains('dark-mode')){document.getElementById('themeLabel').textContent='Dark'}else{document.getElementById('themeLabel').textContent='Light'}
+      try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
+    })
+  })()
+  ;(function(){
+    var el=document.getElementById('sBgSettings')
+    if(el)el.addEventListener('click',function(e){
+      if(e&&e.stopPropagation)e.stopPropagation()
+      modal.classList.remove('show')
+      var p=document.getElementById('bgPanel')
+      if(!p)return
+      if(p.style.display==='block'){p.style.display='none';return}
+      p.style.left=Math.max(8,Math.min(window.innerWidth-300,(window.innerWidth-300)/2))+'px'
+      p.style.top=Math.max(80,(window.innerHeight-380)/2)+'px'
+      setTimeout(function(){p.style.display='block'},10)
+    })
+  })()
+  ;(function(){
+    var el=document.getElementById('sBackupFolder')
+    if(el)el.addEventListener('click',async function(){
+      if(!window.showDirectoryPicker){
+        if(modal)modal.classList.remove('show')
+        showMsg('Folder picker not supported in this browser. Use Chrome/Edge for folder selection.','error')
+        return
       }
-    }
-  })
+      try{
+        var handle=await window.showDirectoryPicker()
+        window._backupDirHandle=handle
+        try{
+          window._backupFileHandle=await handle.getFileHandle('supernova_backup.json',{create:true})
+          localStorage.setItem('backupFolderName',handle.name)
+        }catch(e){}
+        var fn=document.getElementById('headerFolderName');if(fn)fn.textContent='📁 '+handle.name
+        modal.classList.remove('show')
+        showMsg('Backup folder set: '+handle.name+'\n\nBackups will be saved here. (Chrome/Edge only)')
+      }catch(e){
+        if(e.name!=='AbortError'){
+          modal.classList.remove('show')
+          showMsg('Folder selection failed: '+e.message,'error')
+        }
+      }
+    })
+  })()
   // AI Chat
   var aiChatModal=document.getElementById('aiChatModal')
   var aiChatMsgs=document.getElementById('aiChatMsgs')
@@ -10504,8 +10518,8 @@ try{
     aiChatInput.focus()
   }
   if(aiChatSendBtn)aiChatSendBtn.addEventListener('click',aiChatSend)
-  bindClick('sAiChat',openAiChat)
-  bindClick('sLogo',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('logoFileInput');if(el)el.click()},100)})
+  ;(function(){var el=document.getElementById('sAiChat');if(el)el.addEventListener('click',openAiChat)})()
+  ;(function(){var el=document.getElementById('sLogo');if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('logoFileInput');if(el)el.click()},100)})})()
 
   // Folder name display on load (no onclick needed, just UI)
   (function(){
