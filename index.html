@@ -540,6 +540,354 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   .toast{bottom:80px!important;font-size:0.75rem}
 }
 
+/* ==================== MOBILE ONLY (< 768px) ==================== */
+@media (max-width: 767px) {
+
+/* --- COMPACT MOBILE HEADER --- */
+.app{min-height:100vh}
+.header{position:sticky;top:0;z-index:999;padding:8px 12px!important;background:var(--header-bg,#0f172a);border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.header h1{font-size:0.9rem!important;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-inner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+#userBadge,#changePwdLink,#changeUserLink,#logoutLink,#adminUserMgmtLink,#userRoleDisplay,#userNameDisplay{display:none!important}
+#sidebarSettingsBtn{display:none!important}
+#themeLabel,#logoFileInput,#bgFileInput{display:none!important}
+#syncSupabaseBtn{padding:6px 10px!important;font-size:0.65rem!important;margin-left:0!important}
+#syncStatus{font-size:0.55rem!important}
+
+/* Mobile menu toggle button */
+.mob-menu-btn{display:flex!important;align-items:center;justify-content:center;width:38px;height:38px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0}
+
+/* Sidebar on mobile - hidden by default */
+.sidebar,.tabs,.settings-sidebar{display:none!important}
+
+/* Hide desktop tab bar on mobile */
+.tabs-list,.settings-btn{display:none!important}
+
+/* --- MOBILE BOTTOM NAV REDESIGN --- */
+.mob-bottom-nav{
+  display:flex!important;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--tab-bg,#0f172a);
+  border-top:1px solid rgba(255,255,255,0.1);
+  z-index:998;
+  padding:0;
+  height:60px;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.4);
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  justify-content:flex-start!important;
+}
+.mob-bottom-nav .mob-tab{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:6px 12px;
+  border-radius:0;
+  background:transparent;
+  border:none;
+  color:rgba(255,255,255,0.5);
+  font-size:0.55rem;
+  font-weight:600;
+  cursor:pointer;
+  position:relative;
+  min-height:60px;
+  min-width:64px;
+  scroll-snap-align:center;
+}
+.mob-bottom-nav .mob-tab i{font-size:1.15rem}
+.mob-bottom-nav .mob-tab.active{color:var(--accent,#3b82f6);background:rgba(59,130,246,0.15)}
+.mob-bottom-nav .mob-tab.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:30px;height:3px;background:var(--accent,#3b82f6);border-radius:0 0 3px 3px}
+
+/* Hide FAB on mobile - nav has entry now */
+.mob-fab{display:none!important}
+
+/* Mobile panels - full width, no padding */
+.panel{padding:8px!important;padding-bottom:70px!important}
+
+/* --- DATA ENTRY TABLE → CARDS --- */
+#editableTableWrap{overflow:visible!important}
+#editableTable,#editableTable thead,#editableTable tbody,#editableTable tr,#editableTable th,#editableTable td{display:block!important}
+#editableTable thead tr{position:absolute!important;top:-9999px!important;left:-9999px!important}
+#editableTable tbody tr{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  padding:0;
+  position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+#editableTable tbody tr:hover{background:rgba(59,130,246,0.08)}
+#editableTable td{
+  padding:8px 12px;
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:0.8rem;
+  text-align:left!important;
+  position:relative;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+}
+#editableTable td::before{
+  content:attr(data-label);
+  font-weight:700;
+  color:rgba(255,255,255,0.45);
+  min-width:80px;
+  font-size:0.65rem;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-right:10px;
+  flex-shrink:0;
+}
+#editableTable td:first-child{padding-top:12px;border-radius:12px 12px 0 0}
+#editableTable td:last-child{padding-bottom:12px;border-bottom:none;border-radius:0 0 12px 12px}
+#editableTable td input,#editableTable td select{
+  width:100%;
+  min-height:44px;
+  font-size:0.85rem;
+  padding:6px 8px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:8px;
+  color:#fff;
+}
+#editableTable td input[type="date"]{min-height:44px}
+#editableTable td input[type="number"]{min-height:44px;width:100%}
+#editableTable td select{min-height:44px}
+#editableTable td button.delete-btn{
+  width:100%;
+  min-height:44px;
+  background:rgba(239,68,68,0.15);
+  border:1px solid rgba(239,68,68,0.3);
+  border-radius:8px;
+  color:#ef4444;
+  font-size:0.8rem;
+  cursor:pointer;
+}
+.table-wrap{overflow:visible!important}
+
+/* --- BALANCE STOCK → CARDS --- */
+#balanceTableWrap{overflow:visible!important}
+#balanceTable,#balanceTable thead,#balanceTable tbody,#balanceTable tr,#balanceTable th,#balanceTable td{display:block!important}
+#balanceTable thead tr{position:absolute!important;top:-9999px!important;left:-9999px!important}
+.balance-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.balance-card-header{
+  padding:12px;
+  background:rgba(59,130,246,0.12);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+.balance-card-header .item-name{font-weight:700;font-size:0.85rem;color:#fff}
+.balance-card-header .total-badge{
+  background:var(--accent,#3b82f6);
+  color:#fff;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:0.7rem;
+  font-weight:700;
+}
+.balance-card-body{
+  padding:8px 12px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.color-row{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 8px;
+  background:rgba(255,255,255,0.05);
+  border-radius:6px;
+  font-size:0.75rem;
+}
+.color-row .color-name{color:rgba(255,255,255,0.7)}
+.color-row .color-qty{font-weight:700;color:#fff}
+
+/* --- DELIVERY ORDERS → CARDS --- */
+#do-list,#do-all-marks-list{overflow:visible!important}
+.do-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.do-card-header{
+  padding:12px;
+  background:rgba(59,130,246,0.12);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.do-card-body{padding:10px 12px}
+.do-info-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.75rem;border-bottom:1px solid rgba(255,255,255,0.05)}
+.do-info-row:last-child{border-bottom:none}
+.do-info-row .label{color:rgba(255,255,255,0.45);font-weight:600}
+.do-info-row .value{color:#fff;font-weight:600}
+
+/* --- TRANSACTION HISTORY → CARDS --- */
+#historyTableWrap{overflow:visible!important}
+#historyTable,#historyTable thead,#historyTable tbody,#historyTable tr,#historyTable th,#historyTable td{display:block!important}
+#historyTable thead tr{position:absolute!important;top:-9999px!important;left:-9999px!important}
+.history-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:8px;
+  padding:0;
+  overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.history-card-header{
+  padding:10px 12px;
+  background:rgba(59,130,246,0.1);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.history-card-body{padding:8px 12px}
+.history-info{display:flex;justify-content:space-between;padding:4px 0;font-size:0.72rem}
+.history-info .label{color:rgba(255,255,255,0.4);font-weight:600}
+.history-info .value{color:#fff}
+.history-qty{font-size:1.1rem;font-weight:900;color:var(--accent,#3b82f6)}
+
+/* --- REPORTS FULL WIDTH --- */
+.reports-grid{grid-template-columns:1fr!important}
+.report-chart-wrap{width:100%!important;overflow-x:auto}
+.report-chart-wrap canvas{min-width:100%!important}
+
+/* --- MOBILE FORMS - STACKED --- */
+.entry-form-row{display:flex!important;flex-direction:column!important;gap:8px!important}
+.entry-form-row input,.entry-form-row select,.entry-form-row textarea{
+  width:100%!important;
+  min-height:48px;
+  font-size:0.9rem;
+  padding:10px 12px;
+}
+.entry-form-row textarea{min-height:100px}
+.panel textarea,.panel input,.panel select{
+  min-height:48px;
+  font-size:0.9rem;
+  padding:10px 12px;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* --- BUTTONS MIN 48px --- */
+.btn,button,.tab-btn,.mob-tab{
+  min-height:48px;
+  font-size:0.85rem;
+  padding:10px 16px;
+}
+.btn.small-btn,.btn.sm,.tab-btn.small{padding:8px 12px;min-height:44px}
+.delete-btn{padding:10px!important;min-height:48px!important}
+
+/* --- PACKING LIST MOBILE CARDS --- */
+.plm-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* --- PRICING MOBILE CARDS --- */
+.pricing-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* --- DATA CONTROL CARDS --- */
+.dc-section{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+/* --- APPROVAL MOBILE CARDS --- */
+.approval-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* --- WAREHOUSE MOBILE CARDS --- */
+.warehouse-card{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  margin-bottom:10px;
+  padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* --- INVOICE MOBILE --- */
+.invoice-page{padding:5mm!important;margin:0!important;width:100%!important;box-shadow:none!important}
+
+/* --- MOBILE SHEET FULL HEIGHT --- */
+.mob-sheet{
+  max-height:85vh;
+  border-radius:16px 16px 0 0;
+}
+
+/* --- CUSTOMS MOBILE --- */
+.customs-section{
+  background:var(--card-bg,#1e293b);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+/* --- MODALS FULL SCREEN ON MOBILE --- */
+.modal-content,.glass{
+  border-radius:0!important;
+  max-width:100vw!important;
+  width:100vw!important;
+  max-height:100vh!important;
+  height:100vh!important;
+  margin:0!important;
+}
+
+/* --- TOAST BOTTOM --- */
+.toast{bottom:70px!important}
+
+/* --- COMPACT SETTINGS --- */
+.settings-grid{grid-template-columns:1fr!important}
+
+}
+
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes sheetFade{from{opacity:0}to{opacity:1}}
 @keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.6)}70%{box-shadow:0 0 0 6px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
@@ -732,7 +1080,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <div class="app">
 <div class="header">
 <div class="header-inner">
-<h1>SUPERNOVA STOCK LEDGER</h1>
+<button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleSidebar()" style="display:none"><i class="fas fa-bars"></i></button>
+<h1>SUPERNOVA</h1>
 <span id="userBadge"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Guest</span> <span class="user-role" id="userRoleDisplay"></span> <a id="changePwdLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Password</a> <a id="changeUserLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Username</a> <a id="logoutLink" style="margin-left:6px;cursor:pointer;color:var(--danger);font-size:0.65rem">Logout</a> <a id="adminUserMgmtLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Manage Users</a></span>
 <button id="syncSupabaseBtn" style="margin-left:8px;background:#4ade80;color:#000;border:none;border-radius:6px;padding:4px 10px;font-size:0.65rem;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
 <span id="syncStatus" style="margin-left:6px;font-size:0.65rem;color:var(--text-muted,#888)"></span>
@@ -776,20 +1125,12 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   <button onclick="event.stopPropagation();openSettings()"><i class="fas fa-cog"></i> Settings</button>
 </div>
 <nav class="mob-bottom-nav" id="mobBottomNav">
-  <button class="mob-tab active" data-mobtab="entry"><i class="fas fa-paste"></i><span>Entry</span></button>
-  <button class="mob-tab" data-mobtab="delivery"><i class="fas fa-truck"></i><span>DO</span><span class="mob-notif hide" data-mobnotif="delivery"></span></button>
-  <button class="mob-tab" data-mobtab="packing"><i class="fas fa-bell"></i><span>Packing</span><span class="mob-notif hide" data-mobnotif="packing"></span></button>
   <button class="mob-tab" data-mobtab="balance"><i class="fas fa-chart-bar"></i><span>WTS/WTB</span><span class="mob-notif hide" data-mobnotif="balance"></span></button>
-  <button class="mob-tab" data-mobtab="pricing"><i class="fas fa-tag"></i><span>Pricing</span><span class="mob-notif hide" data-mobnotif="pricing"></span></button>
-  <button class="mob-tab" data-mobtab="approval"><i class="fas fa-check-double"></i><span>Approval</span><span class="mob-notif hide" data-mobnotif="approval"></span></button>
   <button class="mob-tab" data-mobtab="warehouse"><i class="fas fa-warehouse"></i><span>Stock</span><span class="mob-notif hide" data-mobnotif="warehouse"></span></button>
-  <button class="mob-tab" data-mobtab="invoice"><i class="fas fa-file-invoice"></i><span>Invoice</span><span class="mob-notif hide" data-mobnotif="invoice"></span></button>
-  <button class="mob-tab" data-mobtab="history"><i class="fas fa-clock"></i><span>History</span></button>
-  <button class="mob-tab" data-mobtab="datacontrol"><i class="fas fa-database"></i><span>Data</span></button>
-  <button class="mob-tab" data-mobtab="reports"><i class="fas fa-chart-line"></i><span>Reports</span></button>
-  <button class="mob-tab" data-mobtab="customs"><i class="fas fa-file-alt"></i><span>Customs</span></button>
+  <button class="mob-tab active" data-mobtab="entry"><i class="fas fa-plus-circle"></i><span>Entry</span></button>
+  <button class="mob-tab" data-mobtab="delivery"><i class="fas fa-file-alt"></i><span>Orders</span><span class="mob-notif hide" data-mobnotif="delivery"></span></button>
+  <button class="mob-tab" onclick="mobOpenSheet('More',mobMoreSheetContent())"><i class="fas fa-ellipsis-h"></i><span>More</span></button>
 </nav>
-<button class="mob-fab" id="mobFab" title="New"><i class="fas fa-plus"></i></button>
 <div class="mob-sheet-overlay" id="mobSheetOverlay">
   <div class="mob-sheet">
     <div class="sheet-handle"></div>
@@ -9784,6 +10125,36 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     sov.addEventListener('click',function(e){
       if(e.target===sov)sov.classList.remove('open')
     })
+  }
+
+  window.toggleSidebar=function(){
+    var sb=document.querySelector('.sidebar,.tabs')
+    if(sb)sb.classList.toggle('open')
+  }
+
+  window.mobMoreSheetContent=function(){
+    return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +'<button class="btn" onclick="mobGo(\'packing\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-bell"></i> Packing</button>'
+      +'<button class="btn" onclick="mobGo(\'pricing\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-tag"></i> Pricing</button>'
+      +'<button class="btn" onclick="mobGo(\'approval\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-check-double"></i> Approval</button>'
+      +'<button class="btn" onclick="mobGo(\'invoice\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-file-invoice"></i> Invoice</button>'
+      +'<button class="btn" onclick="mobGo(\'history\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-clock"></i> History</button>'
+      +'<button class="btn" onclick="mobGo(\'datacontrol\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-database"></i> Data</button>'
+      +'<button class="btn" onclick="mobGo(\'reports\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-chart-line"></i> Reports</button>'
+      +'<button class="btn" onclick="mobGo(\'customs\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-file-alt"></i> Customs</button>'
+      +'<button class="btn" onclick="mobGo(\'warehouse\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-warehouse"></i> Warehouse</button>'
+      +'<button class="btn" onclick="mobGo(\'balance\');mobCloseSheet()" style="min-height:48px"><i class="fas fa-chart-bar"></i> WTS/WTB</button>'
+      +'</div>'
+  }
+
+  window.mobGo=function(tab){
+    var btn=document.querySelector('[data-tab="'+tab+'"]')
+    if(btn)btn.click()
+    var mbtn=document.querySelector('.mob-tab[data-mobtab="'+tab+'"]')
+    if(mbtn){
+      document.querySelectorAll('.mob-tab').forEach(function(b){b.classList.remove('active')})
+      mbtn.classList.add('active')
+    }
   }
 
   document.addEventListener('keydown',function(e){
