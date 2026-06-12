@@ -840,6 +840,15 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 /* --- INVOICE MOBILE --- */
 .invoice-page{padding:5mm!important;margin:0!important;width:100%!important;box-shadow:none!important}
 
+/* --- PLM TABLE SCROLL MOBILE --- */
+#panel-packing .plm-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#panel-packing .plm-link-cell{max-width:120px}
+
+/* --- WAREHOUSE MOBILE STACK --- */
+#panel-warehouse>div>div{flex-direction:column!important}
+#panel-warehouse .wh-sidebar{flex:none!important;width:100%!important;max-height:none!important}
+#panel-warehouse #wh-content,#panel-warehouse #wh-packed-content{width:100%!important}
+
 /* --- MOBILE SHEET FULL HEIGHT --- */
 .mob-sheet{
   max-height:85vh;
@@ -2335,7 +2344,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <div class="glass" style="padding:14px 18px;margin-bottom:12px">
 <div class="section-title" style="margin-bottom:8px"><i class="fas fa-list"></i> &nbsp;Monitored Links</div>
 <div class="table-wrap" style="max-height:42vh;overflow-y:auto">
-<table class="plm-table" id="plmLinksTable">
+<div class="plm-table-wrap"><table class="plm-table" id="plmLinksTable">
   <thead><tr>
     <th>Link Name</th>
     <th>URL</th>
@@ -8450,6 +8459,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       autoBackup()
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
+      setTimeout(function(){try{switchTab('warehouse')}catch(e){}},300)
     }
 
     window.releaseAgainstCash=function(entryId){
