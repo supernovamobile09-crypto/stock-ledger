@@ -5685,7 +5685,13 @@ async function saveToBackend(){
     }else if(sortType==='oldest'){
       rows=rows.slice().sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))})
     }else{
-      rows=rows.slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))})
+      rows=rows.slice().sort(function(a,b){
+        var dc=String(b.date||'').localeCompare(String(a.date||''))
+        if(dc!==0)return dc
+        var cc=(a.customer_vendor||'').localeCompare(b.customer_vendor||'')
+        if(cc!==0)return cc
+        return (a.item_name||'').localeCompare(b.item_name||'')
+      })
     }
     bd.innerHTML=rows.map(function(r){
       var eid=esc(r.id||'')
