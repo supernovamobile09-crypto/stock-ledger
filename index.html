@@ -611,6 +611,18 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 /* Mobile panels - full width, no padding */
 .panel{padding:8px!important;padding-bottom:70px!important}
 
+/* Customs panel mobile fixes */
+#panel-customs .cust-page{padding:14px!important}
+#panel-customs .cust-page .logo-text{font-size:16px!important}
+#panel-customs .cust-page .logo-star{font-size:18px!important}
+#panel-customs .cust-page .fields-tbl{font-size:11px!important}
+#panel-customs .cust-page .fields-tbl .lbl{width:90px!important}
+#panel-customs .pivot-tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;font-size:9px!important}
+#panel-customs .pivot-tbl table,#panel-customs .pivot-tbl thead,#panel-customs .pivot-tbl tbody,#panel-customs .pivot-tbl tr,#panel-customs .pivot-tbl th,#panel-customs .pivot-tbl td{display:table-cell!important}
+#panel-customs .cust-controls h2{width:100%!important;margin:0 0 4px!important;font-size:11px!important}
+#panel-customs .cust-controls input,#panel-customs .cust-controls select{padding:8px 10px!important;font-size:14px!important;min-height:36px}
+#panel-customs .cust-controls .btn{padding:8px 10px!important;font-size:0.72rem!important}
+
 /* --- DATA ENTRY TABLE → CARDS --- */
 #editableTableWrap{overflow:visible!important}
 #editableTable,#editableTable thead,#editableTable tbody,#editableTable tr,#editableTable th,#editableTable td{display:block!important}
@@ -10237,6 +10249,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       document.querySelectorAll('.mob-tab').forEach(function(b){b.classList.remove('active')})
       mbtn.classList.add('active')
     }
+    var menu=document.getElementById('mobMoreMenu')
+    if(menu)menu.classList.remove('open')
   }
 
   document.addEventListener('keydown',function(e){
