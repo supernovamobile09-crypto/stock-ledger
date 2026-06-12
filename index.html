@@ -2902,6 +2902,8 @@ function triggerCloudSync() {
   _cloudSyncPending = true
   syncToSupabase().then(function(){setTimeout(function(){_cloudSyncPending=false},1000)})
 }
+// Also sync on page load (for PLM links etc.)
+setTimeout(function(){try{triggerCloudSync()}catch(e){}},5000)
 // Hook DB.save - no localStorage, all data in Supabase
 var _dbSave=DB.save.bind(DB)
 DB.save=function(){ 
