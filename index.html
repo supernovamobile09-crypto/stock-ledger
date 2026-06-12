@@ -9988,7 +9988,9 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     });
   });
   document.querySelectorAll('.tab-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){ switchTab(btn.dataset.tab); });
+    btn.addEventListener('click', function(){
+      try{ switchTab(btn.dataset.tab); }catch(e){console.error('switchTab error:',e,btn.dataset.tab)}
+    });
   });
   // Initialize default tab
   switchTab('entry');
@@ -10244,15 +10246,18 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
   }
 
   window.mobGo=function(tab){
-    var btn=document.querySelector('[data-tab="'+tab+'"]')
-    if(btn)btn.click()
-    var mbtn=document.querySelector('.mob-tab[data-mobtab="'+tab+'"]')
-    if(mbtn){
-      document.querySelectorAll('.mob-tab').forEach(function(b){b.classList.remove('active')})
-      mbtn.classList.add('active')
-    }
-    var menu=document.getElementById('mobMoreMenu')
-    if(menu)menu.classList.remove('open')
+    try{
+      var btn=document.querySelector('[data-tab="'+tab+'"]')
+      if(btn)btn.click()
+      else console.log('Tab btn not found:',tab)
+      var mbtn=document.querySelector('.mob-tab[data-mobtab="'+tab+'"]')
+      if(mbtn){
+        document.querySelectorAll('.mob-tab').forEach(function(b){b.classList.remove('active')})
+        mbtn.classList.add('active')
+      }
+      var menu=document.getElementById('mobMoreMenu')
+      if(menu)menu.classList.remove('open')
+    }catch(e){console.error('mobGo error:',e)}
   }
 
   document.addEventListener('keydown',function(e){
