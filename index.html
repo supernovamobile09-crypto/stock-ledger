@@ -2815,14 +2815,27 @@ async function loadFromSupabase(){
     }
     var users=await supabaseReq('users','GET','select=*')
     if(users&&users.length>0&&!window._supabaseDisabled){
-      var uobj={};users.forEach(function(u){uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
+      var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
       var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
       for(var dk in existing){
+        if(dk==='__plm_config'||dk.startsWith('_plm_'))continue
         if(!uobj[dk])uobj[dk]=existing[dk]
         else{for(var f in existing[dk]){if(uobj[dk][f]==null)uobj[dk][f]=existing[dk][f]}}
       }
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
+    // Load PLM links from cloud (stored as __plm_config in users table)
+    try{
+      var plmUser=users&&users.find(function(u){return u.username==='__plm_config'})
+      if(plmUser&&plmUser.name){
+        var plmData=JSON.parse(plmUser.name)
+        if(Array.isArray(plmData)&&plmData.length){
+          try{localStorage.setItem('plm_links_v1',JSON.stringify(plmData))}catch(e){}
+          // Force re-render if PLM module loaded
+          setTimeout(function(){try{window.PLM&&window.PLM.renderLinks&&window.PLM.renderLinks()}catch(e){}},100)
+        }
+      }
+    }catch(e){console.warn('[Supabase] PLM links load:',e.message)}
     console.log('[Supabase] Data loaded from cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Loaded '+new Date().toLocaleTimeString()
   }catch(e){console.warn('[Supabase] Load failed:',e.message)}
@@ -2854,11 +2867,24 @@ async function syncToSupabase(){
     var kRes=await fetch(kUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(kBody)})
     if(!kRes.ok&&kRes.status!==409&&kRes.status!==201)console.warn('[Supabase] pricing_submitted_keys sync:',kRes.status)}
     var usersObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
+    delete usersObj.__plm_config
     var users=Object.entries(usersObj)
     if(users.length){var uBody=users.map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})
     var uUrl=SUPABASE_URL+'/rest/v1/users'
     var uRes=await fetch(uUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(uBody)})
     if(!uRes.ok&&uRes.status!==409&&uRes.status!==201)console.warn('[Supabase] users sync:',uRes.status)}
+    // Sync PLM links
+    try{
+      var plmRaw=localStorage.getItem('plm_links_v1')
+      if(plmRaw){
+        var plmData=JSON.parse(plmRaw)
+        if(Array.isArray(plmData)&&plmData.length){
+          var plmBody={username:'__plm_config',password:'__plm',role:'__plm',name:plmRaw}
+          var plmUrl=SUPABASE_URL+'/rest/v1/users'
+          await fetch(plmUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify([plmBody])})
+        }
+      }
+    }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
     console.log('[Supabase] Data synced to cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
     if(typeof showMsg==='function')showMsg('✅ Cloud sync successful!')
@@ -9818,6 +9844,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var users=getUsers()
     var html=''
     Object.keys(users).forEach(function(u){
+      if(u==='__plm_config'||u.startsWith('_plm_'))return
       var isAdmin=users[u].role==='admin'
       var tabStr=''
       if(isAdmin)tabStr='admin'
