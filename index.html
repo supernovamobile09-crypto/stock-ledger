@@ -8032,6 +8032,12 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       renderPendingView()
       showMsg('Pricing submitted! Waiting for DO Approval.')
       autoBackup()
+      // Immediately sync pricingPending to cloud so cross-device sync doesn't overwrite
+      try{
+        var pBody=pending.map(function(e){return{id:e.id,customer:e.customer||'',week:e.week||'',status:e.status||'',date:e.date||'',logistics:e.logistics||'',marks:e.marks||'',items:JSON.stringify(e.items||[]),completed:!!e.completed,approved:e.approved===undefined?null:e.approved,warehouse_packed:!!e.warehousePacked,cash_released:!!e.cashReleased,pricing:JSON.stringify(e.pricing||[]),currency:e.currency||'USD'}})
+        var pUrl='https://cbfbvffbhpguhehadhc.supabase.co/rest/v1/pricing_pending'
+        fetch(pUrl,{method:'POST',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(pBody)}).catch(function(){})
+      }catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
     }
