@@ -8017,7 +8017,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       if(!hasPrice){
         showMsg('Please enter prices for at least one item ('+items.length+' items need pricing)','error');return
       }
-      }
       if(!confirm('Submit this pricing? It will go to DO Approval.'))return
       for(var i=0;i<pending.length;i++){
         if(pending[i].id===entryId){
