@@ -4394,15 +4394,12 @@ function localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideV
   }
 }
 function finishParse(result,text,type,overrideLogistics,overrideMarks,overrideVendor){
-  // Rule: if message contains "eSIM" or "esim", force specs to Japan
-  let isEsim=/\besim\b/i.test(text||'')
   let mapped=result.rows.map(r=>{
     let item=formatItemName(r.model)
     let color=formatColor(r.color)
     // Pro/ProMax: White → Silver
     if(/PRO|MAX/i.test(item)&&/^white$/i.test(color))color='Silver'
     let specsVal=r.country?formatSpecs(r.country):''
-    if(isEsim)specsVal='Japan'
     // Add icon/emoji for product type (headphones, watches, etc.)
     if(typeof addItemIcon==='function')item=addItemIcon(item)
     return {
