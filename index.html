@@ -612,13 +612,15 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 .panel{padding:8px!important;padding-bottom:70px!important}
 
 /* Customs panel mobile fixes */
-#panel-customs .cust-page{padding:14px!important}
+#panel-customs{display:none;flex:1;min-width:0}
+#panel-customs.active{display:block}
+#panel-customs .cust-page{padding:14px!important;overflow-x:auto;-webkit-overflow-scrolling:touch}
 #panel-customs .cust-page .logo-text{font-size:16px!important}
 #panel-customs .cust-page .logo-star{font-size:18px!important}
 #panel-customs .cust-page .fields-tbl{font-size:11px!important}
 #panel-customs .cust-page .fields-tbl .lbl{width:90px!important}
-#panel-customs .pivot-tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;font-size:9px!important}
-#panel-customs .pivot-tbl table,#panel-customs .pivot-tbl thead,#panel-customs .pivot-tbl tbody,#panel-customs .pivot-tbl tr,#panel-customs .pivot-tbl th,#panel-customs .pivot-tbl td{display:table-cell!important}
+#panel-customs .pivot-tbl{font-size:9px!important;max-width:100%;display:table!important;table-layout:auto}
+#panel-customs #cust-pivot-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 #panel-customs .cust-controls h2{width:100%!important;margin:0 0 4px!important;font-size:11px!important}
 #panel-customs .cust-controls input,#panel-customs .cust-controls select{padding:8px 10px!important;font-size:14px!important;min-height:36px}
 #panel-customs .cust-controls .btn{padding:8px 10px!important;font-size:0.72rem!important}
