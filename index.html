@@ -1578,6 +1578,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <option value="za_cv">Z-A (Customer/Vendor)</option>
 <option value="az_item">A-Z (Item)</option>
 <option value="za_item">Z-A (Item)</option>
+<option value="az_status">A-Z (Status)</option>
+<option value="za_status">Z-A (Status)</option>
 </select>
 <button id="clearFilterBtn" class="btn" style="font-size:0.65rem;padding:4px 10px" onclick="clearHistoryFilters()"><i class="fas fa-times-circle"></i> CLEAR FILTER</button>
 <button id="editSelectedBtn" class="btn" style="font-size:0.65rem;padding:4px 10px;display:none"><i class="fas fa-edit"></i> EDIT SELECTED</button>
@@ -5676,6 +5678,10 @@ async function saveToBackend(){
         var ib=(b.item_name||'')+' '+(b.storage||'')+' '+(b.color||'')
         return ib.localeCompare(ia)
       })
+    }else if(sortType==='az_status'){
+      rows=rows.slice().sort(function(a,b){return (a.transaction_status||'').localeCompare(b.transaction_status||'')})
+    }else if(sortType==='za_status'){
+      rows=rows.slice().sort(function(a,b){return (b.transaction_status||'').localeCompare(a.transaction_status||'')})
     }else if(sortType==='oldest'){
       rows=rows.slice().sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))})
     }else{
