@@ -5690,7 +5690,7 @@ async function saveToBackend(){
         if(dc!==0)return dc
         var cc=(a.customer_vendor||'').localeCompare(b.customer_vendor||'')
         if(cc!==0)return cc
-        return (a.item_name||'').localeCompare(b.item_name||'')
+        return (a.created_at||'').localeCompare(b.created_at||'')
       })
     }
     bd.innerHTML=rows.map(function(r){
