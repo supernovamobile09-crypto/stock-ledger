@@ -5530,6 +5530,31 @@ function initDO(){
   }
 }
 let pdfDirHandle=null
+async function _savePdfHandle(h){
+  try{
+    var req=indexedDB.open('PdfHandleDB',1)
+    req.onupgradeneeded=function(e){e.target.result.createObjectStore('handles')}
+    req.onsuccess=function(e){
+      var tx=e.target.result.transaction('handles','readwrite')
+      tx.objectStore('handles').put(h,'dirHandle')
+    }
+  }catch(e){}
+}
+async function _loadPdfHandle(){
+  try{
+    return new Promise(function(res){
+      var req=indexedDB.open('PdfHandleDB',1)
+      req.onupgradeneeded=function(e){e.target.result.createObjectStore('handles')}
+      req.onsuccess=function(e){
+        var tx=e.target.result.transaction('handles','readonly')
+        var getReq=tx.objectStore('handles').get('dirHandle')
+        getReq.onsuccess=function(){res(getReq.result||null)}
+        getReq.onerror=function(){res(null)}
+      }
+      req.onerror=function(){res(null)}
+    })
+  }catch(e){return null}
+}
 async function selectPDFFolder(){
   if(!window.showDirectoryPicker){showMsg('Folder picker not supported','error');return}
   try{
@@ -5539,10 +5564,11 @@ async function selectPDFFolder(){
     pdfDirHandle=dir
     var inp=document.getElementById('pdfFolderInput');if(inp)inp.value=dir.name
     try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){}
+    _savePdfHandle(dir)
     showMsg('PDF folder: '+dir.name)
   }catch(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')}
 }
-;(function(){let s='';try{s=localStorage.getItem('pdfFolderName')||''}catch(e){};let inp=document.getElementById('pdfFolderInput');if(inp&&s)inp.value=s})()
+;(async function(){try{pdfDirHandle=await _loadPdfHandle()}catch(e){};let s='';try{s=localStorage.getItem('pdfFolderName')||''}catch(e){};let inp=document.getElementById('pdfFolderInput');if(inp&&s)inp.value=s})()
 function printDO(){
   const page=document.getElementById('do-page')
   if(!page)return
@@ -6500,12 +6526,12 @@ async function saveToBackend(){
       var perm=await dir.requestPermission({mode:'readwrite'})
       if(perm!=='granted'){showMsg('Folder permission denied','error');return}
       pdfDirHandle=dir;var inp=byId('pdfFolderInput');if(inp)inp.value=dir.name
-      try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){};showMsg('PDF folder: '+dir.name)
+      try{localStorage.setItem('pdfFolderName',dir.name)}catch(e){};_savePdfHandle(dir);showMsg('PDF folder: '+dir.name)
     }catch(e){if(e.name!='AbortError')showMsg('Folder selection failed','error')}
   })
   if(el=byId('clearPDFFolderBtn'))el.addEventListener('click',function(){
     pdfDirHandle=null;var inp=byId('pdfFolderInput');if(inp)inp.value=''
-    try{localStorage.removeItem('pdfFolderName')}catch(e){};showMsg('PDF folder reset')
+    try{localStorage.removeItem('pdfFolderName')}catch(e){};try{indexedDB.deleteDatabase('PdfHandleDB')}catch(e){};showMsg('PDF folder reset')
   })
   ;(function(){
     var saved='';try{saved=localStorage.getItem('pdfFolderName')||''}catch(e){}
