@@ -453,7 +453,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   .mob-sheet{display:flex;flex-direction:column;width:100%;max-height:90vh;background:var(--panel-bg,#0f172a);border-radius:18px 18px 0 0;padding:8px 0 env(safe-area-inset-bottom,12px);animation:sheetUp 0.28s cubic-bezier(0.4,0,0.2,1);box-shadow:0 -8px 30px rgba(0,0,0,0.4)}
   .mob-sheet .sheet-handle{width:40px;height:4px;background:var(--tab-border,#334155);border-radius:4px;margin:6px auto 10px}
   .mob-sheet .sheet-title{font-size:0.95rem;font-weight:700;color:var(--tab-color,#fff);padding:0 18px 10px;border-bottom:1px solid var(--tab-border,#1e293b);display:flex;align-items:center;justify-content:space-between}
-  .mob-sheet .sheet-body{padding:14px 16px;overflow-y:auto;flex:1}
+  .mob-sheet .sheet-body{padding:14px 16px 70px;overflow-y:auto;flex:1}
   .mob-sheet .sheet-close{background:transparent;border:none;color:var(--badge-color,#94a3b8);font-size:1.1rem;cursor:pointer;padding:4px 8px}
 
   .mob-more-menu{position:absolute;top:60px;left:10px;background:var(--panel-bg,#0f172a);border:1px solid var(--tab-border,#1e293b);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.4);min-width:220px;z-index:100;padding:6px 0;display:none;animation:panelFadeIn 0.18s}
@@ -844,6 +844,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 .mob-sheet{
   max-height:85vh;
   border-radius:16px 16px 0 0;
+  padding-bottom:70px!important;
+  z-index:201;
 }
 
 /* --- CUSTOMS MOBILE --- */
