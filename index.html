@@ -6736,6 +6736,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(el)el.classList.add('active')
       document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)})
       if(tab==='delivery')try{initDO()}catch(e){}
+      if(tab==='packing')try{typeof renderLinks==='function'&&renderLinks()}catch(e){}
     }
   }
 
