@@ -1541,7 +1541,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </style>
 <div class="do-controls no-print">
   <h2>⚙ Delivery Order</h2>
-  <div class="ctrl-group" style="display:flex;align-items:center;gap:4px"><label>Date:</label><input type="date" id="do-date-filter" style="padding:3px 6px;border:1px solid #444;border-radius:4px;font-size:11px;background:#fff;color:#000" onchange="onDODateFilterChange(this.value)"></div>
+
   <div class="ctrl-group"><label>Customer:</label><input type="text" id="do-customer" value="" oninput="updateDOField('customer',this.value)"/></div>
   <div class="ctrl-group"><label>Marks:</label><select id="do-marks" onchange="onDOMarkChange(this.value)"><option value="">-- Select Mark --</option></select></div>
   <div class="ctrl-group"><label>Logistics:</label><input type="text" id="do-logistics" value="" oninput="updateDOField('logistics',this.value)"/></div>
@@ -5151,7 +5151,6 @@ function loadDOData(customerName,mark){
   let byModel={}
   let cn=(customerName||'').trim().toUpperCase()
   let mk=(mark||'').trim()
-  let dateFilter=window._doDateFilter||''
   let submittedKeys=getSubmittedKeys()
   function addItem(model,storage,specs,color,qty){
     // Normalize key to merge similar items (case-insensitive, no iPhone prefix, trimmed)
@@ -5172,15 +5171,14 @@ function loadDOData(customerName,mark){
     if(t.transaction_type!=='Selling'&&t.transaction_type!=='Opening'&&t.transaction_type!=='Buying')return
     if((t.customer_vendor||'').trim().toUpperCase()!==cn)return
     if(mk&&(t.marks||'').trim().toUpperCase()!==mk.toUpperCase())return
-    if(dateFilter&&t.date!==dateFilter)return
+    if(t.date!==window._doDateFilter)return
     _dbgMatched++
     addItem((t.item_name||'').trim(),(t.storage||'').trim(),(t.specs||'').trim(),(t.color||'').trim(),parseInt(t.quantity)||0)
   })
   transactions.forEach(t=>{
     if(t.type!=='Selling'&&t.type!=='Opening'&&t.type!=='Buying')return
     if((t.vendor||'').trim().toUpperCase()!==cn)return
-    if(mk&&(t.marks||'').trim().toUpperCase()!==mk.toUpperCase())return
-    if(dateFilter&&t.date!==dateFilter)return
+    if(t.date!==window._doDateFilter)return
     addItem((t.item||'').trim(),(t.storage||'').trim(),(t.specs||'').trim(),(t.color||'').trim(),parseInt(t.qty)||0)
   })
   let grouped={}
@@ -5555,7 +5553,7 @@ function updateDOField(field,val){
   if(field==='customer'){document.getElementById('do-f-customer').value=val;document.getElementById('do-top-name').textContent=val}
   if(field==='marks'){document.getElementById('do-th-marks').textContent=val;document.getElementById('do-f-marks').value=val}
   if(field==='status')document.getElementById('do-f-status').value=val
-  if(field==='date'){document.getElementById('do-f-date').value=val;document.getElementById('do-top-date').textContent=val}
+  if(field==='date'){var dfmt=fmtDateDDMMMYYY(val);document.getElementById('do-f-date').value=dfmt;document.getElementById('do-top-date').textContent=dfmt}
   if(field==='logistics'){document.getElementById('do-f-logistics').value=val;var bn=document.getElementById('do-banner');if(bn)bn.textContent=val||'APL LOGISTIC FOR SALES EXPERT'}
   if(field==='week')document.getElementById('do-f-week').value=val
 }
@@ -5564,9 +5562,8 @@ function populateDOMarks(customerName,autoSelect){
   let ms=document.getElementById('do-marks')
   if(!ms)return''
   let cn=(customerName||'').trim().toUpperCase()
-  let dateFilter=window._doDateFilter||''
   let marks=new Set()
-  allSavedTx.forEach(t=>{if((t.transaction_type==='Selling'||t.transaction_type==='Opening'||t.transaction_type==='Buying')&&(t.customer_vendor||'').trim().toUpperCase()===cn&&t.marks&&(!dateFilter||t.date===dateFilter))marks.add(t.marks.trim())})
+  allSavedTx.forEach(t=>{if((t.transaction_type==='Selling'||t.transaction_type==='Opening'||t.transaction_type==='Buying')&&(t.customer_vendor||'').trim().toUpperCase()===cn&&t.marks&&t.date===window._doDateFilter)marks.add(t.marks.trim())})
   try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if((e.customer||'').trim().toUpperCase()===cn&&e.marks)marks.add(e.marks.trim());if((e.customer||'').trim().toUpperCase()===cn&&e.items)e.items.forEach(function(it){if(it.marks)marks.add(it.marks.trim())})})}catch(e){}
   let list=[...marks].sort((a,b)=>a.localeCompare(b))
   window.doCurrentMarks=list
@@ -5603,7 +5600,6 @@ function loadDOAllMarks(customerName){
   doProducts=[]
   let cn=(customerName||'').trim().toUpperCase()
   let byModel={}
-  let dateFilter=window._doDateFilter||''
   let submittedKeys=getSubmittedKeys()
   function addItem(model,storage,specs,color,qty){
     let key=(model||'')+'|'+(storage||'')+'|'+(specs||'')+'|'+(color||'')
@@ -5623,7 +5619,7 @@ function loadDOAllMarks(customerName){
   allSavedTx.forEach(function(t){
     if(t.transaction_type!=='Selling'&&t.transaction_type!=='Opening'&&t.transaction_type!=='Buying')return
     if((t.customer_vendor||'').trim().toUpperCase()!==cn)return
-    if(dateFilter&&t.date!==dateFilter)return
+    if(t.date!==window._doDateFilter)return
     addItem((t.item_name||'').trim(),(t.storage||'').trim(),(t.specs||'').trim(),(t.color||'').trim(),parseInt(t.quantity)||0)
   })
   transactions.forEach(function(t){
@@ -5648,13 +5644,12 @@ function loadDOAllMarks(customerName){
   })
 }
 function refreshDOCustomers(){
-  var dateFilter=window._doDateFilter||''
   var sel=document.getElementById('do-customer')
   if(!sel)return
   let names=new Set()
   allSavedTx.forEach(t=>{
     if(t.transaction_type==='Selling'&&t.customer_vendor){
-      if(!dateFilter||t.date===dateFilter)names.add(t.customer_vendor)
+      if(t.date===window._doDateFilter)names.add(t.customer_vendor)
     }
   })
   try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)names.add(e.customer)})}catch(e){}
@@ -5665,11 +5660,10 @@ function refreshDOCustomers(){
   if(!names.has(sel.value)){sel.value='';updateDOField('customer','')}
 }
 
+function fmtDateDDMMMYYY(dateStr){if(!dateStr)return'';if(/[A-Za-z]/.test(dateStr))return dateStr;var p=dateStr.split('-');if(p.length!==3)return dateStr;var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return p[2]+'-'+months[parseInt(p[1])-1]+'-'+p[0]}
+
 function onDODateFilterChange(val){
-  window._doDateFilter=val
-  refreshDOCustomers()
-  refreshDOCustomerList()
-  if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
+  // no-op: date filter removed, always use today's date
 }
 
 function setDOView(view){
@@ -5684,11 +5678,10 @@ function refreshDOCustomerList(){
   if(!list)return
   if(typeof window._getDOCustomerNames!=='function'){
     window._getDOCustomerNames=function(){
-      var dateFilter=window._doDateFilter||''
       let ns=new Set()
       try{allSavedTx.forEach(function(t){
         if(t.transaction_type==='Selling'&&t.customer_vendor){
-          if(!dateFilter||t.date===dateFilter)ns.add((t.customer_vendor||'').trim())
+          if(t.date===window._doDateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })}catch(e){}
       try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
@@ -5700,8 +5693,6 @@ function refreshDOCustomerList(){
   var sorted=[...names].sort()
   var sel=document.getElementById('do-customer')
   var cur=(sel?sel.value:'').trim()
-  var dateFilter=window._doDateFilter||''
-  var dateFilterApplied=!!dateFilter
   var submittedMap={}
   try{
     JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
@@ -5714,19 +5705,9 @@ function refreshDOCustomerList(){
     var isSubmitted=!!submittedMap[n.toUpperCase()]
     if(viewFilter==='pending'&&isSubmitted)return
     if(viewFilter==='submitted'&&!isSubmitted)return
-    // For submitted view, check date filter on pricingPending entry date
-    if(viewFilter==='submitted'&&dateFilterApplied){
-      var matchDate=false
-      try{
-        JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
-          if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&e.date===dateFilter)matchDate=true
-        })
-      }catch(e){}
-      if(!matchDate)return
-    }
     var qty=0
     allSavedTx.forEach(function(t){
-      if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&(!dateFilter||t.date===dateFilter))qty+=parseInt(t.quantity)||0
+      if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&t.date===window._doDateFilter)qty+=parseInt(t.quantity)||0
     })
     try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&Array.isArray(e.items))qty+=e.items.reduce(function(s,it){return s+(parseInt(it.qty)||0)},0)})}catch(e){}
     var active=cur.toUpperCase()===n.toUpperCase()
@@ -5764,19 +5745,16 @@ function initDO(){
   const mon=new Date(d.setDate(diff)),sun=new Date(mon);sun.setDate(sun.getDate()+6)
   const fmt=dt=>dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,' ')
   const ws='Week '+fmt(mon)+' - '+fmt(sun)
-  // Set date filter to today (local timezone, not UTC)
-  var df=document.getElementById('do-date-filter')
-  if(df){df.value=ds_ymd;window._doDateFilter=ds_ymd}
+  window._doDateFilter=ds_ymd
   const sel=document.getElementById('do-customer')
   if(sel){
     refreshDOCustomers()
     refreshDOCustomerList()
     window._getDOCustomerNames=function(){
-      var dateFilter=window._doDateFilter||''
       let ns=new Set()
       allSavedTx.forEach(t=>{
         if(t.transaction_type==='Selling'&&t.customer_vendor){
-          if(!dateFilter||t.date===dateFilter)ns.add((t.customer_vendor||'').trim())
+          if(t.date===window._doDateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })
       try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
@@ -5784,8 +5762,7 @@ function initDO(){
     }
     window._getDOLogisticsForCustomer=function(cn){
       let up=cn.toUpperCase()
-      var dateFilter=window._doDateFilter||''
-      let all=allSavedTx.filter(t=>(t.customer_vendor||'').trim().toUpperCase()===up&&(!dateFilter||t.date===dateFilter)).sort(function(a,b){return parseDate(b.date)-parseDate(a.date)})
+      let all=allSavedTx.filter(t=>(t.customer_vendor||'').trim().toUpperCase()===up&&t.date===window._doDateFilter).sort(function(a,b){return parseDate(b.date)-parseDate(a.date)})
       for(let t of all){if(t.logistics)return t.logistics}
       try{let pp=JSON.parse(localStorage.getItem('pricingPending')||'[]');for(let e of pp){if(e.customer&&e.customer.toUpperCase()===up&&e.logistics)return e.logistics}}catch(e){}
       return''
@@ -5800,11 +5777,11 @@ function initDO(){
       }
       window.doAllMarksView=false
       if(v){
-        var dateFilter=window._doDateFilter||''
-        let txAll=allSavedTx.filter(t=>(t.customer_vendor||'').trim().toUpperCase()===v.toUpperCase()&&(!dateFilter||t.date===dateFilter)).sort(function(a,b){return parseDate(b.date)-parseDate(a.date)})
+        let txAll=allSavedTx.filter(t=>(t.customer_vendor||'').trim().toUpperCase()===v.toUpperCase()&&t.date===window._doDateFilter).sort(function(a,b){return parseDate(b.date)-parseDate(a.date)})
         let tx=txAll[0]
         let d=tx&&tx.date||document.getElementById('do-date').value
         document.getElementById('do-date').value=d
+        if(d)d=fmtDateDDMMMYYY(d)
         document.getElementById('do-f-date').value=d
         document.getElementById('do-top-date').textContent=d
         populateDOMarks(v,false)
@@ -5851,7 +5828,7 @@ function initDO(){
       }
     })
   }
-  if(!document.getElementById('do-date').value){document.getElementById('do-date').value=ds;document.getElementById('do-f-date').value=ds;document.getElementById('do-top-date').textContent=ds}
+  if(!document.getElementById('do-date').value){document.getElementById('do-date').value=ds_ymd;var ds_fmt=fmtDateDDMMMYYY(ds_ymd);document.getElementById('do-f-date').value=ds_fmt;document.getElementById('do-top-date').textContent=ds_fmt}
   if(!document.getElementById('do-week').value){document.getElementById('do-week').value=ws;document.getElementById('do-f-week').value=ws}
   document.getElementById('do-th-marks').textContent='MARKS'
   document.getElementById('do-f-marks').value=''
@@ -6851,9 +6828,7 @@ async function saveToBackend(){
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
           // Set DO date filter to today (local timezone)
-          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2
-          var df=document.getElementById('do-date-filter')
-          if(df){df.value=todayYMD};window._doDateFilter=todayYMD
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
@@ -6871,9 +6846,7 @@ async function saveToBackend(){
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
           // Set DO date filter to today (local timezone)
-          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2
-          var df=document.getElementById('do-date-filter')
-          if(df){df.value=todayYMD};window._doDateFilter=todayYMD
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
@@ -7012,7 +6985,7 @@ async function saveToBackend(){
   ;(function(){
     var today=new Date(),p=function(n){return String(n).padStart(2,'0')}
     var todayStr=today.getFullYear()+'-'+p(today.getMonth()+1)+'-'+p(today.getDate())
-    var ids=['do-date-filter','pricingDateFilter','apprDateFilter','whDateFilter','invDateFrom','cust-date-from','rdDateFrom','rdDateTo','rcDateFrom','rcDateTo','rvDateFrom','rvDateTo']
+    var ids=['pricingDateFilter','apprDateFilter','whDateFilter','invDateFrom','cust-date-from','rdDateFrom','rdDateTo','rcDateFrom','rcDateTo','rvDateFrom','rvDateTo']
     ids.forEach(function(id){
       var el=document.getElementById(id)
       if(el&&!el.value)el.value=todayStr
@@ -10951,9 +10924,7 @@ window.settingsRestore=function(){
         var msg=window.restoreFullBackup(data)
         try{allSavedTx=DB.getTransactions()}catch(e){}
         refreshAllSections()
-        var todayStr=new Date().toISOString().split('T')[0]
-        var df=document.getElementById('do-date-filter')
-        if(df){df.value=todayStr};window._doDateFilter=todayStr
+        window._doDateFilter=new Date().toISOString().split('T')[0]
         refreshDOCustomers();refreshDOCustomerList()
         try{fetchHistory()}catch(e){}
         try{renderBalance()}catch(e){}
