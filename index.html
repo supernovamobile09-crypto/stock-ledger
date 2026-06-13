@@ -3104,7 +3104,9 @@ async function syncToSupabase(){
         }
       }
     }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
-    // Re-delete any IDs that were previously deleted but may still exist in cloud
+    // Re-delete any IDs tracked in _deletedIds (best-effort)
+    // Do NOT clear _deletedIds here — let loadFromSupabase() clear them
+    // after it confirms the records are truly gone from downloaded cloud data.
     if(DB._deletedIds&&DB._deletedIds.length){
       var ids=DB._deletedIds.slice();
       for(var d=0;d<ids.length;d++){
@@ -3113,9 +3115,7 @@ async function syncToSupabase(){
           await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
         }catch(e){}
       }
-      DB._deletedIds=[];
-      DB._saveDeletedIds();
-      console.log('[Supabase] Re-deleted '+ids.length+' tracked IDs');
+      console.log('[Supabase] Re-delete attempted for '+ids.length+' tracked IDs');
     }
     console.log('[Supabase] Data synced to cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
