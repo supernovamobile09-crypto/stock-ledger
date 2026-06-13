@@ -6,7 +6,7 @@
 <title>Supernova Stock Ledger</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -97,9 +97,9 @@
   --accent-glow: rgba(137,180,250,0.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--bg-body);color:var(--text-body);padding:16px 14px;min-height:100vh;transition:background 0.3s,color 0.3s;position:relative;font-size:13px}
+body{font-family:'Inter','Segoe UI',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--sn-bg,#F7F8FC);color:var(--sn-text,#0F172A);min-height:100vh;transition:background 0.3s,color 0.3s;font-size:13px}
 body::before{content:'';position:fixed;inset:0;z-index:-1;background:var(--bg-overlay-img);background-size:cover;background-position:center;background-attachment:fixed;opacity:var(--bg-overlay-opacity,0.3);pointer-events:none;transition:opacity 0.3s,filter 0.3s;filter:blur(var(--bg-blur-px,0px))}
-.app{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;column-gap:14px;align-items:flex-start}
+.app{position:relative;min-height:100vh}
 .header{flex:0 0 100%;text-align:center;margin-bottom:16px}
 .header-inner{display:inline-flex;align-items:center;gap:20px;background:var(--header-inner-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:12px;padding:10px 24px;box-shadow:var(--glass-shadow);transition:background 0.3s,border 0.3s}
 .header-inner h1{font-size:1.05rem;font-weight:800;letter-spacing:-0.3px;white-space:nowrap}
@@ -129,7 +129,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:var(--bg-ov
 @keyframes pulseRing{0%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) scale(3);opacity:0}}
 
 /* Tab switch animation */
-.panel{display:none;flex:1;min-width:0;animation:none}
+.panel{display:none;width:100%;animation:none;overflow-x:auto}
 .panel.active{display:block;animation:panelFadeIn 0.35s cubic-bezier(0.4,0,0.2,1)}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
@@ -210,7 +210,7 @@ body.dark-mode .skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04)
 .badge-pop{animation:badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1)}
 .settings-btn{margin-top:auto;background:var(--tab-bg);border:1px solid var(--tab-border);padding:9px 14px;border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.2s;color:var(--tab-color);width:100%;text-align:left;border-top:1px solid var(--td-border)}
 .settings-btn:hover{background:var(--tab-hover);border-color:var(--accent);color:var(--accent)}
-.panel{display:none;flex:1;min-width:0}
+.panel{display:none;min-width:0}
 .panel.active{display:block}
 #settingsModal{display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.5);align-items:center;justify-content:center}
 #settingsModal.show{display:flex}
@@ -251,7 +251,7 @@ body.dark-mode .skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04)
   #aiChatModal .chat-send:disabled{opacity:0.5;cursor:default}
   #aiChatModal .chat-clear{background:none;border:1px solid var(--td-border);color:var(--text-body);padding:8px 10px;border-radius:8px;cursor:pointer;font-size:0.7rem}
   #aiChatModal .chat-clear:hover{background:var(--accent-glow)}
-@media(max-width:900px){.app{flex-direction:column}.tabs{flex:0 0 auto;flex-direction:row;flex-wrap:wrap;gap:5px;position:static;width:100%;margin-bottom:12px}.tabs-list{flex:0 0 auto;flex-direction:row;flex-wrap:wrap;gap:5px;width:100%}.tab-btn{width:auto;text-align:center;padding:6px 10px;font-size:0.7rem;border-radius:20px}.settings-btn{width:auto;text-align:center;padding:6px 10px;font-size:0.7rem;border-radius:20px;border-top:none;margin-top:0}}
+@media(max-width:900px){.app{}.tabs{flex:0 0 auto;flex-direction:row;flex-wrap:wrap;gap:5px;position:static;width:100%;margin-bottom:12px}.tabs-list{flex:0 0 auto;flex-direction:row;flex-wrap:wrap;gap:5px;width:100%}.tab-btn{width:auto;text-align:center;padding:6px 10px;font-size:0.7rem;border-radius:20px}.settings-btn{width:auto;text-align:center;padding:6px 10px;font-size:0.7rem;border-radius:20px;border-top:none;margin-top:0}}
 .glass{background:var(--glass-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:12px;box-shadow:var(--glass-shadow);padding:16px 20px;margin-bottom:14px;transition:background 0.3s,border 0.3s}
 .section-title{font-size:0.72rem;font-weight:600;color:var(--section-title-color);margin-bottom:12px;letter-spacing:0.5px;text-transform:uppercase}
 .input-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
@@ -432,7 +432,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   #mobFab{display:none!important}
   .mob-hamburger{display:none!important}
 
-  .app{flex-direction:column;padding:8px!important;gap:8px!important}
+  .app{}
   .tabs{display:none!important}
 
   .mob-hamburger{display:flex;align-items:center;justify-content:center;position:fixed;top:10px;left:10px;width:42px;height:42px;border-radius:10px;background:var(--tab-bg,#1e293b);color:var(--tab-color,#fff);border:1px solid var(--tab-border,#334155);z-index:99;cursor:pointer;font-size:1.1rem;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
@@ -902,6 +902,130 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes sheetFade{from{opacity:0}to{opacity:1}}
 @keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.6)}70%{box-shadow:0 0 0 6px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+
+/* ── SUPERNOVA UI LAYOUT ── */
+:root{
+  --sidebar-w:220px;
+  --topbar-h:56px;
+  --sn-bg:#F7F8FC;
+  --sn-surface:#FFFFFF;
+  --sn-surface2:#F1F3F9;
+  --sn-border:#E2E6F0;
+  --sn-primary:#6C2BD9;
+  --sn-primary-l:#EDE9FF;
+  --sn-text:#0F172A;
+  --sn-text-2:#475569;
+  --sn-text-3:#94A3B8;
+}
+.dark-mode{
+  --sn-bg:#0f0c29;
+  --sn-surface:#1a1a2e;
+  --sn-surface2:#1e1e35;
+  --sn-border:#2a2a45;
+  --sn-primary:#89b4fa;
+  --sn-primary-l:rgba(137,180,250,0.12);
+  --sn-text:#f0f0f0;
+  --sn-text-2:#aab0c0;
+  --sn-text-3:#6b7280;
+}
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--sn-surface);
+  border-right:1.5px solid var(--sn-border);
+  display:flex;flex-direction:column;z-index:200;
+}
+.sidebar-top{
+  padding:0 12px;height:var(--topbar-h);
+  display:flex;align-items:center;
+  border-bottom:1.5px solid var(--sn-border);
+  gap:8px;
+}
+.brand-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--sn-primary),#0EA5E9);
+  display:grid;place-items:center;font-size:16px;flex-shrink:0;
+}
+.brand-name{font-size:13px;font-weight:800;letter-spacing:-0.3px;color:var(--sn-text);}
+.brand-name span{color:var(--sn-primary);}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.sidebar-nav::-webkit-scrollbar{width:0;}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 10px;border-radius:8px;
+  font-size:12.5px;font-weight:500;color:var(--sn-text-2);
+  cursor:pointer;margin-bottom:1px;position:relative;
+  transition:all 0.15s;text-decoration:none;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;
+}
+.nav-item:hover{background:var(--sn-surface2);color:var(--sn-text);}
+.nav-item.active{background:var(--sn-primary-l);color:var(--sn-primary);font-weight:600;}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;border-radius:0 2px 2px 0;
+  background:var(--sn-primary);
+}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.nav-dot{
+  width:7px;height:7px;border-radius:50%;margin-left:auto;flex-shrink:0;
+}
+.nav-dot.red{background:var(--danger);}
+.nav-dot.green{background:var(--success);}
+.nav-dot.orange{background:var(--warning);}
+.sidebar-footer{
+  padding:10px 8px;border-top:1.5px solid var(--sn-border);
+}
+.user-chip{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:8px;background:var(--sn-surface2);cursor:pointer;
+  transition:background 0.15s;
+}
+.user-chip:hover{background:var(--sn-border);}
+.user-av{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--sn-primary),#0EA5E9);
+  display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.user-nm{font-size:12px;font-weight:600;}
+.user-rl{font-size:10px;color:var(--sn-text-3);}
+
+.topbar{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;
+  height:var(--topbar-h);z-index:100;
+  background:var(--sn-surface);
+  border-bottom:1.5px solid var(--sn-border);
+  display:flex;align-items:center;gap:12px;padding:0 20px;
+}
+.topbar-title{font-size:14px;font-weight:700;flex:1;color:var(--sn-text);}
+.topbar-title small{display:block;font-size:10px;font-weight:400;color:var(--sn-text-3);margin-top:1px;}
+.topbar-links{display:flex;gap:4px;align-items:center;}
+.topbar-link{
+  font-size:11px;color:var(--sn-text-2);padding:5px 10px;border-radius:6px;
+  cursor:pointer;transition:all 0.15s;font-weight:500;background:none;border:none;font-family:inherit;
+}
+.topbar-link:hover{background:var(--sn-surface2);color:var(--sn-text);}
+.topbar-link.danger{color:var(--danger);}
+.topbar-link.danger:hover{background:#FEF2F2;}
+
+.main-layout{
+  margin-left:var(--sidebar-w);
+  padding-top:var(--topbar-h);
+  height:100vh;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.content-area{
+  flex:1;overflow-y:auto;padding:20px;height:100%;width:100%;
+}
+.glass{overflow-x:auto}
+.content-area .panel.active{display:block;width:100%}
+.content-area::-webkit-scrollbar{width:6px;}
+.content-area::-webkit-scrollbar-track{background:transparent;}
+.content-area::-webkit-scrollbar-thumb{background:var(--sn-border);border-radius:3px;}
+
+@media(max-width:700px){
+  .sidebar{transform:translateX(-100%);}
+  .main-layout{margin-left:0;}
+  .topbar{left:0;}
+  .sidebar.open{transform:translateX(0);}
+}
 </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3b82f6">
@@ -1089,42 +1213,54 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   </div>
 </div>
 <div class="app">
-<div class="header">
-<div class="header-inner">
-<button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleSidebar()" style="display:none"><i class="fas fa-bars"></i></button>
-<h1>SUPERNOVA</h1>
-<span id="userBadge"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Guest</span> <span class="user-role" id="userRoleDisplay"></span> <a id="changePwdLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Password</a> <a id="changeUserLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Change Username</a> <a id="logoutLink" style="margin-left:6px;cursor:pointer;color:var(--danger);font-size:0.65rem">Logout</a> <a id="adminUserMgmtLink" style="margin-left:6px;cursor:pointer;color:var(--accent);font-size:0.65rem;display:none">Manage Users</a></span>
-<button id="syncSupabaseBtn" style="margin-left:8px;background:#4ade80;color:#000;border:none;border-radius:6px;padding:4px 10px;font-size:0.65rem;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
-<span id="syncStatus" style="margin-left:6px;font-size:0.65rem;color:var(--text-muted,#888)"></span>
-<span id="themeLabel" style="display:none">Dark</span>
-<input type="file" id="logoFileInput" accept="image/*" style="display:none">
-<input type="file" id="bgFileInput" accept="image/*" style="display:none">
-</div>
+
+<aside class="sidebar" id="mainSidebar">
+  <div class="sidebar-top">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-name"><span>SUPER</span>NOVA<br><span style="font-size:9px;font-weight:400;color:var(--sn-text-3)">Stock Ledger</span></div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <button class="nav-item active" data-sn-tab="entry"><span class="nav-icon">📝</span> Data Entry</button>
+    <button class="nav-item" data-sn-tab="packing"><span class="nav-icon">📋</span> Packing List <span class="nav-dot orange" id="snPackingDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="balance"><span class="nav-icon">⚖️</span> Balance Stock</button>
+    <button class="nav-item" data-sn-tab="delivery"><span class="nav-icon">🚚</span> Delivery Order</button>
+    <button class="nav-item" data-sn-tab="pricing"><span class="nav-icon">🏷️</span> Pricing <span class="nav-dot green" id="snPricingDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="approval"><span class="nav-icon">✅</span> DO Approval <span class="nav-dot green" id="snApprovalDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="warehouse"><span class="nav-icon">🏭</span> Warehouse <span class="nav-dot green" id="snWarehouseDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="invoice"><span class="nav-icon">🧾</span> Invoice <span class="nav-dot red" id="snInvoiceDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="history"><span class="nav-icon">🔄</span> Transaction History</button>
+    <button class="nav-item" data-sn-tab="datacontrol"><span class="nav-icon">🗄️</span> Data Control</button>
+    <button class="nav-item" data-sn-tab="reports"><span class="nav-icon">📊</span> Reports</button>
+    <button class="nav-item" data-sn-tab="customs"><span class="nav-icon">🛃</span> Customs</button>
+    <button class="nav-item" data-sn-tab="settings" onclick="try{window.openSettings?openSettings():document.getElementById('settingsModal')?.classList.add('show')}catch(e){}"><span class="nav-icon">⚙️</span> Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip" onclick="document.getElementById('logoutLink').click()">
+      <div class="user-av" id="snUserAv">SA</div>
+      <div>
+        <div class="user-nm" id="snUserName">Guest</div>
+        <div class="user-rl" id="snUserRole">—</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="topbar">
+  <div class="topbar-title" id="topbarTitle">
+    Data Entry
+    <small>SUPERNOVA STOCK LEDGER</small>
+  </div>
+  <div class="topbar-links">
+    <span id="snSyncStatus" style="font-size:10px;color:var(--sn-text-3);margin-right:4px"></span>
+    <button id="snSyncBtn" style="background:#4ade80;color:#000;border:none;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
+    <button class="topbar-link" id="snChangePwdLink" style="display:none" onclick="var m=document.getElementById('changePwdModal');if(m)m.style.display='flex'">Change Password</button>
+    <button class="topbar-link" id="snChangeUserLink" style="display:none" onclick="var m=document.getElementById('changeUserModal');if(m)m.style.display='flex'">Change Username</button>
+    <button class="topbar-link" id="snAdminUserLink" style="display:none" onclick="var m=document.getElementById('adminUserModal');if(m)m.style.display='flex'">Manage Users</button>
+    <button class="topbar-link danger" id="snLogoutLink" onclick="try{window.logout()}catch(e){}">Logout</button>
+  </div>
 </div>
 
-<div id="bgPanel">
-  <div style="margin-bottom:10px">
-    <label style="font-weight:600;display:block;margin-bottom:4px;color:var(--text-body)">Background Image</label>
-    <input type="file" id="bgFileInput2" accept="image/*" style="font-size:0.7rem;color:var(--text-body)">
-  </div>
-  <div id="bgClearBtn" style="display:none;cursor:pointer;font-size:0.65rem;color:#ff3b30;margin-bottom:10px">
-    <i class="fas fa-trash"></i> Remove Background
-  </div>
-  <div style="margin-bottom:8px">
-    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">Image Opacity: <span id="bgOpacityVal">0.30</span></label>
-    <input type="range" id="bgOpacitySlider" min="0" max="1" step="0.05" value="0.3" style="width:100%">
-  </div>
-  <div style="margin-bottom:8px">
-    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">BG Blur: <span id="bgBlurVal">0px</span></label>
-    <input type="range" id="bgBlurSlider" min="0" max="30" step="1" value="0" style="width:100%">
-  </div>
-  <div>
-    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">Card Opacity: <span id="cardOpacityVal">0.75</span></label>
-    <input type="range" id="cardOpacitySlider" min="0.1" max="1" step="0.05" value="0.75" style="width:100%">
-  </div>
-</div>
-
-<button class="mob-hamburger" id="mobHamburger" aria-label="Menu"><i class="fas fa-bars"></i></button>
+<button class="mob-hamburger" id="mobHamburger" aria-label="Menu" onclick="document.getElementById('mainSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
 <div class="mob-more-menu" id="mobMoreMenu">
   <button onclick="event.stopPropagation();mobGo('entry')"><i class="fas fa-paste"></i> Data Entry</button>
   <button onclick="event.stopPropagation();mobGo('balance')"><i class="fas fa-chart-bar"></i> Balance Stock</button>
@@ -1150,24 +1286,30 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   </div>
 </div>
 
-<div class="tabs">
-<div class="tabs-list">
-<button class="tab-btn active" data-tab="entry"><i class="fas fa-paste"></i> Data Entry</button>
-<button class="tab-btn" data-tab="packing"><i class="fas fa-bell"></i> Packing List <span class="tab-notif hide" id="packingNotif"></span></button>
-<button class="tab-btn" data-tab="balance"><i class="fas fa-chart-bar"></i> Balance Stock <span class="tab-notif hide" id="balanceNotif"></span></button>
-<button class="tab-btn" data-tab="delivery"><i class="fas fa-truck"></i> Delivery Order</button>
-  <button class="tab-btn" data-tab="pricing"><i class="fas fa-tag"></i> Pricing <span class="tab-notif hide" id="pricingNotif"></span></button>
-<button class="tab-btn" data-tab="approval"><i class="fas fa-check-double"></i> DO Approval <span class="tab-notif hide" id="approvalNotif"></span></button>
-<button class="tab-btn" data-tab="warehouse"><i class="fas fa-warehouse"></i> Warehouse <span class="tab-notif hide" id="warehouseNotif"></span></button>
-<button class="tab-btn" data-tab="invoice"><i class="fas fa-file-invoice"></i> Invoice <span class="tab-notif hide" id="invoiceNotif"></span></button>
-<button class="tab-btn" data-tab="history"><i class="fas fa-clock"></i> Transaction History</button>
-<button class="tab-btn" data-tab="datacontrol"><i class="fas fa-database"></i> Data Control</button>
-<button class="tab-btn" data-tab="reports"><i class="fas fa-chart-line"></i> Reports</button>
-<button class="tab-btn" data-tab="customs" id="custTabBtn"><i class="fas fa-file-invoice"></i> Customs</button>
+<div id="bgPanel" style="display:none">
+  <div style="margin-bottom:10px">
+    <label style="font-weight:600;display:block;margin-bottom:4px;color:var(--text-body)">Background Image</label>
+    <input type="file" id="bgFileInput2" accept="image/*" style="font-size:0.7rem;color:var(--text-body)">
+  </div>
+  <div id="bgClearBtn" style="display:none;cursor:pointer;font-size:0.65rem;color:#ff3b30;margin-bottom:10px">
+    <i class="fas fa-trash"></i> Remove Background
+  </div>
+  <div style="margin-bottom:8px">
+    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">Image Opacity: <span id="bgOpacityVal">0.30</span></label>
+    <input type="range" id="bgOpacitySlider" min="0" max="1" step="0.05" value="0.3" style="width:100%">
+  </div>
+  <div style="margin-bottom:8px">
+    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">BG Blur: <span id="bgBlurVal">0px</span></label>
+    <input type="range" id="bgBlurSlider" min="0" max="30" step="1" value="0" style="width:100%">
+  </div>
+  <div>
+    <label style="font-weight:600;display:block;margin-bottom:2px;color:var(--text-body)">Card Opacity: <span id="cardOpacityVal">0.75</span></label>
+    <input type="range" id="cardOpacitySlider" min="0.1" max="1" step="0.05" value="0.75" style="width:100%">
+  </div>
+</div>
 
-</div>
-<button class="settings-btn" id="sidebarSettingsBtn"><i class="fas fa-cog"></i> Settings</button>
-</div>
+<div class="main-layout">
+<div class="content-area">
 
 <div id="panel-entry" class="panel active">
 <div class="glass">
@@ -1392,6 +1534,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 #panel-delivery .do-status-dot.pending::after{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;background:rgba(239,68,68,0.6);transform:translate(-50%,-50%);animation:pulseRing 1.5s ease-out infinite}
 #panel-delivery .do-status-dot.done{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.6)}
 @keyframes dotBlink{0%,100%{opacity:1}50%{opacity:0.4}}
+.do-view-btn.active{background:var(--sn-primary,#89b4fa)!important;color:#1e1e2e!important;border-color:var(--sn-primary,#89b4fa)!important}
 </style>
 <div class="do-controls no-print">
   <h2>⚙ Delivery Order</h2>
@@ -1420,6 +1563,10 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 <div style="display:flex;gap:12px;align-items:flex-start">
 <div class="do-sidebar" id="do-sidebar">
   <div class="do-sidebar-title">Today's Customers</div>
+  <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
+    <button class="do-view-btn" data-do-view="pending" style="padding:3px 10px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-body);cursor:pointer;font-size:10px;font-weight:600" onclick="setDOView('pending')">Pending</button>
+    <button class="do-view-btn" data-do-view="submitted" style="padding:3px 10px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-body);cursor:pointer;font-size:10px;font-weight:600" onclick="setDOView('submitted')">Submitted</button>
+  </div>
   <div class="do-list" id="do-customer-list">
     <div style="padding:20px;text-align:center;color:var(--badge-color);font-size:0.75rem">No customers for selected date.</div>
   </div>
@@ -2408,6 +2555,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 
 <div class="plm-toast-container" id="plmToastContainer"></div>
 </div>
+</div>
 
 <div id="panel-customs" class="panel">
 <style>
@@ -2543,6 +2691,22 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   </div>
 </div>
 </div>
+</div>
+</div>
+
+<!-- Legacy hidden elements for JS compatibility -->
+<span id="userBadge" style="display:none"><span id="userNameDisplay">Guest</span> <span class="user-role" id="userRoleDisplay"></span></span>
+<a id="changePwdLink" style="display:none"></a>
+<a id="changeUserLink" style="display:none"></a>
+<a id="logoutLink" style="display:none" onclick="try{window.logout()}catch(e){localStorage.clear();window.location.reload()}"></a>
+<a id="adminUserMgmtLink" style="display:none"></a>
+<button id="sidebarSettingsBtn" style="display:none"></button>
+<button id="syncSupabaseBtn" style="display:none"></button>
+<span id="syncStatus" style="display:none"></span>
+<span id="themeLabel" style="display:none">Dark</span>
+<input type="file" id="logoFileInput" accept="image/*" style="display:none">
+<input type="file" id="bgFileInput" accept="image/*" style="display:none">
+<!-- End legacy elements -->
 
 <script>
 // ===================== LOCAL DATABASE (localStorage JSON) =====================
@@ -2825,23 +2989,18 @@ async function loadFromSupabase(){
         var pricing=typeof p.pricing==='string'?JSON.parse(p.pricing):(p.pricing||[])
         var cloudEntry={id:p.id,customer:p.customer,week:p.week,status:p.status,date:p.date,logistics:p.logistics,marks:p.marks,items:items,completed:!!p.completed,approved:p.approved===null?undefined:p.approved,warehousePacked:!!p.warehouse_packed,cashReleased:!!p.cash_released,pricing:pricing,currency:p.currency||'USD'}
         if(localMap[p.id]){
-          // Keep local if it has salesman or prices that cloud doesn't have
           var local=localMap[p.id];
-          if(local.salesman&&!cloudEntry.salesman)cloudEntry.salesman=local.salesman;
-          if(local.items&&local.items.some(function(it){return it.unitPrice>0})){
-            // Local has prices - check if we should keep local
-            var cloudHasPrices=cloudEntry.items&&cloudEntry.items.some(function(it){return it.unitPrice>0})
-            if(!cloudHasPrices){
-              // Cloud has no prices, keep local
-              cloudEntry.items=local.items;
-              cloudEntry.pricing=local.pricing||[];
-            }
-          }
-          // Preserve local approved/rejected status if cloud doesn't have it
-          if(local.approved&&(local.approved===true||local.approved===false)&&!cloudEntry.approved){
+          cloudEntry.items=local.items;
+          cloudEntry.pricing=local.pricing||[];
+          if(local.salesman)cloudEntry.salesman=local.salesman;
+          if(local.approved&&(local.approved===true||local.approved===false)){
             cloudEntry.approved=local.approved;
             cloudEntry.approvedAt=local.approvedAt;
           }
+          if(local.warehousePacked)cloudEntry.warehousePacked=local.warehousePacked;
+          if(local.cashReleased)cloudEntry.cashReleased=local.cashReleased;
+          if(local.completed)cloudEntry.completed=local.completed;
+          if(local.completedAt)cloudEntry.completedAt=local.completedAt;
         }
         localMap[p.id]=cloudEntry;
       })
@@ -2878,6 +3037,7 @@ async function loadFromSupabase(){
     }catch(e){console.warn('[Supabase] PLM links load:',e.message)}
     console.log('[Supabase] Data loaded from cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Loaded '+new Date().toLocaleTimeString()
+    var sns=document.getElementById('snSyncStatus');if(sns)sns.textContent=ss&&ss.textContent||''
   }catch(e){console.warn('[Supabase] Load failed:',e.message)}
   window._supabaseReady=true
 }
@@ -2927,10 +3087,12 @@ async function syncToSupabase(){
     }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
     console.log('[Supabase] Data synced to cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
+    var sns=document.getElementById('snSyncStatus');if(sns)sns.textContent=ss&&ss.textContent||''
     if(typeof showMsg==='function')showMsg('✅ Cloud sync successful!')
   }catch(e){
     console.warn('[Supabase] Sync failed:',e.message)
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✗ Sync failed'
+    var sns=document.getElementById('snSyncStatus');if(sns)sns.textContent='✗ Sync failed'
     if(typeof showMsg==='function')showMsg('Cloud sync failed: '+e.message,'error')
   }
 }
@@ -4988,18 +5150,14 @@ function loadDOData(customerName,mark){
     if(dateFilter&&t.date!==dateFilter)return
     addItem((t.item||'').trim(),(t.storage||'').trim(),(t.specs||'').trim(),(t.color||'').trim(),parseInt(t.qty)||0)
   })
-  console.log('[DO DEBUG] customer='+cn+' mark='+mk+' dateFilter='+dateFilter+' allSavedTx.total='+_dbgTotal+' matched='+_dbgMatched+' submittedKeys='+Object.keys(submittedKeys).length+' doProducts='+doProducts.length)
   let grouped={}
   Object.values(byModel).forEach(g=>{
     let hdr=(g.model+' '+g.storage+' '+g.specs).trim().replace(/^iPhone\s*/i,'')
-    // Normalize header for case-insensitive matching
     let hdrKey=hdr.toLowerCase().trim()
     if(!grouped[hdrKey])grouped[hdrKey]={name:hdr,modelName:g.model,storage:g.storage,specs:g.specs,colors:[]}
-    // Check if color already exists in colors array (case-insensitive)
     let colorKey=String(g.color||'').toLowerCase().trim()
     let existingColor=grouped[hdrKey].colors.find(function(c){return String(c.color||'').toLowerCase().trim()===colorKey})
     if(existingColor){
-      // Merge into existing color (sum qty)
       existingColor.qty=(Number(existingColor.qty)||0)+(Number(g.qty)||0)
     }else{
       grouped[hdrKey].colors.push({color:g.color,qty:g.qty})
@@ -5014,6 +5172,29 @@ function loadDOData(customerName,mark){
     if(rst!==0)return rst
     return (a.name||'').localeCompare(b.name||'')
   })
+  if(!doProducts.length){
+    try{
+      var pp=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+      var ppGroup={}
+      pp.forEach(function(e){
+        if((e.customer||'').trim().toUpperCase()!==cn)return
+        if(mk&&(e.marks||'').trim().toUpperCase()!==mk.toUpperCase())return
+        if(!Array.isArray(e.items))return
+        e.items.forEach(function(it){
+          var hdr=(it.name||'').replace(/^iPhone\s*/i,'').trim()
+          if(!hdr)return
+          var hdrKey=hdr.toLowerCase().trim()
+          if(!ppGroup[hdrKey])ppGroup[hdrKey]={name:hdr,modelName:hdr,storage:'',specs:'',colors:[]}
+          var colorKey=String(it.color||'').toLowerCase().trim()
+          var existing=ppGroup[hdrKey].colors.find(function(c){return String(c.color||'').toLowerCase().trim()===colorKey})
+          if(existing)existing.qty=(Number(existing.qty)||0)+(Number(it.qty)||0)
+          else ppGroup[hdrKey].colors.push({color:it.color,qty:it.qty})
+        })
+      })
+      var ppArr=Object.values(ppGroup)
+      if(ppArr.length)doProducts=ppArr
+    }catch(e){}
+  }
 }
 
 function renderDOTable(){
@@ -5244,6 +5425,18 @@ function updateTabNotifs(){
     window._prevApprovalDone=approvalAllDone
     window._prevWarehouseDone=warehouseAllDone
     window._prevInvoiceDone=invoiceAllDone
+    // Sync sidebar nav-dots
+    function _snDot(id,count,allDone){
+      var d=document.getElementById(id)
+      if(!d)return
+      if(count>0){d.style.display='';d.className='nav-dot orange'}
+      else if(allDone){d.style.display='';d.className='nav-dot green'}
+      else{d.style.display='none'}
+    }
+    _snDot('snPricingDot',pricingPending.length,pricingAllDone)
+    _snDot('snApprovalDot',approvalPending.length,approvalAllDone)
+    _snDot('snWarehouseDot',warehousePending.length,warehouseAllDone)
+    _snDot('snInvoiceDot',invoicePending.length,invoiceAllDone)
   }catch(e){}
 }
 
@@ -5429,6 +5622,13 @@ function onDODateFilterChange(val){
   if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
 }
 
+function setDOView(view){
+  window._doViewFilter=view
+  document.querySelectorAll('.do-view-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-do-view')===view)
+  })
+  refreshDOCustomerList()
+}
 function refreshDOCustomerList(){
   var list=document.getElementById('do-customer-list')
   if(!list)return
@@ -5438,9 +5638,10 @@ function refreshDOCustomerList(){
       let ns=new Set()
       try{allSavedTx.forEach(function(t){
         if(t.transaction_type==='Selling'&&t.customer_vendor){
-          if(!dateFilter||t.date===dateFilter)ns.add(t.customer_vendor)
+          if(!dateFilter||t.date===dateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })}catch(e){}
+      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
       return ns
     }
   }
@@ -5452,19 +5653,23 @@ function refreshDOCustomerList(){
   var submittedMap={}
   try{
     JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
-      if(e.customer)submittedMap[e.customer.toUpperCase()]=true
+      if(e.customer)submittedMap[(e.customer||'').trim().toUpperCase()]=true
     })
   }catch(e){}
+  var viewFilter=window._doViewFilter||'pending'
   var html=''
   sorted.forEach(function(n){
+    var isSubmitted=!!submittedMap[n.toUpperCase()]
+    if(viewFilter==='pending'&&isSubmitted)return
+    if(viewFilter==='submitted'&&!isSubmitted)return
     var qty=0
     var dateFilter=window._doDateFilter||''
     allSavedTx.forEach(function(t){
       if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&(!dateFilter||t.date===dateFilter))qty+=parseInt(t.quantity)||0
     })
-    try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&e.customer.toUpperCase()===n.toUpperCase())qty+=e.items.reduce(function(s,it){return s+(parseInt(it.qty)||0)},0)})}catch(e){}
+    try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&Array.isArray(e.items))qty+=e.items.reduce(function(s,it){return s+(parseInt(it.qty)||0)},0)})}catch(e){}
     var active=cur.toUpperCase()===n.toUpperCase()
-    var pendingStatus=!submittedMap[n.toUpperCase()]
+    var pendingStatus=!isSubmitted
     var dotClass=pendingStatus?'do-status-dot pending':'do-status-dot done'
     var dotTitle=pendingStatus?'Pending: Submit for Pricing':'Submitted for Pricing'
     html+='<div class="do-list-item'+(active?' active':'')+'" onclick="doSelectCustomer(\''+escAttr(n)+'\')">'
@@ -5508,16 +5713,10 @@ function initDO(){
       let ns=new Set()
       allSavedTx.forEach(t=>{
         if(t.transaction_type==='Selling'&&t.customer_vendor){
-          if(!dateFilter||t.date===dateFilter)ns.add(t.customer_vendor)
+          if(!dateFilter||t.date===dateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })
-      // Remove customers who have already been submitted for pricing
-      try{
-        var submitted=new Set()
-        var pending=JSON.parse(localStorage.getItem('pricingPending'))||[]
-        pending.forEach(function(e){if(e.customer)submitted.add(e.customer.toUpperCase())})
-        ns.forEach(function(name){if(submitted.has(name.toUpperCase()))ns.delete(name)})
-      }catch(e){}
+      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
       return ns
     }
     window._getDOLogisticsForCustomer=function(cn){
@@ -5597,6 +5796,7 @@ function initDO(){
   window.doCurrentMarks=[]
   document.getElementById('do-marks').innerHTML='<option value="">-- Select Mark --</option>'
   document.getElementById('do-status').value='Order In Hand'
+  window._doViewFilter='pending';setDOView('pending')
   var cv=document.getElementById('do-customer').value.trim()
   if(cv){
     var selMs=populateDOMarks(cv,true)
@@ -6348,7 +6548,31 @@ async function saveToBackend(){
   window.deleteHistoryRow=function(id){
     if(!id)return
     if(!confirm('Delete this transaction permanently?'))return
+    var row=null
+    for(var i=0;i<allSavedTx.length;i++){if(String(allSavedTx[i].id)===String(id)){row=allSavedTx[i];break}}
     DB.deleteById(id)
+    if(row){
+      try{
+        var pending=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+        var cn=(row.customer_vendor||'').trim().toUpperCase()
+        var mk=(row.marks||'').trim().toUpperCase()
+        var rawHdr=(row.item_name+' '+row.storage+' '+row.specs).trim().replace(/^iPhone\s*/i,'')
+        var rawKey=cn+'|'+mk+'|'+(row.item_name||'').trim()+'|'+(row.storage||'').trim()+'|'+(row.specs||'').trim()+'|'+(row.color||'').trim()
+        pending=pending.filter(function(e){
+          if(e.customer&&e.customer.toUpperCase()===cn&&e.marks&&e.marks.toUpperCase()===mk){
+            return false
+          }
+          if(e.submittedKeys&&e.submittedKeys[rawKey]){
+            delete e.submittedKeys[rawKey]
+            if(Object.keys(e.submittedKeys).length===0){
+              return false
+            }
+          }
+          return true
+        })
+        localStorage.setItem('pricingPending',JSON.stringify(pending))
+      }catch(e){}
+    }
     fetchHistory()
     refreshAllSections()
     showMsg('Transaction deleted')
@@ -6721,6 +6945,19 @@ async function saveToBackend(){
     try{DB.deleteAll();showMsg('All balance data deleted');allSavedTx=[];balanceHistory=[];applyFilters();renderBalance()}catch(e){showMsg('Error deleting balance data','error')}
     refreshAllSections()
   })
+  // Set all date inputs to today by default
+  ;(function(){
+    var today=new Date(),p=function(n){return String(n).padStart(2,'0')}
+    var todayStr=today.getFullYear()+'-'+p(today.getMonth()+1)+'-'+p(today.getDate())
+    var ids=['do-date-filter','pricingDateFilter','apprDateFilter','whDateFilter','invDateFrom','cust-date-from','rdDateFrom','rdDateTo','rcDateFrom','rcDateTo','rvDateFrom','rvDateTo']
+    ids.forEach(function(id){
+      var el=document.getElementById(id)
+      if(el&&!el.value)el.value=todayStr
+    })
+    // Set PLM order date too
+    var plm=document.getElementById('plmOrderDate')
+    if(plm&&!plm.value)plm.value=todayStr
+  })()
   // Load data from Supabase ONLY - no localStorage caching
   DB.init()
   // loadFromSupabase() will fetch all data from cloud
@@ -6801,10 +7038,18 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       var el=document.getElementById('panel-'+tab)
       if(el)el.classList.add('active')
       document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)})
+      document.querySelectorAll('.nav-item[data-sn-tab]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-sn-tab')===tab)})
+      var titles={entry:'Data Entry',packing:'Packing List',balance:'Balance Stock',delivery:'Delivery Order',pricing:'Pricing',approval:'DO Approval',warehouse:'Warehouse',invoice:'Invoice',history:'Transaction History',datacontrol:'Data Control',reports:'Reports',customs:'Customs'}
+      var tb=document.getElementById('topbarTitle')
+      if(tb)tb.innerHTML=(titles[tab]||tab)+'<small>SUPERNOVA STOCK LEDGER</small>'
       if(tab==='delivery')try{initDO()}catch(e){}
       if(tab==='packing')try{window.PLM&&typeof window.PLM.renderLinks==='function'&&window.PLM.renderLinks()}catch(e){}
     }
   }
+  // Bind sidebar nav clicks
+  document.querySelectorAll('.nav-item[data-sn-tab]').forEach(function(n){
+    n.addEventListener('click',function(){var t=this.getAttribute('data-sn-tab');if(t!=='settings')switchTab(t)})
+  })
 
 ;(function(){
   var _charts={};
@@ -7966,7 +8211,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         html+='</table>'
         html+='<div class="appr-actions">'
         html+='<button class="btn btn-success" style="background:#4ade80;color:#1e1e2e" onclick="submitPricingEntry(\''+entry.id+'\')"><i class="fas fa-check"></i> SUBMIT</button>'
-        html+='<button class="btn btn-danger" style="background:#ff3b30;color:#fff" onclick="deletePricingEntry(\''+entry.id+'\')"><i class="fas fa-trash"></i> DELETE</button>'
         html+='</div>'
         html+='</div>'
       })
@@ -8003,19 +8247,16 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         var gf=entryEl.querySelector('.appr-total td:last-child')
         if(gf)gf.textContent=grand>0?pricingSymbol()+pricingConv(grand).toFixed(2):pricingSymbol()+'0.00'
       }
-      try{refreshAllSections()}catch(e){}
-    }
+        }
 
     window.submitPricingEntry=function(entryId){
       var pending=getPending()
       var entry=null
       for(var i=0;i<pending.length;i++){if(pending[i].id===entryId){entry=pending[i];break}}
       if(!entry){showMsg('Entry not found','error');return}
-      // Validate: salesman must be selected
       if(!entry.salesman||entry.salesman==='none'||entry.salesman===''){
         showMsg('Please select a Salesman first','error');return
       }
-      // Validate: at least one price must be set (check items, not pricing)
       var items=entry.items||[]
       var hasPrice=items.some(function(p){return parseFloat(p.unitPrice)>0})
       var priceCount=items.filter(function(p){return parseFloat(p.unitPrice)>0}).length
@@ -8027,9 +8268,9 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         if(pending[i].id===entryId){
           pending[i].completed=true
           pending[i].completedAt=Date.now()
-          pending[i].approved=undefined // goes to approval panel
+          pending[i].approved=undefined
           pending[i]._pricingDone=true
-          pending[i]._directFromDO=false // Remove dual-state after pricing submitted
+          pending[i]._directFromDO=false
           break
         }
       }
@@ -8037,10 +8278,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       renderPendingView()
       showMsg('Pricing submitted! Waiting for DO Approval.')
       autoBackup()
-      // Trigger cloud sync to ensure completed state reaches Supabase
       try{triggerCloudSync()}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
+      switchTab('approval')
     }
 
     window.deletePricingEntry=function(entryId){
@@ -8087,7 +8328,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         html+='<div class="card-actions">'
         html+='<button class="btn" style="background:#89b4fa;color:#1e1e2e;font-size:10px;padding:4px 10px" onclick="editCompletedPricing(\''+entry.id+'\')">Edit</button>'
         html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e;font-size:10px;padding:4px 10px" onclick="backToDO(\''+entry.id+'\')">Back to DO</button>'
-        html+='<button class="btn" style="background:#ff3b30;color:#fff;font-size:10px;padding:4px 10px" onclick="deletePricingEntry(\''+entry.id+'\')">Delete</button>'
         html+='</div></div>'
       })
       html+='</div>'
@@ -8409,8 +8649,9 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       html+='</table>'
       html+='<div class="appr-actions">'
       html+='<button class="btn btn-success" style="background:#4ade80;color:#1e1e2e" onclick="approveDOEntry(\''+entry.id+'\')"><i class="fas fa-check"></i> Approve</button>'
+      html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e" onclick="releaseAgainstCash(\''+entry.id+'\')"><i class="fas fa-hand-holding-usd"></i> Release A/C</button>'
       html+='<button class="btn btn-danger" style="background:#ff3b30;color:#fff" onclick="rejectDOEntry(\''+entry.id+'\')"><i class="fas fa-times"></i> Reject</button>'
-      html+='<button class="btn btn-danger" style="background:#6b7280;color:#fff;margin-left:auto" onclick="deleteDOEntry(\''+entry.id+'\')"><i class="fas fa-trash"></i> Delete</button>'
+      html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e;margin-left:auto" onclick="backToDO(\''+entry.id+'\')"><i class="fas fa-undo"></i> Back to DO</button>'
       html+='</div>'
       html+='</div>'
       return html
@@ -8444,7 +8685,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       html+='</table>'
       html+='<div class="appr-actions">'
       html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e" onclick="releaseAgainstCash(\''+entry.id+'\')"><i class="fas fa-hand-holding-usd"></i> Release Against Cash</button>'
-      html+='<button class="btn btn-danger" style="background:#6b7280;color:#fff;margin-left:auto" onclick="deleteDOEntry(\''+entry.id+'\')"><i class="fas fa-trash"></i> Delete</button>'
+      html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e;margin-left:auto" onclick="backToDO(\''+entry.id+'\')"><i class="fas fa-undo"></i> Back to DO</button>'
       html+='</div>'
       html+='</div>'
       return html
@@ -8478,7 +8719,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       html+='</table>'
       html+='<div class="appr-actions">'
       html+='<button class="btn" style="background:#89b4fa;color:#1e1e2e" onclick="unrejectDOEntry(\''+entry.id+'\')"><i class="fas fa-undo"></i> Move to Pending</button>'
-      html+='<button class="btn btn-danger" style="background:#6b7280;color:#fff;margin-left:auto" onclick="deleteDOEntry(\''+entry.id+'\')"><i class="fas fa-trash"></i> Delete</button>'
+      html+='<button class="btn" style="background:#f59e0b;color:#1e1e2e;margin-left:auto" onclick="backToDO(\''+entry.id+'\')"><i class="fas fa-undo"></i> Back to DO</button>'
       html+='</div>'
       html+='</div>'
       return html
@@ -8532,14 +8773,15 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       try{triggerCloudSync()}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
-      setTimeout(function(){try{switchTab('warehouse')}catch(e){}},300)
     }
 
     window.releaseAgainstCash=function(entryId){
-      if(!confirm('Release this approved DO against cash?'))return
+      if(!confirm('Release this DO against cash?'))return
       var all=getPending()
       for(var i=0;i<all.length;i++){
         if(all[i].id===entryId){
+          all[i].approved=true
+          all[i].approvedAt=all[i].approvedAt||Date.now()
           all[i].cashReleased=true
           all[i].cashReleasedAt=Date.now()
           break
@@ -8551,6 +8793,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       autoBackup()
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
+      try{switchTab('warehouse')}catch(e){}
     }
 
     window.rejectDOEntry=function(entryId){
@@ -8580,6 +8823,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         showMsg('Moved back to Pricing pending')
         refreshAllSections()
         if(typeof updateTabNotifs==='function')updateTabNotifs()
+        try{switchTab('pricing')}catch(e){}
       }else{
         showMsg('DO Rejected')
         autoBackup()
@@ -8870,20 +9114,18 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         try{
           var cn=(pendingEntry.customer||'').trim().toUpperCase()
           var mk=(pendingEntry.marks||'').trim().toUpperCase()
-          var itemKey=(item.name||'').replace(/^iPhone\s*/i,'').trim()
-          var colorKey=(item.color||'').trim()
+          var itemKey=(item.name||'').replace(/^iPhone\s*/i,'').trim().toLowerCase()
+          var colorKey=(item.color||'').trim().toLowerCase()
           allSavedTx.forEach(function(t){
             if((t.customer_vendor||'').trim().toUpperCase()!==cn)return
             if(mk&&(t.marks||'').trim().toUpperCase()!==mk)return
-            var itemHdr=((t.item_name||'')+' '+(t.storage||'')+' '+(t.specs||'')).trim().replace(/^iPhone\s*/i,'')
-            if(itemHdr!==itemKey)return
-            if((t.color||'').trim()!==colorKey)return
+            var tName=(t.item_name||'').replace(/^iPhone\s*/i,'').trim().toLowerCase()
+            if(tName!==itemKey)return
+            if((t.color||'').trim().toLowerCase()!==colorKey)return
             matchedTxs.push(t)
           })
           if(matchedTxs.length>0){
-            // Sort by id so the same transaction is always picked
             matchedTxs.sort(function(a,b){return String(a.id).localeCompare(String(b.id))})
-            // Add delta to the first matching transaction only (keeps total correct)
             var firstTx=matchedTxs[0]
             var newQty=(parseInt(firstTx.quantity)||0)+delta
             if(newQty<0)newQty=0
@@ -8894,7 +9136,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
           }
         }catch(e){console.warn('[WH QTY SAVE] Sync error:',e)}
         if(matchedCount===0){
-          // Try submittedKeys approach as fallback
           try{
             var cn2=(pendingEntry.customer||'').trim().toUpperCase()
             var mk2=(pendingEntry.marks||'').trim()
@@ -8907,7 +9148,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
                 if(parts[0]!==cn2)return
                 if(mk2&&parts[1]!==mk2)return
                 if(parts[5]!==colorTrim)return
-                var skItem=parts.slice(2,5).filter(function(s){return s}).join(' ').trim().replace(/^iPhone\s*/i,'')
+                var skItem=parts.slice(2,5).filter(function(s){return s}).join(' ').trim().replace(/^iPhone\s*/i,'').toLowerCase()
                 if(skItem!==itemKey)return
                 allSavedTx.forEach(function(tx){
                   var txParts=[(tx.customer_vendor||'').trim().toUpperCase(),(tx.marks||'').trim(),tx.item_name||'',tx.storage||'',tx.specs||'',(tx.color||'').trim()]
@@ -8929,20 +9170,34 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
           }catch(e){console.warn('[WH QTY SAVE] Fallback error:',e)}
         }
         totalMatched+=matchedCount
+        if(matchedCount===0){
+          var item=pendingEntry.items[c.idx]
+          var itemName=item.name||''
+          var storage=item.storage||''
+          var specs=item.specs||''
+          try{
+            DB.addTransaction({
+              date:pendingEntry.date||new Date().toISOString().slice(0,10),
+              transaction_type:'Selling',
+              customer_vendor:pendingEntry.customer||'',
+              marks:pendingEntry.marks||'',
+              item_name:itemName,
+              storage:storage,
+              specs:specs,
+              color:item.color||'',
+              quantity:c.new,
+              transaction_status:pendingEntry.status||'Order In Hand',
+              logistics:pendingEntry.logistics||''
+            })
+            matchedCount=1
+            totalMatched+=1
+          }catch(e){console.warn('[WH QTY] addTransaction error:',e)}
+        }
       })
       savePending(all)
       try{DB.save()}catch(e){console.warn('[WH QTY SAVE] DB.save error:',e)}
       try{allSavedTx=DB.getTransactions()}catch(e){console.warn('[WH QTY SAVE] DB.getTransactions error:',e)}
       try{autoBackup()}catch(e){console.warn('[WH QTY SAVE] autoBackup not defined, skipping:',e.message)}
-      // Verify data in localStorage
-      try{
-        var stored=JSON.parse(localStorage.getItem('stockLedgerDB')||'[]')
-        var sampleMatch=stored.filter(function(t){
-          return (t.customer_vendor||'').toUpperCase()===(pendingEntry.customer||'').toUpperCase() && (t.marks||'').toUpperCase()===(pendingEntry.marks||'').toUpperCase()
-        })
-        console.log('[WH QTY VERIFY] Stored transactions for this customer/marks:',sampleMatch.length)
-        if(sampleMatch.length>0)console.log('[WH QTY VERIFY] Sample stored tx qty:',sampleMatch[0].quantity,'item:',sampleMatch[0].item_name,sampleMatch[0].storage,sampleMatch[0].specs,'color:',sampleMatch[0].color)
-      }catch(e){console.warn('[WH QTY VERIFY] error:',e)}
       window._whEditing=false
       renderWarehouseView()
       try{window._raRender()}catch(e){console.warn('[WH] _raRender error:',e)}
@@ -8955,11 +9210,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       try{refreshDOCustomerList()}catch(e){console.warn('[WH] refreshDOCustomerList error:',e)}
       if(typeof updateTabNotifs==='function')try{updateTabNotifs()}catch(e){}
       console.log('[WH QTY SAVE] Complete. Changes:',changes.length,'totalMatched:',totalMatched,'allSavedTx:',allSavedTx.length)
-      if(totalMatched===0){
-        showMsg('QTY saved in pricingPending but NO transactions matched in History','error')
-      }else{
-        showMsg('QTY updated! Matched '+totalMatched+' transaction'+(totalMatched!==1?'s':'')+' in History ('+changes.length+' change'+(changes.length!==1?'s':'')+')')
-      }
+      showMsg('QTY updated! ('+changes.length+' change'+(changes.length!==1?'s':'')+', '+totalMatched+' transaction'+(totalMatched!==1?'s':'')+' in History)')
     }
 
     document.addEventListener('click',function(e){
@@ -9189,8 +9440,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       sel.innerHTML='<option value="__ALL__">All Marks</option>'
       if(customer){
         var pending=getPending()
+        var df=document.getElementById('invDateFrom')
+        var dateVal=df&&df.value?df.value:''
         var marks={}
-        pending.filter(function(e){return e.completed && e.customer===customer}).forEach(function(e){
+        pending.filter(function(e){return e.completed && e.customer===customer && (!dateVal || (e.date||'').slice(0,10)===dateVal)}).forEach(function(e){
           if(e.marks)marks[e.marks]=true
         })
         Object.keys(marks).sort().forEach(function(m){
@@ -9205,7 +9458,9 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       var customer=invSel.value
       if(!customer){showMsg('Select a customer','error');return}
       var pending=getPending()
-      var entries=pending.filter(function(e){return e.completed && e.customer===customer})
+      var df=document.getElementById('invDateFrom')
+      var dateVal=df&&df.value?df.value:''
+      var entries=pending.filter(function(e){return e.completed && e.customer===customer && (!dateVal || (e.date||'').slice(0,10)===dateVal)})
       if(!entries.length){showMsg('No completed pricing for this customer','error');return}
       // Filter by selected mark
       var markSel=document.getElementById('invMarks')
@@ -9215,10 +9470,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         if(!entries.length){showMsg('No entries for selected mark','error');return}
       }
 
-      // Set date
-      var d=new Date()
-      document.getElementById('inv-date').value=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
-      document.getElementById('inv-shipdate').value=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      // Set date from entry
+      var entryDate=entries[0]&&entries[0].date?new Date(entries[0].date+'T00:00:00'):new Date()
+      document.getElementById('inv-date').value=entryDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      document.getElementById('inv-shipdate').value=entryDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
       document.getElementById('inv-billto').value=customer
       document.getElementById('inv-shipto').value=lookupLogisticsByCustomer(customer)||customer
       // Set salesperson from matching entry
@@ -9585,7 +9840,13 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       document.getElementById('userRoleDisplay').textContent=currentUser.role||(currentUser.tabs?'Custom':'')
       document.getElementById('changePwdLink').style.display=''
       var cul=document.getElementById('changeUserLink');if(cul)cul.style.display=''
-      document.getElementById('adminUserMgmtLink').style.display='none' // Only in Settings now
+      document.getElementById('adminUserMgmtLink').style.display='none'
+      var sn=document.getElementById('snUserName');if(sn)sn.textContent=currentUser.name||currentUser.username
+      var sr=document.getElementById('snUserRole');if(sr)sr.textContent=currentUser.role||(currentUser.tabs?'Custom':'')
+      var sa=document.getElementById('snUserAv');if(sa)sa.textContent=(currentUser.name||currentUser.username||'?').substring(0,2).toUpperCase()
+      var sl=document.getElementById('snLogoutLink');if(sl)sl.style.display=''
+      var sc=document.getElementById('snChangePwdLink');if(sc)sc.style.display=''
+      var su=document.getElementById('snChangeUserLink');if(su)su.style.display=''
       hideLogin()
     }else{
       document.getElementById('userNameDisplay').textContent='Not logged in'
@@ -9593,6 +9854,12 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       document.getElementById('changePwdLink').style.display='none'
       var cul2=document.getElementById('changeUserLink');if(cul2)cul2.style.display='none'
       document.getElementById('adminUserMgmtLink').style.display='none'
+      var sn2=document.getElementById('snUserName');if(sn2)sn2.textContent='Guest'
+      var sr2=document.getElementById('snUserRole');if(sr2)sr2.textContent='—'
+      var sa2=document.getElementById('snUserAv');if(sa2)sa2.textContent='?'
+      var sl2=document.getElementById('snLogoutLink');if(sl2)sl2.style.display='none'
+      var sc2=document.getElementById('snChangePwdLink');if(sc2)sc2.style.display='none'
+      var su2=document.getElementById('snChangeUserLink');if(su2)su2.style.display='none'
     }
     applyAccess()
   }
@@ -9803,6 +10070,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     saveUsers(users)
     if(el)el.textContent=''
     var unameEl=document.getElementById('userNameDisplay');if(unameEl)unameEl.textContent=currentUser.name||currentUser.username
+    var snu=document.getElementById('snUserName');if(snu)snu.textContent=currentUser.name||currentUser.username
+    var sa=document.getElementById('snUserAv');if(sa)sa.textContent=(currentUser.name||currentUser.username||'?').substring(0,2).toUpperCase()
     var m=document.getElementById('changeUserModal');if(m)m.style.display='none'
     alert('Username/email updated successfully!')
   })
@@ -10005,7 +10274,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
 
 <script>
 (function(){
-  if (typeof window.switchTab !== 'function') {
+  if (typeof switchTab !== 'function') {
     console.error('switchTab not defined');
     return;
   }
@@ -10333,67 +10602,53 @@ try{
     // Show settings
     modal.classList.add('show')
   })
-  var closeBtn=document.getElementById('settingsCloseBtn')
-  if(closeBtn)closeBtn.addEventListener('click',function(){modal.classList.remove('show')})
+  document.getElementById('settingsCloseBtn').addEventListener('click',function(){modal.classList.remove('show')})
   modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('show')})
 
-  ;(function(){
-    var el=document.getElementById('sChangePwd')
-    if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('changePwdLink');if(el)el.click()},100)})
-  })()
-  ;(function(){
-    var el=document.getElementById('sManageUsers')
-    if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('adminUserMgmtLink');if(el)el.click()},100)})
-  })()
-  ;(function(){
-    var el=document.getElementById('sDarkMode')
-    if(el)el.addEventListener('click',function(){
-      modal.classList.remove('show')
-      document.body.classList.toggle('dark-mode')
-      var icon,label
-      if(document.body.classList.contains('dark-mode')){document.getElementById('themeLabel').textContent='Dark'}else{document.getElementById('themeLabel').textContent='Light'}
-      try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
-    })
-  })()
-  ;(function(){
-    var el=document.getElementById('sBgSettings')
-    if(el)el.addEventListener('click',function(e){
-      if(e&&e.stopPropagation)e.stopPropagation()
-      modal.classList.remove('show')
-      var p=document.getElementById('bgPanel')
-      if(!p)return
-      if(p.style.display==='block'){p.style.display='none';return}
-      p.style.left=Math.max(8,Math.min(window.innerWidth-300,(window.innerWidth-300)/2))+'px'
-      p.style.top=Math.max(80,(window.innerHeight-380)/2)+'px'
-      setTimeout(function(){p.style.display='block'},10)
-    })
-  })()
-  ;(function(){
-    var el=document.getElementById('sBackupFolder')
-    if(el)el.addEventListener('click',async function(){
-      if(!window.showDirectoryPicker){
-        if(modal)modal.classList.remove('show')
-        showMsg('Folder picker not supported in this browser. Use Chrome/Edge for folder selection.','error')
-        return
-      }
+  function bindClick(id,fn){var el=document.getElementById(id);if(el)el.addEventListener('click',fn)}
+
+  bindClick('sChangePwd',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('changePwdLink');if(el)el.click()},100)})
+  bindClick('sManageUsers',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('adminUserMgmtLink');if(el)el.click()},100)})
+  bindClick('sDarkMode',function(){
+    modal.classList.remove('show')
+    document.body.classList.toggle('dark-mode')
+    var icon,label
+    if(document.body.classList.contains('dark-mode')){document.getElementById('themeLabel').textContent='Dark'}else{document.getElementById('themeLabel').textContent='Light'}
+    try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
+  })
+  bindClick('sBgSettings',function(e){
+    if(e&&e.stopPropagation)e.stopPropagation()
+    modal.classList.remove('show')
+    var p=document.getElementById('bgPanel')
+    if(!p)return
+    if(p.style.display==='block'){p.style.display='none';return}
+    p.style.left=Math.max(8,Math.min(window.innerWidth-300,(window.innerWidth-300)/2))+'px'
+    p.style.top=Math.max(80,(window.innerHeight-380)/2)+'px'
+    setTimeout(function(){p.style.display='block'},10)
+  })
+  bindClick('sBackupFolder',async function(){
+    if(!window.showDirectoryPicker){
+      if(modal)modal.classList.remove('show')
+      showMsg('Folder picker not supported in this browser. Use Chrome/Edge for folder selection.','error')
+      return
+    }
+    try{
+      var handle=await window.showDirectoryPicker()
+      window._backupDirHandle=handle
       try{
-        var handle=await window.showDirectoryPicker()
-        window._backupDirHandle=handle
-        try{
-          window._backupFileHandle=await handle.getFileHandle('supernova_backup.json',{create:true})
-          localStorage.setItem('backupFolderName',handle.name)
-        }catch(e){}
-        var fn=document.getElementById('headerFolderName');if(fn)fn.textContent='📁 '+handle.name
+        window._backupFileHandle=await handle.getFileHandle('supernova_backup.json',{create:true})
+        localStorage.setItem('backupFolderName',handle.name)
+      }catch(e){}
+      var fn=byId('headerFolderName');if(fn)fn.textContent='📁 '+handle.name
+      modal.classList.remove('show')
+      showMsg('✅ Backup folder set: '+handle.name+'\n\nBackups will be saved here. (Chrome/Edge only)')
+    }catch(e){
+      if(e.name!=='AbortError'){
         modal.classList.remove('show')
-        showMsg('Backup folder set: '+handle.name+'\n\nBackups will be saved here. (Chrome/Edge only)')
-      }catch(e){
-        if(e.name!=='AbortError'){
-          modal.classList.remove('show')
-          showMsg('Folder selection failed: '+e.message,'error')
-        }
+        showMsg('Folder selection failed: '+e.message,'error')
       }
-    })
-  })()
+    }
+  })
   // AI Chat
   var aiChatModal=document.getElementById('aiChatModal')
   var aiChatMsgs=document.getElementById('aiChatMsgs')
@@ -10518,8 +10773,8 @@ try{
     aiChatInput.focus()
   }
   if(aiChatSendBtn)aiChatSendBtn.addEventListener('click',aiChatSend)
-  ;(function(){var el=document.getElementById('sAiChat');if(el)el.addEventListener('click',openAiChat)})()
-  ;(function(){var el=document.getElementById('sLogo');if(el)el.addEventListener('click',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('logoFileInput');if(el)el.click()},100)})})()
+  bindClick('sAiChat',openAiChat)
+  bindClick('sLogo',function(){modal.classList.remove('show');setTimeout(function(){var el=document.getElementById('logoFileInput');if(el)el.click()},100)})
 
   // Folder name display on load (no onclick needed, just UI)
   (function(){
@@ -11604,10 +11859,9 @@ window.settingsRestore=function(){
     }
     const dets=l._details||{};
     const raw=l._allItems||[];
-    var html='<div class="plm-modal-bg" onclick="if(event.target===this)this.remove()" style="z-index:10001">'
-      +'<div class="plm-modal" style="max-width:700px">'
+    var html='<div class="plm-modal-bg" onclick="if(event.target===this)this.remove()" style="z-index:10001;display:flex;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);padding:20px">'
+      +'<div class="plm-modal" style="max-width:700px;width:100%;max-height:80vh;overflow-y:auto;background:var(--glass-bg,#fff);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:14px;padding:20px 22px;box-shadow:0 20px 50px rgba(0,0,0,0.25)">'
       +'<h3><i class="fas fa-box"></i> '+esc(l.name||'Items')+'</h3>'
-      +'<div style="max-height:60vh;overflow-y:auto">'
       +'<table class="plm-table" style="width:100%"><thead><tr>'
       +'<th>Model</th><th>Storage</th><th>Color</th><th>Specs</th><th>Qty</th>'
       +'</tr></thead><tbody>';
