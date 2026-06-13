@@ -2989,8 +2989,7 @@ async function loadFromSupabase(){
         var deduped=Object.values(contentMap);
         if(typeof DB.db!=='undefined'&&DB.db){DB.db.splice(0,DB.db.length);deduped.forEach(function(t){DB.db.push(t)})}
         try{DB.save()}catch(e){}
-        // Clear deleted-IDs list since we successfully filtered them out
-        if(DB._deletedIds&&DB._deletedIds.length){DB._deletedIds=[];DB._saveDeletedIds()}
+        // NOTE: _deletedIds cleared ONLY in syncToSupabase() after re-delete completes
         
         console.log('[Supabase] Transactions synced: '+deduped.length+' records from cloud')
       }
@@ -3103,8 +3102,7 @@ async function syncToSupabase(){
       }
     }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
     // Re-delete any IDs tracked in _deletedIds (best-effort)
-    // Do NOT clear _deletedIds here — let loadFromSupabase() clear them
-    // after it confirms the records are truly gone from downloaded cloud data.
+    // Re-delete any IDs that were previously deleted but may still exist in cloud
     if(DB._deletedIds&&DB._deletedIds.length){
       var ids=DB._deletedIds.slice();
       for(var d=0;d<ids.length;d++){
@@ -3113,6 +3111,8 @@ async function syncToSupabase(){
           await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
         }catch(e){}
       }
+      DB._deletedIds=[];
+      DB._saveDeletedIds();
       console.log('[Supabase] Re-delete attempted for '+ids.length+' tracked IDs');
     }
     console.log('[Supabase] Data synced to cloud')
@@ -11277,7 +11277,8 @@ window.settingsRestore=function(){
     const FIMEX='FIMEX FZCO';
     const changes=[];
     var orderDateInput=document.getElementById('plmOrderDate');
-    const today=(orderDateInput&&orderDateInput.value)||new Date().toISOString().split('T')[0];
+    var dPLM=new Date(),pPLM=function(n){return String(n).padStart(2,'0')};
+    const today=(orderDateInput&&orderDateInput.value)||dPLM.getFullYear()+'-'+pPLM(dPLM.getMonth()+1)+'-'+pPLM(dPLM.getDate());
     const norm=function(s){return String(s==null?'':s).replace(/[\u201C\u201D\u2018\u2019"']/g,'').replace(/[–—]+/g,'-').replace(/\s+/g,' ').toLowerCase().trim()};
 
     let allTx=[];
@@ -11543,7 +11544,8 @@ window.settingsRestore=function(){
       // and re-create from PDF. Used to recover from data loss.
       if(freshSync){
         try{
-          var todayFs=(document.getElementById('plmOrderDate')&&document.getElementById('plmOrderDate').value)||new Date().toISOString().split('T')[0];
+          var dPlm=new Date(),pPlm=function(n){return String(n).padStart(2,'0')};
+          var todayFs=(document.getElementById('plmOrderDate')&&document.getElementById('plmOrderDate').value)||dPlm.getFullYear()+'-'+pPlm(dPlm.getMonth()+1)+'-'+pPlm(dPlm.getDate());
           var allTxFs=(typeof DB.getTransactions==='function')?DB.getTransactions():[];
           for(var fi=allTxFs.length-1;fi>=0;fi--){
             var ft=allTxFs[fi];
@@ -12001,7 +12003,7 @@ window.settingsRestore=function(){
     $('plmSearchInput').oninput=renderLinks;
     $('plmNotifFilter').onchange=renderHistory;
     $('plmSoundToggle').onchange=(e)=>{SETTINGS.soundEnabled=e.target.checked;persistSettings()};
-    var od=$('plmOrderDate');if(od&&!od.value)od.value=new Date().toISOString().split('T')[0];
+    var od=$('plmOrderDate');if(od&&!od.value){var dOd=new Date(),pOd=function(n){return String(n).padStart(2,'0')};od.value=dOd.getFullYear()+'-'+pOd(dOd.getMonth()+1)+'-'+pOd(dOd.getDate())}
     $('plmNotifPermBtn').onclick=()=>{
       if(!('Notification'in window)){toast('Browser notifications not supported','error');return}
       Notification.requestPermission().then(p=>{
