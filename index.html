@@ -5648,7 +5648,7 @@ function refreshDOCustomers(){
       if(t.date===window._doDateFilter)names.add(t.customer_vendor)
     }
   })
-  try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)names.add(e.customer)})}catch(e){}
+  try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(!e.date||e.date===window._doDateFilter))names.add(e.customer)})}catch(e){}
   var dl=document.getElementById('do-customer-datalist')
   if(!dl){dl=document.createElement('datalist');dl.id='do-customer-datalist';document.body.appendChild(dl)}
   dl.innerHTML=[...names].sort().map(n=>`<option value="${esc(n)}">`).join('')
@@ -5692,7 +5692,7 @@ function refreshDOCustomerList(){
           if(t.date===window._doDateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })}catch(e){}
-      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
+      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(!e.date||e.date===window._doDateFilter))ns.add((e.customer||'').trim())})}catch(e){}
       return ns
     }
   }
@@ -5704,7 +5704,7 @@ function refreshDOCustomerList(){
   var submittedMap={}
   try{
     JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
-      if(e.customer)submittedMap[(e.customer||'').trim().toUpperCase()]=true
+      if(e.customer&&(!e.date||e.date===window._doDateFilter))submittedMap[(e.customer||'').trim().toUpperCase()]=true
     })
   }catch(e){}
   var viewFilter=window._doViewFilter||'pending'
@@ -5775,7 +5775,7 @@ function initDO(){
           if(t.date===window._doDateFilter)ns.add((t.customer_vendor||'').trim())
         }
       })
-      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer)ns.add((e.customer||'').trim())})}catch(e){}
+      try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(!e.date||e.date===window._doDateFilter))ns.add((e.customer||'').trim())})}catch(e){}
       return ns
     }
     window._getDOLogisticsForCustomer=function(cn){
