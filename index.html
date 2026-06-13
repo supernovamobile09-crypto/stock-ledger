@@ -7095,7 +7095,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       var titles={entry:'Data Entry',packing:'Packing List',balance:'Balance Stock',delivery:'Delivery Order',pricing:'Pricing',approval:'DO Approval',warehouse:'Warehouse',invoice:'Invoice',history:'Transaction History',datacontrol:'Data Control',reports:'Reports',customs:'Customs'}
       var tb=document.getElementById('topbarTitle')
       if(tb)tb.innerHTML=(titles[tab]||tab)+'<small>SUPERNOVA STOCK LEDGER</small>'
-      if(tab==='delivery')try{initDO()}catch(e){}
+      if(tab==='delivery'){try{initDO()}catch(e){};try{goDOToday()}catch(e){}}
       if(tab==='packing')try{window.PLM&&typeof window.PLM.renderLinks==='function'&&window.PLM.renderLinks()}catch(e){}
     }
   }
