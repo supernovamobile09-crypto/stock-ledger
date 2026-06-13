@@ -10874,7 +10874,7 @@ try{
     var notes=loadEducationNotes()
     var items=JSON.parse(localStorage.getItem('itemsList')||'[]').slice(0,80).join(', ')
     var vendors=JSON.parse(localStorage.getItem('vendorList')||'[]').slice(0,50).join(', ')
-    var systemPrompt='You are a helpful AI assistant for an inventory management system. Your job is to LEARN and REMEMBER rules the user teaches you about parsing inventory messages.\n\nContext:\n- Known items: '+(items||'(none)')+'\n- Known vendors: '+(vendors||'(none)')+'\n- Existing education rules ('+notes.length+'):\n'+(notes.map(function(n,i){return (i+1)+'. '+n}).join('\n')||'(none)')+'\n\nWhen the user teaches you a rule, acknowledge it briefly. When asked about data, give concise answers. Respond in the same language the user uses.'
+    var systemPrompt='You are a helpful AI assistant for a mobile phone inventory management system called Stock Ledger.\n\nYour capabilities:\n1. ANSWER QUESTIONS about inventory management, parsing logic, and data rules\n2. LEARN new rules when the user explicitly teaches you (e.g. "When you see ABC, treat it as vendor XYZ")\n\nContext:\n- Known items: '+(items||'(none)')+'\n- Known vendors: '+(vendors||'(none)')+'\n- Learned rules ('+notes.length+'):\n'+(notes.map(function(n,i){return (i+1)+'. '+n}).join('\n')||'(none)')+'\n\nGuidelines:\n- If user asks a question, give a helpful, concise answer\n- If user teaches a rule, briefly acknowledge and confirm you learned it\n- Always respond in the same language the user uses (Urdu/Hindi/English)\n- Keep responses short and practical'
     aiChatHistory.push({role:'user',content:text})
     if(aiChatHistory.length>20)aiChatHistory=aiChatHistory.slice(-20)
     aiChatSendBtn.disabled=true
