@@ -499,6 +499,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   .do-list-item,.inv-customer-card{padding:10px 12px!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important}
   .do-list-item .do-cust-name{font-size:0.85rem!important}
   .do-list-item .do-cust-meta{font-size:0.7rem!important}
+  .do-list-item .do-undo-btn{font-size:16px!important;padding:4px 8px!important}
 
   .rpt-model-tbl{font-size:0.7rem!important}
   .rpt-model-tbl th,.rpt-model-tbl td{padding:4px 6px!important}
@@ -1529,6 +1530,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   #panel-delivery .do-list-item .do-cust-name{font-size:0.8rem;font-weight:600;color:var(--text-body)}
   #panel-delivery .do-list-item .do-cust-meta{font-size:0.65rem;color:var(--badge-color);margin-top:1px}
   #panel-delivery .do-list-item .do-cust-count{background:#1e3c72;color:#fff;border-radius:30px;padding:2px 10px;font-size:0.65rem;font-weight:700;white-space:nowrap}
+  #panel-delivery .do-undo-btn{cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;opacity:0.6;transition:all 0.15s}
+  #panel-delivery .do-undo-btn:hover{opacity:1;background:rgba(255,0,0,0.1)}
 #panel-delivery .do-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block;position:relative}
 #panel-delivery .do-status-dot.pending{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.6);animation:dotBlink 1s ease-in-out infinite}
 #panel-delivery .do-status-dot.pending::after{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;background:rgba(239,68,68,0.6);transform:translate(-50%,-50%);animation:pulseRing 1.5s ease-out infinite}
@@ -5378,6 +5381,23 @@ function submitForPricing(){
   refreshAllSections()
   updateTabNotifs()
 }
+window.undoDOSubmit=function(customerName){
+  if(!confirm('Undo submission for "'+customerName+'"? It will move back to Pending.'))return
+  try{
+    var pending=JSON.parse(localStorage.getItem('pricingPending')||'[]')
+    var before=pending.length
+    pending=pending.filter(function(e){
+      return (e.customer||'').trim().toUpperCase()!==(customerName||'').trim().toUpperCase()
+    })
+    if(pending.length===before){showMsg('No submission found for '+customerName,'error');return}
+    localStorage.setItem('pricingPending',JSON.stringify(pending))
+    showMsg('Undone: '+customerName+' moved back to Pending')
+    refreshDOCustomerList()
+    refreshDOCustomers()
+    refreshAllSections()
+    updateTabNotifs()
+  }catch(e){showMsg('Undo failed: '+e.message,'error')}
+}
 
 // One-time migration: dedupe any pre-existing _p/_a duplicate entries from the old bug
 ;(function dedupeOldPendingEntries(){
@@ -5646,7 +5666,13 @@ function refreshDOCustomers(){
 }
 
 function onDODateFilterChange(val){
-  window._doDateFilter=val
+  // val is ISO YYYY-MM-DD from input type="date", convert to DD-MM-YYYY for comparison
+  if(val){
+    var p=val.split('-')
+    window._doDateFilter=p[2]+'-'+p[1]+'-'+p[0]
+  }else{
+    window._doDateFilter=''
+  }
   refreshDOCustomers()
   refreshDOCustomerList()
   if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
@@ -5680,6 +5706,8 @@ function refreshDOCustomerList(){
   var sorted=[...names].sort()
   var sel=document.getElementById('do-customer')
   var cur=(sel?sel.value:'').trim()
+  var dateFilter=window._doDateFilter||''
+  var dateFilterApplied=!!dateFilter
   var submittedMap={}
   try{
     JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
@@ -5692,8 +5720,17 @@ function refreshDOCustomerList(){
     var isSubmitted=!!submittedMap[n.toUpperCase()]
     if(viewFilter==='pending'&&isSubmitted)return
     if(viewFilter==='submitted'&&!isSubmitted)return
+    // For submitted view, check date filter on pricingPending entry date
+    if(viewFilter==='submitted'&&dateFilterApplied){
+      var matchDate=false
+      try{
+        JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
+          if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&e.date===dateFilter)matchDate=true
+        })
+      }catch(e){}
+      if(!matchDate)return
+    }
     var qty=0
-    var dateFilter=window._doDateFilter||''
     allSavedTx.forEach(function(t){
       if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&(!dateFilter||t.date===dateFilter))qty+=parseInt(t.quantity)||0
     })
@@ -5703,7 +5740,9 @@ function refreshDOCustomerList(){
     var dotClass=pendingStatus?'do-status-dot pending':'do-status-dot done'
     var dotTitle=pendingStatus?'Pending: Submit for Pricing':'Submitted for Pricing'
     html+='<div class="do-list-item'+(active?' active':'')+'" onclick="doSelectCustomer(\''+escAttr(n)+'\')">'
-    html+='<div style="display:flex;align-items:center;gap:8px"><span class="'+dotClass+'" title="'+dotTitle+'"></span><div class="do-cust-name" style="flex:1">'+esc(n)+'</div></div>'
+    html+='<div style="display:flex;align-items:center;gap:8px"><span class="'+dotClass+'" title="'+dotTitle+'"></span><div class="do-cust-name" style="flex:1">'+esc(n)+'</div>'
+    if(!pendingStatus)html+='<span class="do-undo-btn" onclick="event.stopPropagation();undoDOSubmit(\''+escAttr(n)+'\')" title="Undo - move back to Pending">↩</span>'
+    html+='</div>'
     html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span class="do-cust-meta">'+qty+' qty</span><span style="font-size:0.6rem;color:var(--badge-color)">'+(pendingStatus?'Pending':'Submitted')+'</span></div>'
     html+='</div>'
   })
@@ -5730,10 +5769,9 @@ function initDO(){
   const mon=new Date(d.setDate(diff)),sun=new Date(mon);sun.setDate(sun.getDate()+6)
   const fmt=dt=>dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,' ')
   const ws='Week '+fmt(mon)+' - '+fmt(sun)
-  // Set date filter to today
-  var todayStr=new Date().toISOString().split('T')[0]
+  // Set date filter to today (ISO for input, DD-MM-YYYY for comparison with t.date)
   var df=document.getElementById('do-date-filter')
-  if(df){df.value=todayStr;window._doDateFilter=todayStr}
+  if(df){df.value=yy+'-'+mm+'-'+dd;window._doDateFilter=ds}
   const sel=document.getElementById('do-customer')
   if(sel){
     refreshDOCustomers()
