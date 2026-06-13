@@ -10896,7 +10896,15 @@ try{
         aiChatHistory.forEach(function(m){msgs.push({role:m.role==='user'?'user':'model',parts:[{text:m.content}]})})
         body={contents:msgs,generationConfig:{temperature:0.3,maxOutputTokens:600}}
       }
-      var r=await fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body)})
+var r=await Promise.race([
+        fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body)}),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('Request timeout (30s)')),30000))
+      ])
+      if(!r.ok){
+        var errText='API Error: '+r.status+' '+r.statusText;
+        try{var errJson=await r.json();if(errJson.error&&errJson.error.message)errText+=' - '+errJson.error.message}catch(e2){}
+        throw new Error(errText)
+      }
       var d=await r.json()
       var reply=''
       if(provider==='gemini'){
