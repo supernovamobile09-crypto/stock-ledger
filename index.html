@@ -5759,14 +5759,14 @@ function initDO(){
   const d=new Date()
   const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear()
   const ds=dd+'-'+mm+'-'+yy
+  const ds_ymd=yy+'-'+mm+'-'+dd
   const day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1)
   const mon=new Date(d.setDate(diff)),sun=new Date(mon);sun.setDate(sun.getDate()+6)
   const fmt=dt=>dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,' ')
   const ws='Week '+fmt(mon)+' - '+fmt(sun)
-  // Set date filter to today
-  var todayStr=new Date().toISOString().split('T')[0]
+  // Set date filter to today (local timezone, not UTC)
   var df=document.getElementById('do-date-filter')
-  if(df){df.value=todayStr;window._doDateFilter=todayStr}
+  if(df){df.value=ds_ymd;window._doDateFilter=ds_ymd}
   const sel=document.getElementById('do-customer')
   if(sel){
     refreshDOCustomers()
@@ -6850,10 +6850,10 @@ async function saveToBackend(){
           var data=JSON.parse(localData)
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
-          // Set DO date filter to today
-          var todayStr=new Date().toISOString().split('T')[0]
+          // Set DO date filter to today (local timezone)
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2
           var df=document.getElementById('do-date-filter')
-          if(df){df.value=todayStr};window._doDateFilter=todayStr
+          if(df){df.value=todayYMD};window._doDateFilter=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
@@ -6870,10 +6870,10 @@ async function saveToBackend(){
           if(!data.version)throw new Error('Invalid backup file')
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
-          // Set DO date filter to today
-          var todayStr=new Date().toISOString().split('T')[0]
+          // Set DO date filter to today (local timezone)
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2
           var df=document.getElementById('do-date-filter')
-          if(df){df.value=todayStr};window._doDateFilter=todayStr
+          if(df){df.value=todayYMD};window._doDateFilter=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
