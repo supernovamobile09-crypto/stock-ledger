@@ -2954,12 +2954,16 @@ async function loadFromSupabase(){
         localTx.forEach(function(t){if(t.id&&!deleteSet[t.id])map[t.id]=t})
         
         // Then merge cloud transactions - skip deleted IDs, add cloud-only records
+        // For same-ID records: keep the newer version (enables cross-device sync)
         cloudTx.forEach(function(ct){
           if(deleteSet[ct.id])return; // Skip cloud records we intentionally deleted
           if(!map[ct.id]){
             map[ct.id]=ct
           }else{
-            // Both local and cloud have this ID: prefer local (user has latest edits)
+            var local=map[ct.id];
+            var localTs=local.created_at?new Date(local.created_at).getTime():0;
+            var cloudTs=ct.created_at?new Date(ct.created_at).getTime():0;
+            if(cloudTs>localTs)map[ct.id]=ct
           }
         })
         
