@@ -973,6 +973,8 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   width:7px;height:7px;border-radius:50%;margin-left:auto;flex-shrink:0;
 }
 .nav-dot.red{background:var(--danger);}
+.nav-dot.red.alert{animation:navDotPulse 1.5s ease-in-out infinite}
+@keyframes navDotPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,0.7)}50%{opacity:0.6;transform:scale(1.3);box-shadow:0 0 0 4px rgba(239,68,68,0)}}
 .nav-dot.green{background:var(--success);}
 .nav-dot.orange{background:var(--warning);}
 .sidebar-footer{
@@ -1227,7 +1229,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
   <nav class="sidebar-nav" id="sidebarNav">
     <button class="nav-item active" data-sn-tab="entry"><span class="nav-icon">📝</span> Data Entry</button>
     <button class="nav-item" data-sn-tab="packing"><span class="nav-icon">📋</span> Packing List <span class="nav-dot orange" id="snPackingDot" style="display:none"></span></button>
-    <button class="nav-item" data-sn-tab="balance"><span class="nav-icon">⚖️</span> Balance Stock</button>
+    <button class="nav-item" data-sn-tab="balance"><span class="nav-icon">⚖️</span> Balance Stock <span class="nav-dot red" id="balanceNotif" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="delivery"><span class="nav-icon">🚚</span> Delivery Order</button>
     <button class="nav-item" data-sn-tab="pricing"><span class="nav-icon">🏷️</span> Pricing <span class="nav-dot green" id="snPricingDot" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="approval"><span class="nav-icon">✅</span> DO Approval <span class="nav-dot green" id="snApprovalDot" style="display:none"></span></button>
