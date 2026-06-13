@@ -5709,33 +5709,47 @@ function refreshDOCustomerList(){
   }catch(e){}
   var viewFilter=window._doViewFilter||'pending'
   var html=''
-  sorted.forEach(function(n){
-    var isSubmitted=!!submittedMap[n.toUpperCase()]
+  // Build per-mark entries instead of per-customer
+  var markEntries=[]
+  allSavedTx.forEach(function(t){
+    if(t.transaction_type!=='Selling'&&t.transaction_type!=='Opening'&&t.transaction_type!=='Buying')return
+    if(t.date!==window._doDateFilter)return
+    var cn=(t.customer_vendor||'').trim()
+    var mk=(t.marks||'').trim()
+    if(!cn)return
+    var key=cn.toUpperCase()+'||'+mk.toUpperCase()
+    var found=markEntries.find(function(e){return e.key===key})
+    if(found)found.qty+=parseInt(t.quantity)||0
+    else markEntries.push({key:key,customer:cn,mark:mk,qty:parseInt(t.quantity)||0})
+  })
+  try{
+    JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
+      if(!e.customer)return
+      var cn=e.customer.trim()
+      var mk=(e.marks||'').trim()
+      var key=cn.toUpperCase()+'||'+mk.toUpperCase()
+      var found=markEntries.find(function(e2){return e2.key===key})
+      var eqty=e.items?e.items.reduce(function(s,it){return s+(parseInt(it.qty)||0)},0):0
+      if(found)found.qty+=eqty
+      else markEntries.push({key:key,customer:cn,mark:mk,qty:eqty})
+    })
+  }catch(e){}
+  markEntries.sort(function(a,b){var c=a.customer.localeCompare(b.customer);return c||a.mark.localeCompare(b.mark)})
+  markEntries.forEach(function(entry){
+    var uc=entry.customer.toUpperCase()
+    var isSubmitted=!!submittedMap[uc]
     if(viewFilter==='pending'&&isSubmitted)return
     if(viewFilter==='submitted'&&!isSubmitted)return
-    if(viewFilter==='submitted'&&window._doDateFilter){
-      var matchDate=false
-      try{
-        JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
-          if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&e.date===window._doDateFilter)matchDate=true
-        })
-      }catch(e){}
-      if(!matchDate)return
-    }
-    var qty=0
-    allSavedTx.forEach(function(t){
-      if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&t.date===window._doDateFilter)qty+=parseInt(t.quantity)||0
-    })
-    try{JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&Array.isArray(e.items))qty+=e.items.reduce(function(s,it){return s+(parseInt(it.qty)||0)},0)})}catch(e){}
-    var active=cur.toUpperCase()===n.toUpperCase()
+    var active=cur.toUpperCase()===uc
     var pendingStatus=!isSubmitted
     var dotClass=pendingStatus?'do-status-dot pending':'do-status-dot done'
     var dotTitle=pendingStatus?'Pending: Submit for Pricing':'Submitted for Pricing'
-    html+='<div class="do-list-item'+(active?' active':'')+'" onclick="doSelectCustomer(\''+escAttr(n)+'\')">'
-    html+='<div style="display:flex;align-items:center;gap:8px"><span class="'+dotClass+'" title="'+dotTitle+'"></span><div class="do-cust-name" style="flex:1">'+esc(n)+'</div>'
-    if(!pendingStatus)html+='<span class="do-undo-btn" onclick="event.stopPropagation();undoDOSubmit(\''+escAttr(n)+'\')" title="Undo - move back to Pending">↩</span>'
+    var displayLabel=entry.customer+(entry.mark?' ('+entry.mark+')':'')
+    html+='<div class="do-list-item'+(active?' active':'')+'" onclick="doSelectCustomerMark(\''+escAttr(entry.customer)+'\',\''+escAttr(entry.mark)+'\')">'
+    html+='<div style="display:flex;align-items:center;gap:8px"><span class="'+dotClass+'" title="'+dotTitle+'"></span><div class="do-cust-name" style="flex:1">'+esc(displayLabel)+'</div>'
+    if(!pendingStatus)html+='<span class="do-undo-btn" onclick="event.stopPropagation();undoDOSubmit(\''+escAttr(entry.customer)+'\')" title="Undo - move back to Pending">↩</span>'
     html+='</div>'
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span class="do-cust-meta">'+qty+' qty</span><span style="font-size:0.6rem;color:var(--badge-color)">'+(pendingStatus?'Pending':'Submitted')+'</span></div>'
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span class="do-cust-meta">'+entry.qty+' qty</span><span style="font-size:0.6rem;color:var(--badge-color)">'+(pendingStatus?'Pending':'Submitted')+'</span></div>'
     html+='</div>'
   })
   list.innerHTML=html
@@ -5748,6 +5762,21 @@ function doSelectCustomer(name){
   if(existing.toUpperCase()===name.toUpperCase())return
   sel.value=name
   if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
+  refreshDOCustomerList()
+}
+function doSelectCustomerMark(name,mark){
+  var sel=document.getElementById('do-customer')
+  if(!sel)return
+  sel.value=name
+  if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
+  if(mark){
+    var ms=document.getElementById('do-marks')
+    if(ms){
+      // Set the mark and trigger onDOMarkChange
+      ms.value=mark
+      if(typeof onDOMarkChange==='function')onDOMarkChange(mark)
+    }
+  }
   refreshDOCustomerList()
 }
 
