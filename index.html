@@ -1227,18 +1227,18 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
     <div class="brand-name"><span>SUPER</span>NOVA<br><span style="font-size:9px;font-weight:400;color:var(--sn-text-3)">Stock Ledger</span></div>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
-    <button class="nav-item active" data-sn-tab="entry"><span class="nav-icon">📝</span> Data Entry</button>
+    <button class="nav-item active" data-sn-tab="entry"><span class="nav-icon">📝</span> Data Entry <span class="nav-dot red" id="snEntryDot" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="packing"><span class="nav-icon">📋</span> Packing List <span class="nav-dot orange" id="snPackingDot" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="balance"><span class="nav-icon">⚖️</span> Balance Stock <span class="nav-dot red" id="balanceNotif" style="display:none"></span></button>
-    <button class="nav-item" data-sn-tab="delivery"><span class="nav-icon">🚚</span> Delivery Order</button>
-    <button class="nav-item" data-sn-tab="pricing"><span class="nav-icon">🏷️</span> Pricing <span class="nav-dot green" id="snPricingDot" style="display:none"></span></button>
-    <button class="nav-item" data-sn-tab="approval"><span class="nav-icon">✅</span> DO Approval <span class="nav-dot green" id="snApprovalDot" style="display:none"></span></button>
-    <button class="nav-item" data-sn-tab="warehouse"><span class="nav-icon">🏭</span> Warehouse <span class="nav-dot green" id="snWarehouseDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="delivery"><span class="nav-icon">🚚</span> Delivery Order <span class="nav-dot red" id="snDeliveryDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="pricing"><span class="nav-icon">🏷️</span> Pricing <span class="nav-dot red" id="snPricingDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="approval"><span class="nav-icon">✅</span> DO Approval <span class="nav-dot red" id="snApprovalDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="warehouse"><span class="nav-icon">🏭</span> Warehouse <span class="nav-dot red" id="snWarehouseDot" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="invoice"><span class="nav-icon">🧾</span> Invoice <span class="nav-dot red" id="snInvoiceDot" style="display:none"></span></button>
-    <button class="nav-item" data-sn-tab="history"><span class="nav-icon">🔄</span> Transaction History</button>
-    <button class="nav-item" data-sn-tab="datacontrol"><span class="nav-icon">🗄️</span> Data Control</button>
-    <button class="nav-item" data-sn-tab="reports"><span class="nav-icon">📊</span> Reports</button>
-    <button class="nav-item" data-sn-tab="customs"><span class="nav-icon">🛃</span> Customs</button>
+    <button class="nav-item" data-sn-tab="history"><span class="nav-icon">🔄</span> Transaction History <span class="nav-dot red" id="snHistoryDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="datacontrol"><span class="nav-icon">🗄️</span> Data Control <span class="nav-dot red" id="snDatacontrolDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="reports"><span class="nav-icon">📊</span> Reports <span class="nav-dot red" id="snReportsDot" style="display:none"></span></button>
+    <button class="nav-item" data-sn-tab="customs"><span class="nav-icon">🛃</span> Customs <span class="nav-dot red" id="snCustomsDot" style="display:none"></span></button>
     <button class="nav-item" data-sn-tab="settings" onclick="try{window.openSettings?openSettings():document.getElementById('settingsModal')?.classList.add('show')}catch(e){}"><span class="nav-icon">⚙️</span> Settings</button>
   </nav>
   <div class="sidebar-footer">
@@ -5381,6 +5381,7 @@ function submitForPricing(){
    saveSubmittedKeys(existing)
   showMsg('Submitted '+submittedCount+' order(s) to Pricing & DO Approval!')
   autoBackup()
+  try{window.showTabNotif('pricing')}catch(e){}
   doProducts=[];window.doAllMarksView=false;window.doCurrentMarks=[];renderDOTable()
   document.getElementById('do-customer').value=''
   document.getElementById('do-logistics').value=''
@@ -6119,6 +6120,7 @@ async function saveToBackend(){
     }catch(e){errors++}
   }
   showMsg('Saved: '+saved+' rows'+(skipped?', Skipped: '+skipped+' duplicate(s)':''))
+  if(saved>0)try{window.showTabNotif('balance')}catch(e){}
   if(errors)return
   // Sync qty changes to pricingPending entries
   try{
@@ -6688,6 +6690,7 @@ async function saveToBackend(){
     fetchHistory()
     refreshAllSections()
     showMsg('Transaction deleted')
+    try{window.showTabNotif('balance')}catch(e){}
   }
   if(el=byId('themeToggle'))el.addEventListener('click',function(){
     document.body.classList.toggle('dark-mode')
@@ -7152,6 +7155,29 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       if(tb)tb.innerHTML=(titles[tab]||tab)+'<small>SUPERNOVA STOCK LEDGER</small>'
       if(tab==='delivery'){try{initDO()}catch(e){};try{goDOToday()}catch(e){}}
       if(tab==='packing')try{window.PLM&&typeof window.PLM.renderLinks==='function'&&window.PLM.renderLinks()}catch(e){}
+      // Clear notification dot for this tab
+      window.clearTabNotif(tab)
+    }
+  }
+  // Tab notification system
+  window.showTabNotif=function(tab){
+    var dotMap={entry:'snEntryDot',packing:'snPackingDot',balance:'balanceNotif',delivery:'snDeliveryDot',pricing:'snPricingDot',approval:'snApprovalDot',warehouse:'snWarehouseDot',invoice:'snInvoiceDot',history:'snHistoryDot',datacontrol:'snDatacontrolDot',reports:'snReportsDot',customs:'snCustomsDot'}
+    var dotId=dotMap[tab]
+    if(!dotId)return
+    var dot=document.getElementById(dotId)
+    if(dot){
+      dot.style.display='inline-block'
+      dot.classList.add('alert')
+    }
+  }
+  window.clearTabNotif=function(tab){
+    var dotMap={entry:'snEntryDot',packing:'snPackingDot',balance:'balanceNotif',delivery:'snDeliveryDot',pricing:'snPricingDot',approval:'snApprovalDot',warehouse:'snWarehouseDot',invoice:'snInvoiceDot',history:'snHistoryDot',datacontrol:'snDatacontrolDot',reports:'snReportsDot',customs:'snCustomsDot'}
+    var dotId=dotMap[tab]
+    if(!dotId)return
+    var dot=document.getElementById(dotId)
+    if(dot){
+      dot.style.display='none'
+      dot.classList.remove('alert')
     }
   }
   // Bind sidebar nav clicks
@@ -8388,6 +8414,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       autoBackup()
       try{triggerCloudSync()}catch(e){}
       window._balanceUpdatedAt=Date.now()
+      try{window.showTabNotif('approval')}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
       switchTab('approval')
@@ -8879,6 +8906,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       // Trigger cloud sync to ensure approved state reaches Supabase
       try{triggerCloudSync()}catch(e){}
       window._balanceUpdatedAt=Date.now()
+      try{window.showTabNotif('warehouse')}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
     }
@@ -8900,6 +8928,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       showMsg('Released Against Cash!')
       autoBackup()
       window._balanceUpdatedAt=Date.now()
+      try{window.showTabNotif('warehouse')}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
       try{switchTab('warehouse')}catch(e){}
@@ -9427,6 +9456,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       switchWarehouseView(view)
       try{autoBackup()}catch(e){console.warn('[WH PACK] autoBackup skipped:',e.message)}
       window._balanceUpdatedAt=Date.now()
+      if(isPacking)try{window.showTabNotif('invoice')}catch(e){}
       refreshAllSections()
       if(typeof updateTabNotifs==='function')updateTabNotifs()
     }
