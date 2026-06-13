@@ -1541,7 +1541,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </style>
 <div class="do-controls no-print">
   <h2>⚙ Delivery Order</h2>
-  <div class="ctrl-group" style="display:flex;align-items:center;gap:4px"><label>Date:</label><input type="date" id="do-date-filter" style="padding:3px 6px;border:1px solid #444;border-radius:4px;font-size:11px;background:#fff;color:#000" onchange="onDODateFilterChange(this.value)"></div>
+  <div class="ctrl-group" style="display:flex;align-items:center;gap:4px"><label>Date:</label><input type="date" id="do-date-filter" style="padding:3px 6px;border:1px solid #444;border-radius:4px;font-size:11px;background:#fff;color:#000" onchange="onDODateFilterChange(this.value)"><button onclick="goDOToday()" style="margin-left:2px;padding:2px 6px;font-size:10px;background:#4ade80;color:#1e1e2e;border:0;border-radius:4px;cursor:pointer;font-weight:600" title="Reset to today">Today</button></div>
   <div class="ctrl-group"><label>Customer:</label><input type="text" id="do-customer" value="" oninput="updateDOField('customer',this.value)"/></div>
   <div class="ctrl-group"><label>Marks:</label><select id="do-marks" onchange="onDOMarkChange(this.value)"><option value="">-- Select Mark --</option></select></div>
   <div class="ctrl-group"><label>Logistics:</label><input type="text" id="do-logistics" value="" oninput="updateDOField('logistics',this.value)"/></div>
@@ -5660,6 +5660,15 @@ function fmtDateDDMMMYYY(dateStr){if(!dateStr)return'';if(/[A-Za-z]/.test(dateSt
 
 function onDODateFilterChange(val){
   window._doDateFilter=val
+  refreshDOCustomers()
+  refreshDOCustomerList()
+  if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
+}
+function goDOToday(){
+  var d=new Date(),dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear(),ymd=yy+'-'+mm+'-'+dd
+  var df=document.getElementById('do-date-filter')
+  if(df)df.value=ymd
+  window._doDateFilter=ymd
   refreshDOCustomers()
   refreshDOCustomerList()
   if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
