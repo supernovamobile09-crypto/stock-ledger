@@ -11307,7 +11307,7 @@ window.settingsRestore=function(){
           item.color=pendingItem.color||item.color;
           item.country=pendingItem.country||item.country;
           allParsed.push(item);
-          pendingItem=null;
+          // Don't clear pendingItem - subsequent color/qty lines should also use it
         }else if(pendingItem&&item.color&&!item.qty){
           pendingItem.color=item.color;
           pendingItem.country=pendingItem.country||item.country;
