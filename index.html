@@ -5666,13 +5666,7 @@ function refreshDOCustomers(){
 }
 
 function onDODateFilterChange(val){
-  // val is ISO YYYY-MM-DD from input type="date", convert to DD-MM-YYYY for comparison
-  if(val){
-    var p=val.split('-')
-    window._doDateFilter=p[2]+'-'+p[1]+'-'+p[0]
-  }else{
-    window._doDateFilter=''
-  }
+  window._doDateFilter=val
   refreshDOCustomers()
   refreshDOCustomerList()
   if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
@@ -5769,9 +5763,10 @@ function initDO(){
   const mon=new Date(d.setDate(diff)),sun=new Date(mon);sun.setDate(sun.getDate()+6)
   const fmt=dt=>dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,' ')
   const ws='Week '+fmt(mon)+' - '+fmt(sun)
-  // Set date filter to today (ISO for input, DD-MM-YYYY for comparison with t.date)
+  // Set date filter to today
+  var todayStr=new Date().toISOString().split('T')[0]
   var df=document.getElementById('do-date-filter')
-  if(df){df.value=yy+'-'+mm+'-'+dd;window._doDateFilter=ds}
+  if(df){df.value=todayStr;window._doDateFilter=todayStr}
   const sel=document.getElementById('do-customer')
   if(sel){
     refreshDOCustomers()
