@@ -5725,6 +5725,7 @@ function refreshDOCustomerList(){
   try{
     JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
       if(!e.customer)return
+      if(window._doDateFilter&&e.date&&e.date!==window._doDateFilter)return
       var cn=e.customer.trim()
       var mk=(e.marks||'').trim()
       var key=cn.toUpperCase()+'||'+mk.toUpperCase()
