@@ -2712,8 +2712,14 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 // ===================== LOCAL DATABASE (localStorage JSON) =====================
 const DB = {
   db: [],
-  _deletedIds: [], // Track IDs deleted locally (for Supabase sync)
-  init() { this.db = []; },
+  _deletedIds: [],
+  _saveDeletedIds(){try{localStorage.setItem('dbDeletedIds',JSON.stringify(this._deletedIds))}catch(e){}},
+  _loadDeletedIds(){try{var d=localStorage.getItem('dbDeletedIds');if(d)this._deletedIds=JSON.parse(d)}catch(e){}},
+  init() {
+    this.db = [];
+    try{var c=localStorage.getItem('dbCache');if(c){var p=JSON.parse(c);if(p&&p.length)this.db=p}}catch(e){}
+    this._loadDeletedIds();
+  },
   save() { },
   nextId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); },
   getTransactions() { return [...this.db].reverse(); },
@@ -2726,8 +2732,10 @@ const DB = {
     return txns.length;
   },
   deleteAll() { 
-    // Delete from Supabase immediately
     var self=this;
+    self.db.forEach(function(t){if(t.id)self._deletedIds.push(String(t.id))});
+    self._saveDeletedIds();
+    // Delete from Supabase immediately
     (async function(){
       for(var i=0;i<self.db.length;i++){
         if(!self.db[i].id)continue;
@@ -2746,6 +2754,8 @@ const DB = {
     for (var i = 0; i < this.db.length; i++) { if (String(this.db[i].id) === String(id)) { idx = i; break; } }
     if (idx >= 0) {
       this.db.splice(idx, 1);
+      this._deletedIds.push(String(id));
+      this._saveDeletedIds();
       // Delete from Supabase immediately
       (async function(){
         try{
@@ -2936,20 +2946,20 @@ async function loadFromSupabase(){
         var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():[]}catch(e){}
         var map={};
         
-        // First, add all local transactions to map
-        localTx.forEach(function(t){if(t.id)map[t.id]=t})
+        // Build deleted-IDs set so we never re-import cloud records we chose to delete
+        var deleteSet={};
+        if(DB._deletedIds&&DB._deletedIds.length){DB._deletedIds.forEach(function(id){deleteSet[id]=true})}
         
-        // Then merge cloud transactions - always download all, ignore _lastClearTime filter
+        // First, add all local transactions to map
+        localTx.forEach(function(t){if(t.id&&!deleteSet[t.id])map[t.id]=t})
+        
+        // Then merge cloud transactions - skip deleted IDs, add cloud-only records
         cloudTx.forEach(function(ct){
-          // Always include cloud transactions (ignore clear time filter for cross-device sync)
-          // Merge: prefer newer version by timestamp
+          if(deleteSet[ct.id])return; // Skip cloud records we intentionally deleted
           if(!map[ct.id]){
             map[ct.id]=ct
           }else{
-            var local=map[ct.id];
-            var localTs=local.created_at?new Date(local.created_at).getTime():0;
-            var cloudTs=ct.created_at?new Date(ct.created_at).getTime():0;
-            if(cloudTs>localTs)map[ct.id]=ct
+            // Both local and cloud have this ID: prefer local (user has latest edits)
           }
         })
         
@@ -2974,6 +2984,8 @@ async function loadFromSupabase(){
         var deduped=Object.values(contentMap);
         if(typeof DB.db!=='undefined'&&DB.db){DB.db.splice(0,DB.db.length);deduped.forEach(function(t){DB.db.push(t)})}
         try{DB.save()}catch(e){}
+        // Clear deleted-IDs list since we successfully filtered them out
+        if(DB._deletedIds&&DB._deletedIds.length){DB._deletedIds=[];DB._saveDeletedIds()}
         
         console.log('[Supabase] Transactions synced: '+deduped.length+' records from cloud')
       }
@@ -3085,6 +3097,19 @@ async function syncToSupabase(){
         }
       }
     }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
+    // Re-delete any IDs that were previously deleted but may still exist in cloud
+    if(DB._deletedIds&&DB._deletedIds.length){
+      var ids=DB._deletedIds.slice();
+      for(var d=0;d<ids.length;d++){
+        try{
+          var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(ids[d]);
+          await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
+        }catch(e){}
+      }
+      DB._deletedIds=[];
+      DB._saveDeletedIds();
+      console.log('[Supabase] Re-deleted '+ids.length+' tracked IDs');
+    }
     console.log('[Supabase] Data synced to cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
     var sns=document.getElementById('snSyncStatus');if(sns)sns.textContent=ss&&ss.textContent||''
@@ -3106,10 +3131,11 @@ function triggerCloudSync() {
 }
 // Also sync on page load (for PLM links etc.)
 setTimeout(function(){try{triggerCloudSync()}catch(e){}},5000)
-// Hook DB.save - no localStorage, all data in Supabase
+// Hook DB.save - also cache to localStorage for offline resilience
 var _dbSave=DB.save.bind(DB)
 DB.save=function(){ 
   _dbSave(); 
+  try{localStorage.setItem('dbCache',JSON.stringify(DB.db||[]))}catch(e){}
   triggerCloudSync(); 
 }
 // ===================== FULL BACKUP SYSTEM =====================
