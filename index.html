@@ -1541,7 +1541,7 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
 </style>
 <div class="do-controls no-print">
   <h2>⚙ Delivery Order</h2>
-
+  <div class="ctrl-group" style="display:flex;align-items:center;gap:4px"><label>Date:</label><input type="date" id="do-date-filter" style="padding:3px 6px;border:1px solid #444;border-radius:4px;font-size:11px;background:#fff;color:#000" onchange="onDODateFilterChange(this.value)"></div>
   <div class="ctrl-group"><label>Customer:</label><input type="text" id="do-customer" value="" oninput="updateDOField('customer',this.value)"/></div>
   <div class="ctrl-group"><label>Marks:</label><select id="do-marks" onchange="onDOMarkChange(this.value)"><option value="">-- Select Mark --</option></select></div>
   <div class="ctrl-group"><label>Logistics:</label><input type="text" id="do-logistics" value="" oninput="updateDOField('logistics',this.value)"/></div>
@@ -1550,8 +1550,6 @@ body.dark-mode .ms-drop label:hover{background:#3a3a4a}
       <option>Order In Hand</option><option>Order Dispatched</option><option>Buying Received</option><option>Buying in Transit</option><option>Stock Landed</option>
     </select>
   </div>
-  <div class="ctrl-group"><label>Date:</label><input type="text" id="do-date" value="" oninput="updateDOField('date',this.value)" style="width:90px"/></div>
-  <div class="ctrl-group"><label>Week:</label><input type="text" id="do-week" value="" oninput="updateDOField('week',this.value)" style="width:160px"/></div>
    <button class="btn" style="background:#89b4fa;color:#1e1e2e" onclick="printDO()" title="Print DO"><i class="fas fa-print"></i></button>
   <button class="btn" style="background:#4ade80;color:#1e1e2e" onclick="saveDOasPDF()" title="Save as PDF"><i class="fas fa-file-pdf"></i></button>
   <button class="btn" style="background:#f59e0b;color:#1e1e2e" onclick="submitForPricing()"><i class="fas fa-tag"></i></button>
@@ -5283,8 +5281,8 @@ function submitForPricing(){
   let isAllView=window.doAllMarksView
   let logi=document.getElementById('do-logistics').value||''
   let stat=document.getElementById('do-status').value||''
-  let dt=document.getElementById('do-date').value||''
-  let wk=document.getElementById('do-week').value||''
+  let dt=window._doDateFilter||''
+  let wk=''
   let marksToSubmit=[]
   if(isAllView&&window.doCurrentMarks&&window.doCurrentMarks.length){
     marksToSubmit=window.doCurrentMarks.slice()
@@ -5365,8 +5363,6 @@ function submitForPricing(){
   document.getElementById('do-logistics').value=''
   document.getElementById('do-marks').innerHTML='<option value="">-- Select Mark --</option>'
   document.getElementById('do-status').value='Order In Hand'
-  document.getElementById('do-date').value=''
-  document.getElementById('do-week').value=''
   document.getElementById('do-f-customer').value=''
   document.getElementById('do-f-status').value='Order In Hand'
   document.getElementById('do-f-date').value=''
@@ -5663,7 +5659,10 @@ function refreshDOCustomers(){
 function fmtDateDDMMMYYY(dateStr){if(!dateStr)return'';if(/[A-Za-z]/.test(dateStr))return dateStr;var p=dateStr.split('-');if(p.length!==3)return dateStr;var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return p[2]+'-'+months[parseInt(p[1])-1]+'-'+p[0]}
 
 function onDODateFilterChange(val){
-  // no-op: date filter removed, always use today's date
+  window._doDateFilter=val
+  refreshDOCustomers()
+  refreshDOCustomerList()
+  if(typeof window._onDOCustomerChange==='function')window._onDOCustomerChange(false)
 }
 
 function setDOView(view){
@@ -5705,6 +5704,15 @@ function refreshDOCustomerList(){
     var isSubmitted=!!submittedMap[n.toUpperCase()]
     if(viewFilter==='pending'&&isSubmitted)return
     if(viewFilter==='submitted'&&!isSubmitted)return
+    if(viewFilter==='submitted'&&window._doDateFilter){
+      var matchDate=false
+      try{
+        JSON.parse(localStorage.getItem('pricingPending')||'[]').forEach(function(e){
+          if(e.customer&&(e.customer||'').trim().toUpperCase()===n.toUpperCase()&&e.date===window._doDateFilter)matchDate=true
+        })
+      }catch(e){}
+      if(!matchDate)return
+    }
     var qty=0
     allSavedTx.forEach(function(t){
       if((t.customer_vendor||'').trim().toUpperCase()===n.toUpperCase()&&t.date===window._doDateFilter)qty+=parseInt(t.quantity)||0
@@ -5745,7 +5753,8 @@ function initDO(){
   const mon=new Date(d.setDate(diff)),sun=new Date(mon);sun.setDate(sun.getDate()+6)
   const fmt=dt=>dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,' ')
   const ws='Week '+fmt(mon)+' - '+fmt(sun)
-  window._doDateFilter=ds_ymd
+  var df=document.getElementById('do-date-filter')
+  if(df){df.value=ds_ymd;window._doDateFilter=ds_ymd}
   const sel=document.getElementById('do-customer')
   if(sel){
     refreshDOCustomers()
@@ -5779,8 +5788,7 @@ function initDO(){
       if(v){
         let txAll=allSavedTx.filter(t=>(t.customer_vendor||'').trim().toUpperCase()===v.toUpperCase()&&t.date===window._doDateFilter).sort(function(a,b){return parseDate(b.date)-parseDate(a.date)})
         let tx=txAll[0]
-        let d=tx&&tx.date||document.getElementById('do-date').value
-        document.getElementById('do-date').value=d
+        let d=tx&&tx.date||''
         if(d)d=fmtDateDDMMMYYY(d)
         document.getElementById('do-f-date').value=d
         document.getElementById('do-top-date').textContent=d
@@ -5828,8 +5836,8 @@ function initDO(){
       }
     })
   }
-  if(!document.getElementById('do-date').value){document.getElementById('do-date').value=ds_ymd;var ds_fmt=fmtDateDDMMMYYY(ds_ymd);document.getElementById('do-f-date').value=ds_fmt;document.getElementById('do-top-date').textContent=ds_fmt}
-  if(!document.getElementById('do-week').value){document.getElementById('do-week').value=ws;document.getElementById('do-f-week').value=ws}
+  if(!document.getElementById('do-f-date').value){var ds_fmt=fmtDateDDMMMYYY(ds_ymd);document.getElementById('do-f-date').value=ds_fmt;document.getElementById('do-top-date').textContent=ds_fmt}
+  if(!document.getElementById('do-f-week').value){document.getElementById('do-f-week').value=ws}
   document.getElementById('do-th-marks').textContent='MARKS'
   document.getElementById('do-f-marks').value=''
   window.doAllMarksView=false
@@ -6828,7 +6836,7 @@ async function saveToBackend(){
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
           // Set DO date filter to today (local timezone)
-          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD;var df2=document.getElementById('do-date-filter');if(df2)df2.value=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
@@ -6846,7 +6854,7 @@ async function saveToBackend(){
           var msg=window.restoreFullBackup(data)
           refreshAllSections()
           // Set DO date filter to today (local timezone)
-          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD
+          var d2=new Date(),dd2=String(d2.getDate()).padStart(2,'0'),mm2=String(d2.getMonth()+1).padStart(2,'0'),yy2=d2.getFullYear(),todayYMD=yy2+'-'+mm2+'-'+dd2;window._doDateFilter=todayYMD;var df2=document.getElementById('do-date-filter');if(df2)df2.value=todayYMD
           refreshDOCustomers();refreshDOCustomerList()
           window._supabaseDisabled=true
           showMsg('Restored: '+msg+' (Cloud sync disabled)')
@@ -6985,7 +6993,7 @@ async function saveToBackend(){
   ;(function(){
     var today=new Date(),p=function(n){return String(n).padStart(2,'0')}
     var todayStr=today.getFullYear()+'-'+p(today.getMonth()+1)+'-'+p(today.getDate())
-    var ids=['pricingDateFilter','apprDateFilter','whDateFilter','invDateFrom','cust-date-from','rdDateFrom','rdDateTo','rcDateFrom','rcDateTo','rvDateFrom','rvDateTo']
+    var ids=['do-date-filter','pricingDateFilter','apprDateFilter','whDateFilter','invDateFrom','cust-date-from','rdDateFrom','rdDateTo','rcDateFrom','rcDateTo','rvDateFrom','rvDateTo']
     ids.forEach(function(id){
       var el=document.getElementById(id)
       if(el&&!el.value)el.value=todayStr
@@ -8415,8 +8423,6 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         if(sel)sel.value=entry.customer
         document.getElementById('do-logistics').value=entry.logistics||''
         document.getElementById('do-status').value=entry.status||'Order In Hand'
-        document.getElementById('do-date').value=entry.date||''
-        document.getElementById('do-week').value=entry.week||''
         updateDOField('customer',entry.customer)
         updateDOField('logistics',entry.logistics||'')
         updateDOField('status',entry.status||'Order In Hand')
@@ -10924,7 +10930,7 @@ window.settingsRestore=function(){
         var msg=window.restoreFullBackup(data)
         try{allSavedTx=DB.getTransactions()}catch(e){}
         refreshAllSections()
-        window._doDateFilter=new Date().toISOString().split('T')[0]
+        var d3=new Date(),dd3=String(d3.getDate()).padStart(2,'0'),mm3=String(d3.getMonth()+1).padStart(2,'0'),yy3=d3.getFullYear(),ds_ymd=yy3+'-'+mm3+'-'+dd3;window._doDateFilter=ds_ymd;var df3=document.getElementById('do-date-filter');if(df3)df3.value=window._doDateFilter
         refreshDOCustomers();refreshDOCustomerList()
         try{fetchHistory()}catch(e){}
         try{renderBalance()}catch(e){}
