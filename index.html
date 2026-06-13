@@ -10646,9 +10646,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
 
   window.mobGo=function(tab){
     try{
-      var btn=document.querySelector('[data-tab="'+tab+'"]')
-      if(btn)btn.click()
-      else console.log('Tab btn not found:',tab)
+      switchTab(tab)
+      syncMobTabs()
       var mbtn=document.querySelector('.mob-tab[data-mobtab="'+tab+'"]')
       if(mbtn){
         document.querySelectorAll('.mob-tab').forEach(function(b){b.classList.remove('active')})
@@ -10656,6 +10655,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       }
       var menu=document.getElementById('mobMoreMenu')
       if(menu)menu.classList.remove('open')
+      setTimeout(resetMobMasterDetail,80)
     }catch(e){console.error('mobGo error:',e)}
   }
 
