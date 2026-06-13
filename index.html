@@ -11448,16 +11448,26 @@ window.settingsRestore=function(){
          return;
        }
 
-          if(match){
-            match.quantity=q;
-            // Only add linkId if this was originally a PLM transaction (had linkId)
-            // Don't convert manual sales into PLM-managed transactions
-            if(match.linkId){
-              if(match.linkId!==linkIdVal)match.linkId=linkIdVal;
-            }
-            if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-            if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
-            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+           if(match){
+             match.quantity=q;
+             // Only add linkId if this was originally a PLM transaction (had linkId)
+             // Don't convert manual sales into PLM-managed transactions
+             if(match.linkId){
+               if(match.linkId!==linkIdVal)match.linkId=linkIdVal;
+             }
+             if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
+             if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
+             try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+             // Delete any manual FIMEX sales for same item on same date (PLM is source of truth)
+             existingFimex.forEach(function(t){
+               if(!t.linkId && t.id!==match.id
+                 &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
+                 &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
+                 &&String(t.date||'').trim()===today){
+                 try{DB.deleteById(t.id)}catch(e){}
+                 console.log('[PLM] Deleted manual FIMEX sale for '+itemName+' (PLM is source of truth)');
+               }
+             });
           }else{
            // No existing PLM transaction - create new one
            const newTx={
@@ -11476,10 +11486,20 @@ window.settingsRestore=function(){
            linkName:link&&link.name,
            created_at:new Date().toISOString()
          };
-         try{
-           if(typeof DB.insertTransactions==='function'){DB.insertTransactions([newTx])}
-           else{if(Array.isArray(DB.db))DB.db.push(newTx);if(typeof DB.save==='function')DB.save()}
-         }catch(e){console.warn('[PLM] insert error:',e)}
+          try{
+            if(typeof DB.insertTransactions==='function'){DB.insertTransactions([newTx])}
+            else{if(Array.isArray(DB.db))DB.db.push(newTx);if(typeof DB.save==='function')DB.save()}
+          }catch(e){console.warn('[PLM] insert error:',e)}
+          // Delete any manual FIMEX sales for same item on same date (PLM is source of truth)
+          existingFimex.forEach(function(t){
+            if(!t.linkId
+              &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
+              &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
+              &&String(t.date||'').trim()===today){
+              try{DB.deleteById(t.id)}catch(e){}
+              console.log('[PLM] Deleted manual FIMEX sale for '+itemName+' (PLM is source of truth)');
+            }
+          });
        }
 
       changes.push({
