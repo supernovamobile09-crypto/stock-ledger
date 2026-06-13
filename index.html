@@ -2944,6 +2944,20 @@ function scheduleSync(){
 async function loadFromSupabase(){
   if(window._supabaseDisabled)return
   try{
+    // Load pricing_submitted_keys FIRST to get cross-device deleted IDs
+    var keys=await supabaseReq('pricing_submitted_keys','GET','select=*')
+    if(keys&&!window._supabaseDisabled){
+      var obj={};keys.forEach(function(k){
+        if(k.key&&k.key.startsWith('_del_')){
+          var delId=k.key.substring(5);
+          if(DB._deletedIds.indexOf(delId)<0)DB._deletedIds.push(delId);
+        }else{
+          obj[k.key]=k.qty
+        }
+      })
+      localStorage.setItem('pricingSubmittedKeys',JSON.stringify(obj))
+      if(DB._deletedIds.length)DB._saveDeletedIds();
+    }
     // Download transactions and merge with local data
     try{
       var cloudTx=await supabaseReq('transactions','GET','select=*')
@@ -3027,11 +3041,6 @@ async function loadFromSupabase(){
       var merged=Object.values(localMap);
       localStorage.setItem('pricingPending',JSON.stringify(merged))
     }
-    var keys=await supabaseReq('pricing_submitted_keys','GET','select=*')
-    if(keys&&!window._supabaseDisabled){
-      var obj={};keys.forEach(function(k){obj[k.key]=k.qty})
-      localStorage.setItem('pricingSubmittedKeys',JSON.stringify(obj))
-    }
     var users=await supabaseReq('users','GET','select=*')
     if(users&&users.length>0&&!window._supabaseDisabled){
       var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
@@ -3081,6 +3090,10 @@ async function syncToSupabase(){
     var pRes=await fetch(pUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(pBody)})
     if(!pRes.ok&&pRes.status!==409&&pRes.status!==201)console.warn('[Supabase] pricing_pending sync:',pRes.status)}
     var keysObj=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')
+    // Add deleted IDs to pricing_submitted_keys with _del_ prefix for cross-device sync
+    if(DB._deletedIds&&DB._deletedIds.length){
+      DB._deletedIds.forEach(function(id){keysObj['_del_'+id]=1})
+    }
     var keys=Object.entries(keysObj)
     if(keys.length){var kBody=keys.map(function(k){return{key:k[0],qty:k[1]}})
     var kUrl=SUPABASE_URL+'/rest/v1/pricing_submitted_keys'
@@ -11435,40 +11448,19 @@ window.settingsRestore=function(){
          return;
        }
 
-         if(match){
-           // Check for manual FIMEX sales of same item (no linkId) on same date
-           // Add their qty to PLM transaction so balance accounts for both
-           var manualSalesQty=0;
-           existingFimex.forEach(function(t){
-             if(t.id!==match.id&&!t.linkId
-               &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
-               &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
-               &&String(t.date||'').trim()===today){
-               manualSalesQty+=parseInt(t.quantity)||0;
-             }
-           });
-           match.quantity=q+manualSalesQty;
-           // Only add linkId if this was originally a PLM transaction (had linkId)
-           // Don't convert manual sales into PLM-managed transactions
-           if(match.linkId){
-             if(match.linkId!==linkIdVal)match.linkId=linkIdVal;
-           }
-           if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
-           if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
-           try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
-           if(manualSalesQty>0)console.log('[PLM] Added '+manualSalesQty+' manual sales to PLM qty ('+q+'+'+manualSalesQty+'='+(q+manualSalesQty)+')');
-         }else{
-          // No existing PLM transaction - check for manual sales to merge
-          var manualSalesQty2=0;
-          existingFimex.forEach(function(t){
-            if(!t.linkId
-               &&norm(t.item_name)===nItem&&norm(t.storage)===nStorage
-               &&mappedExisting(t)===mappedSpecs&&mappedExistingColor(t)===mappedColor
-               &&String(t.date||'').trim()===today){
-               manualSalesQty2+=parseInt(t.quantity)||0;
+          if(match){
+            match.quantity=q;
+            // Only add linkId if this was originally a PLM transaction (had linkId)
+            // Don't convert manual sales into PLM-managed transactions
+            if(match.linkId){
+              if(match.linkId!==linkIdVal)match.linkId=linkIdVal;
             }
-          });
-          const newTx={
+            if(nSpecs&&norm(match.specs)!==nSpecs)match.specs=specs;
+            if(mappedColor&&mappedExistingColor(match)!==mappedColor)match.color=color;
+            try{DB.updateById(match.id,match)}catch(e){console.warn('[PLM] updateById error:',e)}
+          }else{
+           // No existing PLM transaction - create new one
+           const newTx={
             date:today,
             transaction_type:'Selling',
             customer_vendor:FIMEX,
@@ -11476,8 +11468,8 @@ window.settingsRestore=function(){
             item_name:itemName,
             storage:storage,
             specs:specs,
-            color:color,
-            quantity:q+manualSalesQty2,
+             color:color,
+             quantity:q,
            transaction_status:'Order In Hand',
            logistics:FIMEX,
            linkId:linkIdVal,
