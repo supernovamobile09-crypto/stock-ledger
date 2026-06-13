@@ -11141,7 +11141,7 @@ window.settingsRestore=function(){
   }
 
   function parseLine(rawLine){
-    if(!rawLine)return null;
+    if(!rawLine){return null;}
     let line=rawLine.replace(/[\u00A0]/g,' ').trim();
     if(line.length<3)return null;
     line=line.replace(/[\$£€]\s*\d+(\.\d+)?/gi,' ').replace(/\b(?:USD|AED|EUR|GBP)\s*\d+(\.\d+)?/gi,' ');
@@ -11326,6 +11326,7 @@ window.settingsRestore=function(){
         }
       });
     }
+    console.log('[PLM] After page loop, allParsed.length:',allParsed.length,'allParsed:',JSON.stringify(allParsed).substring(0,500));
     const map=new Map();
     allParsed.forEach(function(it){
       const k=itemKey(it);
