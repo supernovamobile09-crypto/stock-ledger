@@ -11227,7 +11227,6 @@ window.settingsRestore=function(){
         .replace(/[\$£€]\s*\d+(\.\d+)?/gi,' ')
         .replace(/\b(?:USD|AED|EUR|GBP)\s*\d+(\.\d+)?/gi,' ')
         .replace(/\b\d{1,4}\s*(GB|TB)\b/gi,'')
-        .replace(/\b\d{2}\b/g,'')  // remove 2-digit numbers (likely years/codes)
         .replace(/\b(17|16|15|14|13|12|11|SE)\b/gi,'')
         .replace(/\([^)]*\)/g,'')
         .replace(/\s+/g,' ').trim();
