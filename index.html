@@ -11259,6 +11259,7 @@ window.settingsRestore=function(){
     if(!model)model='Unknown';
     if(qty==null||qty<0)qty=0;
 
+    console.log('[PLM-PARSE] line:',JSON.stringify(rawLine),'→ model:',model,'storage:',storage,'color:',color,'country:',country,'qty:',qty);
     return{model,storage:storage||'',color:color||'',country:country||'',qty,raw:rawLine};
   }
 
@@ -11297,24 +11298,31 @@ window.settingsRestore=function(){
         }
 
         if(item.model!=='Unknown'&&(item.color||item.qty)){
+          console.log('[PLM-LINE] PUSH-self-contained:',JSON.stringify(item));
           pendingItem=null;
           allParsed.push(item);
         }else if(item.model!=='Unknown'){
+          console.log('[PLM-LINE] SET-PENDING:',JSON.stringify(item));
           pendingItem=item;
         }else if(pendingItem&&item.qty>0){
           item.model=pendingItem.model;
           item.storage=pendingItem.storage||item.storage;
           item.color=pendingItem.color||item.color;
           item.country=pendingItem.country||item.country;
+          console.log('[PLM-LINE] PUSH-from-pending:',JSON.stringify(item));
           allParsed.push(item);
           // Don't clear pendingItem - subsequent color/qty lines should also use it
         }else if(pendingItem&&item.color&&!item.qty){
           pendingItem.color=item.color;
           pendingItem.country=pendingItem.country||item.country;
+          console.log('[PLM-LINE] UPDATE-pending-color:',JSON.stringify(item));
           // keep pending for next line which may have qty
         }else if(item.model!=='Unknown'||item.color||item.storage){
+          console.log('[PLM-LINE] PUSH-partial:',JSON.stringify(item));
           pendingItem=null;
           allParsed.push(item);
+        }else{
+          console.log('[PLM-LINE] SKIP:',JSON.stringify(item),'text:',l.text);
         }
       });
     }
