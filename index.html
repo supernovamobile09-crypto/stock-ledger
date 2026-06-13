@@ -11278,11 +11278,15 @@ window.settingsRestore=function(){
     }
     const allParsed=[];
     let pendingItem=null;
+    console.log('[PLM] PDF pages:',pdf.numPages);
     for(let p=1;p<=pdf.numPages;p++){
       const page=await pdf.getPage(p);
       const tc=await page.getTextContent();
       const lines=groupByLine(tc.items);
+      console.log('[PLM] Page',p,'has',lines.length,'lines');
+      let lineIdx=0;
       lines.forEach(l=>{
+        lineIdx++;
         const item=parseLine(l.text);
         if(!item){
           // If line is just a number and we have a pending item, adopt it as qty
@@ -11292,6 +11296,7 @@ window.settingsRestore=function(){
             allParsed.push(pendingItem);
             pendingItem=null;
           }else{
+            if(l.text.trim()&&lineIdx<=20)console.log('[PLM-RAW-LINE] Pg',p,'#',lineIdx,'TEXT:',JSON.stringify(l.text),'→ parseLine returned null, pendingItem:',pendingItem?pendingItem.model:'null');
             pendingItem=null;
           }
           return;
