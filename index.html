@@ -3107,17 +3107,19 @@ async function syncToSupabase(){
     }catch(e){console.warn('[Supabase] PLM sync:',e.message)}
     // Re-delete any IDs tracked in _deletedIds (best-effort)
     // Re-delete any IDs that were previously deleted but may still exist in cloud
+    var failedIds=[];
     if(DB._deletedIds&&DB._deletedIds.length){
       var ids=DB._deletedIds.slice();
       for(var d=0;d<ids.length;d++){
         try{
           var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(ids[d]);
-          await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
-        }catch(e){}
+          var resp=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}});
+          if(!resp.ok&&resp.status!==404)failedIds.push(ids[d]);
+        }catch(e){failedIds.push(ids[d])}
       }
-      DB._deletedIds=[];
+      DB._deletedIds=failedIds;
       DB._saveDeletedIds();
-      console.log('[Supabase] Re-delete attempted for '+ids.length+' tracked IDs');
+      console.log('[Supabase] Re-delete attempted for '+ids.length+' tracked IDs, '+(ids.length-failedIds.length)+' succeeded, '+failedIds.length+' failed/stayed');
     }
     console.log('[Supabase] Data synced to cloud')
     var ss=document.getElementById('syncStatus');if(ss)ss.textContent='✓ Synced '+new Date().toLocaleTimeString()
