@@ -11222,25 +11222,28 @@ window.settingsRestore=function(){
     if(qTag){qty=parseInt(qTag[1],10)}
 
     if(qty==null){
-      // Only look for qty if there was a model detected on this line
-      if(model){
-        let lineForQty=lineForCountry
-          .replace(/[\$£€]\s*\d+(\.\d+)?/gi,' ')
-          .replace(/\b(?:USD|AED|EUR|GBP)\s*\d+(\.\d+)?/gi,' ')
-          .replace(/\b\d{1,4}\s*(GB|TB)\b/gi,'')  // remove storage numbers
-          .replace(/\b\d{2}\b/g,'')  // remove 2-digit numbers (likely years/codes)
-          .replace(/\b(17|16|15|14|13|12|11|SE)\b/gi,'')  // remove model numbers
-          .replace(/\([^)]*\)/g,'')
-          .replace(/\s+/g,' ').trim();
-        const endQty=lineForQty.match(/\b(\d{1,4})\s*$/);
-        if(endQty){qty=parseInt(endQty[1],10)}
-        if(qty==null){
-          const nums=lineForQty.match(/\b(\d{1,4})\b/g);
-          if(nums){
-            for(let i=nums.length-1;i>=0;i--){
-              const n=parseInt(nums[i],10);
-              if(n>=1&&n<=999){qty=n;break}
-            }
+      // Clean line for qty extraction
+      let lineForQty=lineForCountry
+        .replace(/[\$£€]\s*\d+(\.\d+)?/gi,' ')
+        .replace(/\b(?:USD|AED|EUR|GBP)\s*\d+(\.\d+)?/gi,' ')
+        .replace(/\b\d{1,4}\s*(GB|TB)\b/gi,'')
+        .replace(/\b\d{2}\b/g,'')  // remove 2-digit numbers (likely years/codes)
+        .replace(/\b(17|16|15|14|13|12|11|SE)\b/gi,'')
+        .replace(/\([^)]*\)/g,'')
+        .replace(/\s+/g,' ').trim();
+
+      // First try: find qty at END of line (most reliable for PDF format)
+      const endQty=lineForQty.match(/\b(\d{1,4})\s*$/);
+      if(endQty){qty=parseInt(endQty[1],10)}
+
+      // Second try: find any number that looks like qty (not storage, not model)
+      if(qty==null){
+        const nums=lineForQty.match(/\b(\d{1,4})\b/g);
+        if(nums){
+          for(let i=nums.length-1;i>=0;i--){
+            const n=parseInt(nums[i],10);
+            // Accept numbers 1-999 as valid qty
+            if(n>=1&&n<=999){qty=n;break}
           }
         }
       }
@@ -11316,21 +11319,24 @@ window.settingsRestore=function(){
       });
     }
     const map=new Map();
-    allParsed.forEach(it=>{
+    allParsed.forEach(function(it){
       const k=itemKey(it);
-      if(!k)return;
+      if(!k){console.log('[PLM] Skipping item with no key:',JSON.stringify(it));return;}
       const prev=map.get(k)||{model:it.model,storage:it.storage,color:it.color,country:it.country,qty:0};
+      console.log('[PLM] Adding/merging item:',k,'qty:',it.qty,'prev.qty:',prev.qty);
       prev.qty+=it.qty;
       map.set(k,prev);
     });
     const snap={};
     const details={};
-    map.forEach((v,k)=>{
+    map.forEach(function(v,k){
+      console.log('[PLM] Final item:',k,'total qty:',v.qty);
       snap[k]=v.qty;
       details[k]={model:v.model,storage:v.storage,color:v.color,country:v.country};
     });
     let totalQty=0;
-    map.forEach(v=>{totalQty+=v.qty});
+    map.forEach(function(v){totalQty+=v.qty});
+    console.log('[PLM] Total qty from PDF:',totalQty,'items:',map.size);
     return{snap,details,rawCount:allParsed.length,pageCount:pdf.numPages,totalQty,allItems:allParsed};
   }
 
