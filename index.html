@@ -4631,9 +4631,9 @@ function localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideV
     text=text.replace(/(\d+(?:MM|mm)?)\s*([A-Z]{1,2}[A-Z0-9]{2,5}(?:LL|HN|LW|AM)\/A)/g,'$1\n$2')
     text=text.replace(/([^A-Z\n])([A-Z]{1,2}[A-Z0-9]{2,5}(?:LL|HN|LW|AM)\/A)/g,'$1\n$2')
   }
-  let result=parseHanchongFormat(text)
+  let result=parseKoreaFormat(text)
+  if(!result)result=parseHanchongFormat(text)
   if(!result)result=parseRussianFormat(text)
-  if(!result)result=parseKoreaFormat(text)
   if(!result)result=parseGenericProduct(text)
   if(!result){
     if(isBalanceFormat(text)){
