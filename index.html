@@ -2724,7 +2724,6 @@ const DB = {
   _loadDeletedIds(){try{var d=localStorage.getItem('dbDeletedIds');if(d)this._deletedIds=JSON.parse(d)}catch(e){}},
   init() {
     this.db = [];
-    try{var c=localStorage.getItem('dbCache');if(c){var p=JSON.parse(c);if(p&&p.length)this.db=p}}catch(e){}
     this._loadDeletedIds();
   },
   save() { },
