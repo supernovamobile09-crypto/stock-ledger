@@ -3424,7 +3424,28 @@ function yp(e){
       continue
     }
     let _rp=mp(e);
-    if(!_rp)continue;
+    if(!_rp){
+      // Try KR format: "KR, IPHONE17PRO-256OR - 17.00"
+      let _am=e.match(/^([A-Z]{2,4}),\s*(.+?)\s*-\s*(\d+(?:\.\d+)?)\s*$/);
+      if(_am){
+        let _ccd=_am[1].toUpperCase(),_itm=_am[2].trim(),_qty=Math.round(parseFloat(_am[3]));
+        // Color code mapping
+        let _cmap={OR:'Orange',BU:'Blue',WH:'White',GR:'Green',PK:'Pink',PU:'Purple',RD:'Red',BK:'Black',GD:'Gold',SR:'Silver',GY:'Gray',YW:'Yellow',LA:'Lavender',TE:'Teal',SG:'Sage',MN:'Midnight',ST:'Starlight',SB:'Sky Blue',RG:'Rose Gold',IN:'Indigo',CO:'Coral',TI:'Titanium'};
+        let _stor='',_clr='';
+        let _sm=_itm.match(/^(.+?)-(\d+(?:GB|TB)?)(-?)([A-Z]{2})$/);
+        if(_sm){_stor=_sm[2]+(/^\d+$/.test(_sm[2])?'GB':'');_clr=_cmap[_sm[4]]||_sm[4];_itm=_sm[1];}
+        // Normalize model name
+        _itm=_itm.replace(/^IPHONE(17(?:PRO|MAX|AIR|E)?)$/i,function(m,p1){var n='iPhone '+p1;return n.replace(/\bPRO\b/,'Pro').replace(/\bMAX\b/,'Pro Max').replace(/\bAIR\b/,'Air').replace(/\bE\b/,'e')});
+        let _altRow={model:_itm,storage:_stor,country:_ccd,color:_clr,qty:_qty,vendor:'',marks:'',logistics:''};
+        let _vm=e.match(/\*([^*\d][^*]*)\*/);
+        if(_vm){let _v=_vm[1].trim(),_mv=typeof fuzzyMatchVendor==='function'?fuzzyMatchVendor(_v):_v;if(_mv&&_mv!==_v)_altRow.vendor=_mv;else if(VENDOR_LIST.some(function(v){return v.toUpperCase()===_v.toUpperCase()}))_altRow.vendor=_v;else _altRow.vendor=_v}
+        if(_altRow.vendor)_pendingVendor='';
+        let _pm=e.match(/\b(\d{10,})\b/);if(_pm)_pendingPhone=_pm[1];
+        if(_pendingPhone){_altRow.logistics=_pendingPhone;_pendingPhone=''}
+        n.push(_altRow);
+      }
+      continue;
+    }
     let i=hp(_rp.code);
     let _row;
     let _cc=(_rp.code||'')+' ' +(_rp.color||'');
@@ -4423,6 +4444,29 @@ function parseRussianFormat(text){
   return{rows:rows};
 }
 
+function parseKoreaFormat(text){
+  let lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let rows=[],vendor='',phone='';
+  let krRe=/^([A-Z]{2,4}),\s*(.+?)\s*-\s*(\d+(?:\.\d+)?)\s*$/;
+  let cmap={OR:'Orange',BU:'Blue',WH:'White',GR:'Green',PK:'Pink',PU:'Purple',RD:'Red',BK:'Black',GD:'Gold',SR:'Silver',GY:'Gray',YW:'Yellow',LA:'Lavender',TE:'Teal',SG:'Sage',MN:'Midnight',ST:'Starlight',SB:'Sky Blue',RG:'Rose Gold',IN:'Indigo',CO:'Coral',TI:'Titanium'};
+  let found=0;
+  for(let l of lines){
+    let km=l.match(krRe);
+    if(km){found++;
+      let country=km[1].toUpperCase(),item=km[2].trim(),qty=Math.round(parseFloat(km[3]));
+      let storage='',color='';
+      let sm=item.match(/^(.+?)-(\d+(?:GB|TB)?)(-?)([A-Z]{2})$/);
+      if(sm){storage=sm[2]+(/^\d+$/.test(sm[2])?'GB':'');color=cmap[sm[4]]||sm[4];item=sm[1];}
+      item=item.replace(/^IPHONE(17(?:PRO|MAX|AIR|E)?)$/i,function(m,p1){var n='iPhone '+p1;return n.replace(/\bPRO\b/,'Pro').replace(/\bMAX\b/,'Pro Max').replace(/\bAIR\b/,'Air').replace(/\bE\b/,'e')});
+      rows.push({model:item,storage:storage,country:country,color:color,qty:qty,vendor:vendor||'',marks:'',logistics:phone||''});
+      continue;
+    }
+    if(!vendor&&/^[A-Z\s]+$/.test(l)&&l.length>2)vendor=l.trim();
+    let pm=l.match(/\b(\d{10,})\b/);if(pm)phone=pm[1];
+  }
+  return found>1?{rows:rows}:null;
+}
+
 function parseGenericProduct(text){
   // Skip if text contains Apple model codes - let yp() handle those
   if(/[A-Z0-9]{3,}(?:LL|HN|LW|AM)\/A/i.test(text))return null
@@ -4589,6 +4633,7 @@ function localParseAndFinish(text,type,overrideLogistics,overrideMarks,overrideV
   }
   let result=parseHanchongFormat(text)
   if(!result)result=parseRussianFormat(text)
+  if(!result)result=parseKoreaFormat(text)
   if(!result)result=parseGenericProduct(text)
   if(!result){
     if(isBalanceFormat(text)){
