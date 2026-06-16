@@ -5663,7 +5663,7 @@ function refreshDOCustomers(){
   if(!sel)return
   let names=new Set()
   allSavedTx.forEach(t=>{
-    if((t.transaction_type==='Selling'||t.transaction_type==='Buying'||t.transaction_type==='Opening')&&t.customer_vendor){
+    if(t.transaction_type==='Selling'&&t.customer_vendor){
       if(t.date===window._doDateFilter)names.add(t.customer_vendor)
     }
   })
