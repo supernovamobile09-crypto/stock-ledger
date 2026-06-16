@@ -3054,13 +3054,14 @@ async function loadFromSupabase(){
       }
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
-    // Load PLM links from cloud (stored as __plm_config in users table) — only if local is empty
+    // Load PLM links from cloud (stored as __plm_config in users table)
     try{
       var plmUser=users&&users.find(function(u){return u.username==='__plm_config'})
       if(plmUser&&plmUser.name){
         var plmData=JSON.parse(plmUser.name)
         if(Array.isArray(plmData)&&plmData.length){
-          try{var existing=JSON.parse(localStorage.getItem('plm_links_v1')||'[]');if(!Array.isArray(existing)||!existing.length)localStorage.setItem('plm_links_v1',JSON.stringify(plmData))}catch(e){}
+          // Only seed from cloud if localStorage has NO PLM links key at all (never been saved locally)
+          try{var key='plm_links_v1';if(localStorage.getItem(key)===null)localStorage.setItem(key,JSON.stringify(plmData))}catch(e){}
           // Force re-render if PLM module loaded
           setTimeout(function(){try{window.PLM&&window.PLM.renderLinks&&window.PLM.renderLinks()}catch(e){}},100)
         }
