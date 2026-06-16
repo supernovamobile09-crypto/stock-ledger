@@ -3153,7 +3153,7 @@ var _cloudSyncPending = false
 function triggerCloudSync() {
   if (_cloudSyncPending) return
   _cloudSyncPending = true
-  syncToSupabase().then(function(){setTimeout(function(){_cloudSyncPending=false},1000)})
+  syncToSupabase().then(function(){_cloudSyncPending=false})
 }
 // Also sync on page load (for PLM links etc.)
 setTimeout(function(){try{triggerCloudSync()}catch(e){}},5000)
@@ -7166,15 +7166,12 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
       var after=await supabaseReq('transactions','GET','select=id,created_at,quantity,item_name,storage,specs,color,customer_vendor');
       var afterCount=(after||[]).length;
       var afterHash=JSON.stringify((after||[]).map(function(t){return[t.id,t.quantity,t.item_name,t.storage,t.specs,t.color,t.customer_vendor].join('|')}).sort());
-      if(beforeHash!==afterHash||beforeCount!==afterCount){
-        console.log('[CrossDevice] Cloud changed ('+reason+'): '+beforeCount+'→'+afterCount+'. Re-rendering.');
-        try{fetchHistory()}catch(e){}
-        try{renderBalance()}catch(e){}
-        try{renderHistory&&renderHistory()}catch(e){}
-        try{if(typeof window.renderNotifs==='function')window.renderNotifs()}catch(e){}
-        try{if(typeof window.refreshApprovalView==='function')window.refreshApprovalView()}catch(e){}
-        try{if(typeof window.refreshPricingView==='function')window.refreshPricingView()}catch(e){}
-      }
+      try{fetchHistory()}catch(e){}
+      try{renderBalance()}catch(e){}
+      try{renderHistory&&renderHistory()}catch(e){}
+      try{if(typeof window.renderNotifs==='function')window.renderNotifs()}catch(e){}
+      try{if(typeof window.refreshApprovalView==='function')window.refreshApprovalView()}catch(e){}
+      try{if(typeof window.refreshPricingView==='function')window.refreshPricingView()}catch(e){}
     }catch(e){console.warn('[CrossDevice] refresh:',e.message)}
   }
   // Periodic refresh
