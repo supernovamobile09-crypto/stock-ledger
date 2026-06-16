@@ -7144,6 +7144,8 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
     }
   }catch(e){}
   if(typeof window.loginRefreshDropdown==='function')try{window.loginRefreshDropdown()}catch(e){}
+  // Force immediate sync to cloud (uploads any local data)
+  try{triggerCloudSync()}catch(e){}
   console.log('[Supabase] Data load callback complete')
 })
 
