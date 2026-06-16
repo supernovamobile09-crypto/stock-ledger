@@ -3054,13 +3054,13 @@ async function loadFromSupabase(){
       }
       localStorage.setItem('loginUsers',JSON.stringify(uobj))
     }
-    // Load PLM links from cloud (stored as __plm_config in users table)
+    // Load PLM links from cloud (stored as __plm_config in users table) — only if local is empty
     try{
       var plmUser=users&&users.find(function(u){return u.username==='__plm_config'})
       if(plmUser&&plmUser.name){
         var plmData=JSON.parse(plmUser.name)
         if(Array.isArray(plmData)&&plmData.length){
-          try{localStorage.setItem('plm_links_v1',JSON.stringify(plmData))}catch(e){}
+          try{var existing=JSON.parse(localStorage.getItem('plm_links_v1')||'[]');if(!Array.isArray(existing)||!existing.length)localStorage.setItem('plm_links_v1',JSON.stringify(plmData))}catch(e){}
           // Force re-render if PLM module loaded
           setTimeout(function(){try{window.PLM&&window.PLM.renderLinks&&window.PLM.renderLinks()}catch(e){}},100)
         }
@@ -3113,7 +3113,7 @@ async function syncToSupabase(){
       var plmRaw=localStorage.getItem('plm_links_v1')
       if(plmRaw){
         var plmData=JSON.parse(plmRaw)
-        if(Array.isArray(plmData)&&plmData.length){
+        if(Array.isArray(plmData)){
           var plmBody={username:'__plm_config',password:'__plm',role:'__plm',name:plmRaw}
           var plmUrl=SUPABASE_URL+'/rest/v1/users'
           await fetch(plmUrl,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify([plmBody])})
@@ -12040,6 +12040,7 @@ window.settingsRestore=function(){
     LINKS=LINKS.filter(x=>x.id!==id);
     persistLinks();renderLinks();renderDashboard();
     toast('Monitor deleted');
+    setTimeout(function(){try{typeof triggerCloudSync==='function'&&triggerCloudSync()}catch(e){}},100);
   }
   function handleToggle(id){
     const l=LINKS.find(x=>x.id===id);if(!l)return;
