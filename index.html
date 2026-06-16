@@ -4459,7 +4459,7 @@ function parseKoreaFormat(text){
       let sm=item.match(/^(.+?)-(\d+(?:GB|TB)?)(-?)([A-Z]{2})$/);
       if(sm){storage=sm[2]+(/^\d+$/.test(sm[2])?'GB':'');color=cmap[sm[4]]||sm[4];item=sm[1];}
       if(color&&typeof fp==='function'){var _fc=fp(color);if(_fc)color=_fc;}
-      item=item.replace(/^IPHONE(17(?:PRO|MAX|AIR|E)?)$/i,function(m,p1){var u=p1.toUpperCase();return u==='17PRO'?'iPhone 17 Pro':u==='17MAX'?'iPhone 17 Pro Max':u==='17AIR'?'iPhone 17 Air':u==='17E'?'iPhone 17e':'iPhone '+p1;});
+      item=item.replace(/^IPHONE(17(?:PRO|MAX|AIR|E)?)$/i,function(m,p1){var u=p1.toUpperCase();return u==='17PRO'?'17 Pro':u==='17MAX'?'17 Pro Max':u==='17AIR'?'17 Air':u==='17E'?'17e':p1;});
       rows.push({model:item,storage:storage,country:country,color:color,qty:qty,vendor:vendor||'',marks:'',logistics:phone||''});
       continue;
     }
