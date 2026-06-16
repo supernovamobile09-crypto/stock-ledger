@@ -5737,7 +5737,7 @@ function refreshDOCustomerList(){
   // Build per-mark entries instead of per-customer
   var markEntries=[]
   allSavedTx.forEach(function(t){
-    if(t.transaction_type!=='Selling'&&t.transaction_type!=='Opening'&&t.transaction_type!=='Buying')return
+    if(t.transaction_type!=='Selling')return
     if(t.date!==window._doDateFilter)return
     var cn=(t.customer_vendor||'').trim()
     var mk=(t.marks||'').trim()
