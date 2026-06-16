@@ -11174,7 +11174,10 @@ window.settingsRestore=function(){
       if(brandMatch){
         const brand=brandMatch[1];
         const brandIdx=line.indexOf(brand);
-        const afterBrand=line.substring(brandIdx+brand.length).trim();
+        let afterBrand=line.substring(brandIdx+brand.length).trim();
+        // If brand name appears again at start of afterBrand, strip it
+        const brandAgain=new RegExp('^'+brand+'\\s+','i');
+        afterBrand=afterBrand.replace(brandAgain,'');
         // Extract model name (everything until color or end)
         const colorMatch=afterBrand.match(/\b(Black|White|Silver|Gold|Blue|Red|Green|Pink|Purple|Orange|Brown|Gray|Grey|Cream|Beige|Navy|Maroon|Yellow|Light\s+\w+|Dark\s+\w+)\b/i);
         const stripWords=/\s+(Headphones|Earphones|Earbuds|Wireless|Bluetooth|Speaker|Speakers|Case|Charger|Cable|Adapter|Charging)\s*$/i;
