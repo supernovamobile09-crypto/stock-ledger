@@ -7152,7 +7152,7 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
 // Periodic re-fetch from cloud so changes made on another device appear within ~30s
 ;(function setupCrossDeviceSync(){
   if(window._crossDeviceSyncSet)return;window._crossDeviceSyncSet=true;
-  var REFRESH_MS=30000;
+  var REFRESH_MS=10000;
   var lastCloudCount=-1,lastCloudHash='';
   async function doRefresh(reason){
     if(window._supabaseDisabled)return;
