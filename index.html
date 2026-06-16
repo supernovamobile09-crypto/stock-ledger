@@ -11167,6 +11167,27 @@ window.settingsRestore=function(){
       }
     }
 
+    // Non-Apple brands detection (Marshall, Samsung, etc.)
+    if(!model){
+      const BRAND_RE=/\b(Marshall|Samsung|Sony|Bose|JBL|Beats|Sennheiser|Apple\s*Watch|AirPods)\b/i;
+      const brandMatch=line.match(BRAND_RE);
+      if(brandMatch){
+        const brand=brandMatch[1];
+        const brandIdx=line.indexOf(brand);
+        const afterBrand=line.substring(brandIdx+brand.length).trim();
+        // Extract model name (everything until color or end)
+        const colorMatch=afterBrand.match(/\b(Black|White|Silver|Gold|Blue|Red|Green|Pink|Purple|Orange|Brown|Gray|Grey|Cream|Beige|Navy|Maroon|Yellow|Light\s+\w+|Dark\s+\w+)\b/i);
+        if(colorMatch){
+          const colorIdx=afterBrand.indexOf(colorMatch[0]);
+          const modelName=afterBrand.substring(0,colorIdx).trim();
+          model=brand+' '+modelName;
+          color=colorMatch[0];
+        }else{
+          model=brand+' '+afterBrand;
+        }
+      }
+    }
+
     let lineForCountry=line;
     if(model){
       const mEsc=model.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
