@@ -6206,9 +6206,9 @@ async function saveToBackend(){
     if(ppChanged){localStorage.setItem('pricingPending',JSON.stringify(pp));console.warn('[SYNC] Saved updated pricingPending to localStorage')}
     else console.warn('[SYNC] No changes to pricingPending')
   }catch(e){console.error('[SYNC] Error:',e)}
-  // Force immediate cloud sync after save - single sync for all rows
+  // Force cloud sync in background (non-blocking)
   _syncBlocked = false
-  if(saved>0){try{await syncToSupabase()}catch(e){console.warn('Save sync error:',e)}}else{_cloudSyncPending = false}
+  if(saved>0){syncToSupabase().catch(function(e){console.warn('Save sync error:',e)})}else{_cloudSyncPending = false}
   var scrollToId=window._editingScrollToId||null
   transactions=[];transactions.push(emptyRow())
   renderEditable()
