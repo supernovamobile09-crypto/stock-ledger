@@ -3150,8 +3150,9 @@ async function syncToSupabase(){
 
 // Cloud sync engine — syncs to Supabase when DB changes
 var _cloudSyncPending = false
+var _syncBlocked = false
 function triggerCloudSync() {
-  if (_cloudSyncPending) return
+  if (_cloudSyncPending || _syncBlocked) return
   _cloudSyncPending = true
   syncToSupabase().then(function(){_cloudSyncPending=false}).catch(function(e){console.warn('Sync error:',e);_cloudSyncPending=false})
 }
@@ -6139,6 +6140,7 @@ function erpGo(page){try{switchTab(page)}catch(e){}}
 window.erpToday=erpToday;window.erpFmt=erpFmt;window.erpGetPrices=erpGetPrices;window.erpPostJv=erpPostJv;window.erpGo=erpGo;window.erpGetLegalNameByGivenName=erpGetLegalNameByGivenName;
 var editingHistoryId=null
 async function saveToBackend(){
+  _syncBlocked = true
   let data=transactions.filter(function(r){return r.item||r.vendor||r.qty})
   if(data.length===0){showMsg('No transactions to save','error');return}
   let sellWarnings=[]
@@ -6204,8 +6206,9 @@ async function saveToBackend(){
     if(ppChanged){localStorage.setItem('pricingPending',JSON.stringify(pp));console.warn('[SYNC] Saved updated pricingPending to localStorage')}
     else console.warn('[SYNC] No changes to pricingPending')
   }catch(e){console.error('[SYNC] Error:',e)}
-  // Force immediate cloud sync after save
-  if(saved>0){_cloudSyncPending=false;try{await syncToSupabase()}catch(e){console.warn('Save sync error:',e)}}
+  // Force immediate cloud sync after save - single sync for all rows
+  _syncBlocked = false
+  if(saved>0){try{await syncToSupabase()}catch(e){console.warn('Save sync error:',e)}else{_cloudSyncPending = false}}
   var scrollToId=window._editingScrollToId||null
   transactions=[];transactions.push(emptyRow())
   renderEditable()
