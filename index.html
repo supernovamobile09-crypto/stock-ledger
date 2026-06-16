@@ -11177,13 +11177,16 @@ window.settingsRestore=function(){
         const afterBrand=line.substring(brandIdx+brand.length).trim();
         // Extract model name (everything until color or end)
         const colorMatch=afterBrand.match(/\b(Black|White|Silver|Gold|Blue|Red|Green|Pink|Purple|Orange|Brown|Gray|Grey|Cream|Beige|Navy|Maroon|Yellow|Light\s+\w+|Dark\s+\w+)\b/i);
+        const stripWords=/\s+(Headphones|Earphones|Earbuds|Wireless|Bluetooth|Speaker|Speakers|Case|Charger|Cable|Adapter|Charging)\s*$/i;
         if(colorMatch){
           const colorIdx=afterBrand.indexOf(colorMatch[0]);
-          const modelName=afterBrand.substring(0,colorIdx).trim();
+          let modelName=afterBrand.substring(0,colorIdx).trim();
+          modelName=modelName.replace(stripWords,'');
           model=brand+' '+modelName;
           color=colorMatch[0];
         }else{
-          model=brand+' '+afterBrand;
+          let modelName=afterBrand.replace(stripWords,'');
+          model=brand+' '+modelName;
         }
       }
     }
