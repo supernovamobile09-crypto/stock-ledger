@@ -3153,7 +3153,7 @@ var _cloudSyncPending = false
 function triggerCloudSync() {
   if (_cloudSyncPending) return
   _cloudSyncPending = true
-  syncToSupabase().then(function(){_cloudSyncPending=false})
+  syncToSupabase().then(function(){_cloudSyncPending=false}).catch(function(e){console.warn('Sync error:',e);_cloudSyncPending=false})
 }
 // Also sync on page load (for PLM links etc.)
 setTimeout(function(){try{triggerCloudSync()}catch(e){}},5000)
