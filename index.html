@@ -6083,11 +6083,7 @@ async function loadFromSupabase(){
       if(users&&users.length>0&&!window._supabaseDisabled){
         var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
         var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
-        for(var dk in existing){
-          if(dk==='__plm_config'||dk.startsWith('_plm_'))continue
-          if(!uobj[dk])uobj[dk]=existing[dk]
-          else{for(var f in existing[dk]){if(uobj[dk][f]==null)uobj[dk][f]=existing[dk][f]}}
-        }
+        if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
         localStorage.setItem('loginUsers',JSON.stringify(uobj))
       }
     }catch(e){logSyncError('load','users',e)}
@@ -13400,6 +13396,16 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var pass=document.getElementById('loginPass').value
     var el=document.getElementById('loginError')
     if(!user||!pass){if(el)el.textContent='Enter username and password';return}
+    if(el)el.textContent='Checking...'
+    try{
+      var cloudUsers=await supabaseReq('users','GET','select=*')
+      if(cloudUsers&&cloudUsers.length>0){
+        var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
+        var existing=getUsers()
+        if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
+        saveUsers(uobj)
+      }
+    }catch(e){console.warn('Login user refresh:',e)}
     var users=getUsers()
     if(!users[user]){if(el)el.textContent='User not found';return}
     if(users[user].password!==pass){if(el)el.textContent='Wrong password';return}
