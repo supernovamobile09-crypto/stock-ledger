@@ -6087,7 +6087,7 @@ async function loadFromSupabase(){
         for(var dk in existing){
           if(dk==='__plm_config')continue
           if(uobj[dk]){
-            if(!uobj[dk].tabs&&existing[dk].tabs&&existing[dk].tabs.length)uobj[dk].tabs=existing[dk].tabs
+            if((!uobj[dk].tabs||!uobj[dk].tabs.length)&&existing[dk].tabs&&existing[dk].tabs.length)uobj[dk].tabs=existing[dk].tabs
           }else{
             uobj[dk]=existing[dk]
           }
@@ -13428,7 +13428,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         for(var ek in existing){
           if(ek==='__plm_config')continue
           if(uobj[ek]){
-            if(!uobj[ek].tabs&&existing[ek].tabs&&existing[ek].tabs.length)uobj[ek].tabs=existing[ek].tabs
+            if((!uobj[ek].tabs||!uobj[ek].tabs.length)&&existing[ek].tabs&&existing[ek].tabs.length)uobj[ek].tabs=existing[ek].tabs
           }else{
             uobj[ek]=existing[ek]
           }
