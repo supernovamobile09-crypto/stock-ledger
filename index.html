@@ -13391,7 +13391,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       c.appendChild(e)
     }
   })()
-  onId('loginBtn','click',function(){
+  onId('loginBtn','click',async function(){
     var user=document.getElementById('loginUser').value.trim().toLowerCase()
     var pass=document.getElementById('loginPass').value
     var el=document.getElementById('loginError')
@@ -14397,7 +14397,7 @@ window.settingsRestore=function(){
       _plmChanged=false;
       try{
         var plmRaw=localStorage.getItem('plm_links_v1');
-        if(plmRaw){
+        if(plmRaw&&typeof supabaseReq==='function'){
           var plmBody={username:'__plm_config',password:'__plm',role:'__plm',name:plmRaw};
           supabaseReq('users','POST','',plmBody,'resolution=merge-duplicates').catch(function(){});
         }
