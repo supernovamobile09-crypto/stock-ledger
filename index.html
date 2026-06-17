@@ -13228,7 +13228,14 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       var uObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
       delete uObj.__plm_config
       var uBody=Object.entries(uObj).map(function(e){return{username:e[0],password:e[1].password,role:e[1].role,name:e[1].name||e[0]}})
-      if(uBody.length) supabaseReq('users','POST','',uBody,'resolution=merge-duplicates').catch(function(){})
+      if(uBody.length){
+        console.log('[UserSync] Syncing '+uBody.length+' users to cloud:',uBody.map(function(u){return u.username}))
+        supabaseReq('users','POST','',uBody,'resolution=merge-duplicates').then(function(res){
+          console.log('[UserSync] Success:',res)
+        }).catch(function(e){
+          console.error('[UserSync] Failed:',e.message||e)
+        })
+      }
     }catch(e){console.warn('User sync error:',e)}
   }
   var defaultUsers={
@@ -13397,11 +13404,14 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(el)el.textContent='Checking...'
     try{
       var cloudUsers=await supabaseReq('users','GET','select=*')
+      console.log('[Login] Cloud users downloaded:',cloudUsers?cloudUsers.length:0,cloudUsers?cloudUsers.map(function(u){return u.username}):[])
       var existing=getUsers()
+      console.log('[Login] Local users before merge:',Object.keys(existing))
       if(cloudUsers&&cloudUsers.length>0){
         var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
         for(var ek in existing){if(!uobj[ek]&&ek!=='__plm_config')uobj[ek]=existing[ek]}
         if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
+        console.log('[Login] Merged users:',Object.keys(uobj))
         saveUsers(uobj)
       }
     }catch(e){console.warn('Login user refresh:',e)}
