@@ -6089,7 +6089,7 @@ async function loadFromSupabase(){
           if(uobj[dk]){
             if(!uobj[dk].tabs||!uobj[dk].tabs.length)uobj[dk].tabs=existing[dk].tabs||[]
           }else{
-            if(_usersJustSaved)uobj[dk]=existing[dk]
+            uobj[dk]=existing[dk]
           }
         }
         if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
