@@ -13421,6 +13421,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(users[user].password!==pass){if(el)el.textContent='Wrong password';return}
     if(el)el.textContent=''
     currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user}
+    var u=users[user]
+    console.log('[Login] User object:',JSON.stringify({username:u.username,role:u.role,tabs:u.tabs,name:u.name}))
+    console.log('[Login] currentUser.role:',currentUser.role)
+    console.log('[Login] canAccess test - entry:',u.tabs&&Array.isArray(u.tabs)?u.tabs.indexOf('entry')>=0:'no tabs')
     updateUI()
     if(document.getElementById('rememberMe').checked){
       try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user}))}catch(e){}
