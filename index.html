@@ -6083,6 +6083,9 @@ async function loadFromSupabase(){
       if(users&&users.length>0&&!window._supabaseDisabled){
         var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
         var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
+        if(_usersJustSaved){
+          for(var dk in existing){if(!uobj[dk]&&dk!=='__plm_config')uobj[dk]=existing[dk]}
+        }
         if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
         localStorage.setItem('loginUsers',JSON.stringify(uobj))
       }
@@ -13218,7 +13221,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     try{return JSON.parse(localStorage.getItem(USERS_KEY))||{}}catch(e){return {}}
   }
   function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){}}
-  function saveUsersAndSync(u){saveUsers(u);syncUsersToCloud()}
+  var _usersJustSaved = false
+  function saveUsersAndSync(u){saveUsers(u);_usersJustSaved=true;setTimeout(function(){_usersJustSaved=false},10000);syncUsersToCloud()}
   function syncUsersToCloud(){
     try{
       var uObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
