@@ -8462,11 +8462,15 @@ function renderDOTable(){
   tbody.innerHTML=''
   let grandTotal=0
   doProducts.forEach(function(prod,pi){
+    // Item name row
+    var nr=document.createElement('tr');nr.className='row-color'
+    nr.innerHTML='<td class="col-cat"></td><td class="col-desc" style="font-weight:700">'+prod.name+'</td><td class="col-color"></td><td class="col-qty"></td>'
+    tbody.appendChild(nr)
     let subtotal=0
     prod.colors.forEach(function(item,ci){
       subtotal+=Number(item.qty)||0
       var r=document.createElement('tr');r.className='row-color'
-      r.innerHTML='<td class="col-cat"></td><td class="col-desc" style="font-weight:700">'+(ci===0?prod.name:'')+'</td><td class="col-color">'+item.color+'</td><td class="col-qty">'+item.qty+'</td>'
+      r.innerHTML='<td class="col-cat"></td><td class="col-desc"></td><td class="col-color">'+item.color+'</td><td class="col-qty">'+item.qty+'</td>'
       tbody.appendChild(r)
     })
     var dot=document.createElement('tr');dot.className='row-subtotal'
