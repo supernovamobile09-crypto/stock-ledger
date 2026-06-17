@@ -9189,7 +9189,6 @@ var origRenderEditable = window.renderEditable;
 if (origRenderEditable) {
   window.renderEditable = function() {
     origRenderEditable();
-    setTimeout(initTableZoomHandlers, 100);
     setTimeout(function(){_initBulkDelete();_updateSelectedCount();_checkDuplicates()},50);
   };
 }
@@ -9198,7 +9197,6 @@ var origRenderHistory = window.renderHistory;
 if (origRenderHistory) {
   window.renderHistory = function() {
     origRenderHistory();
-    setTimeout(initTableZoomHandlers, 100);
   };
 }
 
