@@ -13300,8 +13300,9 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     }else if(currentUser.tabs&&Array.isArray(currentUser.tabs)&&currentUser.tabs.length){
       userTabs=currentUser.tabs
     }
-    console.log('[canAccess] tab:',tab,'userTabs:',userTabs,'currentUser:',currentUser.username,'storedUser:',storedUser)
-    if(userTabs)return userTabs.indexOf(tab)>=0
+    var hasAccess=userTabs?userTabs.indexOf(tab)>=0:false
+    console.log('[canAccess] tab:',tab,'userTabs:',JSON.stringify(userTabs),'hasAccess:',hasAccess)
+    if(userTabs)return hasAccess
     var role=currentUser.role||(storedUser?storedUser.role:null)
     if(!role)return false
     var allowed=tabRoles[tab]
@@ -13474,6 +13475,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}
     console.log('[Login] currentUser set to:',currentUser)
     console.log('[Login] users[user]:',users[user])
+    console.log('[Login] currentUser.tabs:',currentUser.tabs)
     updateUI()
     if(document.getElementById('rememberMe').checked){
       try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}))}catch(e){}
