@@ -13274,22 +13274,23 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     warehouse:'Warehouse',history:'History'
   }
   function canAccess(tab){
-    if(!currentUser){console.log('[canAccess] no currentUser');return false}
+    if(!currentUser)return false
+    if(currentUser.role==='admin')return true
+    if(currentUser.tabs&&Array.isArray(currentUser.tabs)&&currentUser.tabs.length){
+      return currentUser.tabs.indexOf(tab)>=0
+    }
     var users=getUsers()
     var u=users[currentUser.username]
-    if(!u){console.log('[canAccess] no user in users for:',currentUser.username);return false}
+    if(!u)return false
     if(u.role==='admin')return true
     if(u.tabs&&Array.isArray(u.tabs)&&u.tabs.length){
-      var allowed=u.tabs.indexOf(tab)>=0
-      console.log('[canAccess] tab:',tab,'u.tabs:',u.tabs,'allowed:',allowed)
-      return allowed
+      return u.tabs.indexOf(tab)>=0
     }
-    var role=currentUser.role
-    console.log('[canAccess] no tabs, checking role. currentUser.role:',role,'tabRoles[tab]:',tabRoles[tab])
+    var role=currentUser.role||u.role
     if(!role)return false
-    var allowed2=tabRoles[tab]
-    if(!allowed2)return false
-    return allowed2.indexOf(role)>=0
+    var allowed=tabRoles[tab]
+    if(!allowed)return false
+    return allowed.indexOf(role)>=0
   }
   function applyAccess(){
     if(!currentUser){
@@ -13376,7 +13377,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       if(!u||!u.username)return
       var users=getUsers()
       if(!users[u.username])return
-      currentUser=window.currentUser={username:u.username,role:u.role,name:u.name||u.username}
+      currentUser=window.currentUser={username:u.username,role:u.role,name:u.name||u.username,tabs:u.tabs||users[u.username].tabs}
       var rm=document.getElementById('rememberMe')
       if(rm)rm.checked=true
       updateUI()
@@ -13442,14 +13443,11 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(!users[user]){if(el)el.textContent='User not found';return}
     if(users[user].password!==pass){if(el)el.textContent='Wrong password';return}
     if(el)el.textContent=''
-    currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user}
+    currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}
     var u=users[user]
-    console.log('[Login] User object:',JSON.stringify({username:u.username,role:u.role,tabs:u.tabs,name:u.name}))
-    console.log('[Login] currentUser.role:',currentUser.role)
-    console.log('[Login] canAccess test - entry:',u.tabs&&Array.isArray(u.tabs)?u.tabs.indexOf('entry')>=0:'no tabs')
     updateUI()
     if(document.getElementById('rememberMe').checked){
-      try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user}))}catch(e){}
+      try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}))}catch(e){}
     }
   })
   onId('loginPass','keydown',function(e){if(e.key==='Enter'){var btn=document.getElementById('loginBtn');if(btn)btn.click()}})
