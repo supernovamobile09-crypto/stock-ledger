@@ -13397,9 +13397,10 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(el)el.textContent='Checking...'
     try{
       var cloudUsers=await supabaseReq('users','GET','select=*')
+      var existing=getUsers()
       if(cloudUsers&&cloudUsers.length>0){
         var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username}})
-        var existing=getUsers()
+        for(var ek in existing){if(!uobj[ek]&&ek!=='__plm_config')uobj[ek]=existing[ek]}
         if(existing.__plm_config)uobj.__plm_config=existing.__plm_config
         saveUsers(uobj)
       }
