@@ -5626,8 +5626,8 @@ const DB = {
   _deletedIds: [], // Track IDs deleted locally (for Supabase sync)
   _saveDeletedIds(){try{localStorage.setItem('dbDeletedIds',JSON.stringify(this._deletedIds))}catch(e){}},
   _loadDeletedIds(){try{var d=localStorage.getItem('dbDeletedIds');if(d)this._deletedIds=JSON.parse(d)}catch(e){}},
-  init() { this.db = []; this._loadDeletedIds(); },
-  save() { },
+  init() { try{var d=localStorage.getItem('dbData');if(d)this.db=JSON.parse(d)}catch(e){} this._loadDeletedIds(); },
+  save() { try{localStorage.setItem('dbData',JSON.stringify(this.db))}catch(e){} },
   nextId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); },
   getTransactions() { return [...this.db].reverse(); },
   insertTransactions(txns) {
@@ -10361,7 +10361,7 @@ async function saveToBackend(){
     var plm=document.getElementById('plmOrderDate')
     if(plm&&!plm.value)plm.value=todayStr
   })()
-  // Load data from Supabase ONLY - no localStorage caching
+  // Load data from localStorage first, then sync from Supabase
   DB.init()
   // loadFromSupabase() will fetch all data from cloud
   try{fetchHistory()}catch(e){}
