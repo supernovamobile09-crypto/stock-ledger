@@ -10435,7 +10435,55 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
   });
   // Re-fetch on window focus
   window.addEventListener('focus',function(){doRefresh('focus')});
-  console.log('[CrossDevice] Real-time sync enabled (every '+(REFRESH_MS/1000)+'s + on tab focus)');
+  console.log('[CrossDevice] Sync enabled (every '+(REFRESH_MS/1000)+'s + on tab focus)');
+})();
+// ===== SUPABASE REALTIME SUBSCRIPTION (instant cross-device sync) =====
+;(function(){
+  var url=window.SUPABASE_URL,key=window.SUPABASE_ANON_KEY;
+  if(!url||!key||window.location.href.indexOf('nocloud')>=0)return;
+  var ref=url.replace(/^https?:\/\//,'').replace(/\.supabase\.co.*$/,'');
+  if(!ref)return;
+  var wsUrl='wss://'+ref+'.supabase.co/realtime/v1';
+  var channel='realtime:*';
+  var ws=null;
+  var reconnectTimer=null;
+  function connectRealtime(){
+    if(ws&&ws.readyState===WebSocket.OPEN)return;
+    try{
+      ws=new WebSocket(wsUrl+'?apikey='+key+'&token='+key);
+      ws.onopen=function(){console.log('[Realtime] Connected');if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null}};
+      ws.onmessage=function(evt){
+        try{
+          var msg=JSON.parse(evt.data);
+          if(msg.event==='postgres_changes'&&msg.payload&&msg.payload.type){
+            var table=(msg.payload.data||{}).table||(msg.payload.column||'').toLowerCase();
+            if(table.indexOf('transaction')>=0||msg.payload.type==='INSERT'||msg.payload.type==='UPDATE'||msg.payload.type==='DELETE'){
+              console.log('[Realtime] Change detected:',msg.payload.type,table);
+              doRefresh('realtime');
+            }
+          }
+        }catch(e){}
+      };
+      ws.onerror=function(){};
+      ws.onclose=function(){
+        console.log('[Realtime] Disconnected, reconnecting in 5s');
+        reconnectTimer=setTimeout(connectRealtime,5000);
+      };
+    }catch(e){console.warn('[Realtime] Connection error:',e.message);reconnectTimer=setTimeout(connectRealtime,10000)}
+  }
+  // Subscribe to specific table changes
+  function subscribeToChanges(){
+    if(!ws||ws.readyState!==WebSocket.OPEN){setTimeout(subscribeToChanges,1000);return}
+    var subMsg={event:'phx_join',topic:'realtime:transactions',payload:{},ref:''};
+    ws.send(JSON.stringify(subMsg));
+    console.log('[Realtime] Subscribed to transactions table');
+  }
+  connectRealtime();
+  setTimeout(subscribeToChanges,2000);
+  // Also subscribe on page focus (reconnect)
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'&&(!ws||ws.readyState!==WebSocket.OPEN)){connectRealtime();setTimeout(subscribeToChanges,2000)}
+  });
 })();
   // Base tab switcher
   if(typeof window.switchTab !== 'function'){
