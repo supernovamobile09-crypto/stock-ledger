@@ -13264,17 +13264,22 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     warehouse:'Warehouse',history:'History'
   }
   function canAccess(tab){
-    if(!currentUser)return false
+    if(!currentUser){console.log('[canAccess] no currentUser');return false}
     var users=getUsers()
     var u=users[currentUser.username]
-    if(!u)return false
+    if(!u){console.log('[canAccess] no user in users for:',currentUser.username);return false}
     if(u.role==='admin')return true
-    if(u.tabs&&Array.isArray(u.tabs))return u.tabs.indexOf(tab)>=0
+    if(u.tabs&&Array.isArray(u.tabs)){
+      var allowed=u.tabs.indexOf(tab)>=0
+      console.log('[canAccess] tab:',tab,'u.tabs:',u.tabs,'allowed:',allowed)
+      return allowed
+    }
     var role=currentUser.role
+    console.log('[canAccess] no tabs, checking role. currentUser.role:',role,'tabRoles[tab]:',tabRoles[tab])
     if(!role)return false
-    var allowed=tabRoles[tab]
-    if(!allowed)return false
-    return allowed.indexOf(role)>=0
+    var allowed2=tabRoles[tab]
+    if(!allowed2)return false
+    return allowed2.indexOf(role)>=0
   }
   function applyAccess(){
     if(!currentUser){
