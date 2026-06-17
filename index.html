@@ -6138,13 +6138,6 @@ async function syncToSupabase(){
     try{
       await supabaseReqWithRetry('pricing_submitted_keys','POST','',kBody,'resolution=merge-duplicates')
     }catch(e){logSyncError('sync','pricing_submitted_keys',e,{count:kBody.length})}}
-    var usersObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
-    delete usersObj.__plm_config
-    var users=Object.entries(usersObj)
-    if(users.length){var uBody=users.map(function(u){return{username:u[0],password:u[1].password,role:u[1].role,name:u[1].name||u[0]}})
-    try{
-      await supabaseReqWithRetry('users','POST','',uBody,'resolution=merge-duplicates')
-    }catch(e){logSyncError('sync','users',e,{count:uBody.length})}}
     try{
       var plmRaw=localStorage.getItem('plm_links_v1')
       if(plmRaw){
