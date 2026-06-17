@@ -13445,6 +13445,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(el)el.textContent=''
     currentUser=window.currentUser={username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}
     var u=users[user]
+    console.log('[Login] currentUser:',JSON.stringify(currentUser))
+    console.log('[Login] users[user]:',JSON.stringify(u))
     updateUI()
     if(document.getElementById('rememberMe').checked){
       try{localStorage.setItem('rememberedUser',JSON.stringify({username:user,role:users[user].role,name:users[user].name||user,tabs:users[user].tabs}))}catch(e){}
