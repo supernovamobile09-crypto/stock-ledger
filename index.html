@@ -6082,7 +6082,19 @@ async function loadFromSupabase(){
     try{
       users=await supabaseReqWithRetry('users','GET','select=*')
       if(users&&users.length>0&&!window._supabaseDisabled){
-        var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){var x={password:u.password,role:u.role,name:u.name||u.username};if(u.tabs)x.tabs=u.tabs;uobj[u.username]=x}})
+        var uobj={};users.forEach(function(u){
+          if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){
+            var x={password:u.password,name:u.name||u.username}
+            if(u.role&&u.role.indexOf('tab:')===0){
+              x.tabs=u.role.substring(4).split(',')
+              x.role=''
+            }else{
+              x.role=u.role
+              if(u.tabs)x.tabs=u.tabs
+            }
+            uobj[u.username]=x
+          }
+        })
         var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
         for(var dk in existing){
           if(dk==='__plm_config')continue
@@ -13231,7 +13243,11 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     try{
       var uObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
       delete uObj.__plm_config
-      var uBody=Object.entries(uObj).map(function(e){return{username:e[0],password:e[1].password||'',role:e[1].role||'data',name:e[1].name||e[0]}})
+      var uBody=Object.entries(uObj).map(function(e){
+        var role=e[1].role||''
+        if(e[1].tabs&&e[1].tabs.length)role='tab:'+e[1].tabs.join(',')
+        return{username:e[0],password:e[1].password||'',role:role,name:e[1].name||e[0]}
+      })
       if(uBody.length){
         console.log('[UserSync] Syncing '+uBody.length+' users to cloud:',uBody.map(function(u){return u.username+' (role:'+u.role+')'}))
         supabaseReq('users','POST','',uBody,'resolution=merge-duplicates').then(function(res){
@@ -13345,7 +13361,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
   window.loginAs=function(username){
     var users=getUsers()
     if(!users[username])return false
-    currentUser=window.currentUser={username:username,role:users[username].role,name:users[username].name||username}
+    currentUser=window.currentUser={username:username,role:users[username].role,name:users[username].name||username,tabs:users[username].tabs}
     updateUI()
     return true
   }
@@ -13424,7 +13440,19 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       var existing=getUsers()
       console.log('[Login] Local users before merge:',Object.keys(existing))
       if(cloudUsers&&cloudUsers.length>0){
-        var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){var x={password:u.password,role:u.role,name:u.name||u.username};if(u.tabs)x.tabs=u.tabs;uobj[u.username]=x}})
+        var uobj={};cloudUsers.forEach(function(u){
+          if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){
+            var x={password:u.password,name:u.name||u.username}
+            if(u.role&&u.role.indexOf('tab:')===0){
+              x.tabs=u.role.substring(4).split(',')
+              x.role=''
+            }else{
+              x.role=u.role
+              if(u.tabs)x.tabs=u.tabs
+            }
+            uobj[u.username]=x
+          }
+        })
         for(var ek in existing){
           if(ek==='__plm_config')continue
           if(uobj[ek]){
