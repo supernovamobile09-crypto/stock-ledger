@@ -3027,7 +3027,7 @@ input:focus,select:focus,textarea:focus{
   <div class="topbar-links">
     <span id="snSyncStatus" style="font-size:10px;color:var(--sn-text-3);margin-right:4px"></span>
     <button id="snSyncBtn" style="background:#4ade80;color:#000;border:none;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
-    <button id="themeToggle" class="topbar-link" style="display:inline-flex;align-items:center;gap:4px"><i class="fas fa-sun"></i></button>
+    <button id="themeToggle" class="topbar-link" style="display:inline-flex;align-items:center;gap:4px" onclick="var b=document.body;b.classList.toggle('dark-mode');var i=this.querySelector('i');i.className=b.classList.contains('dark-mode')?'fas fa-moon':'fas fa-sun';try{localStorage.setItem('darkMode',b.classList.contains('dark-mode')?'1':'0')}catch(e){}"><i class="fas fa-sun"></i></button>
     <button class="topbar-link" id="snChangePwdLink" style="display:none" onclick="var m=document.getElementById('changePwdModal');if(m)m.style.display='flex'">Change Password</button>
     <button class="topbar-link" id="snChangeUserLink" style="display:none" onclick="var m=document.getElementById('changeUserModal');if(m)m.style.display='flex'">Change Username</button>
     <button class="topbar-link" id="snAdminUserLink" style="display:none" onclick="var m=document.getElementById('adminUserModal');if(m)m.style.display='flex'">Manage Users</button>
@@ -9984,12 +9984,6 @@ async function saveToBackend(){
     refreshAllSections()
     showMsg('Transaction deleted')
   }
-  if(el=byId('themeToggle'))el.addEventListener('click',function(){
-    document.body.classList.toggle('dark-mode')
-    var icon=this.querySelector('i'),label=document.getElementById('themeLabel')
-    if(document.body.classList.contains('dark-mode')){if(icon)icon.className='fas fa-moon';if(label)label.textContent='Dark'}else{if(icon)icon.className='fas fa-sun';if(label)label.textContent='Light'}
-    try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
-  })
   ;(function(){try{if(localStorage.getItem('darkMode')==='1'){document.body.classList.add('dark-mode');var t=document.getElementById('themeToggle');if(t){var ic=t.querySelector('i');if(ic)ic.className='fas fa-moon'}}}catch(e){}})()
   if(el=byId('aiSaveKeyBtn'))el.addEventListener('click',function(){
     var key=document.getElementById('aiApiKey').value.trim()
