@@ -13276,17 +13276,16 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
   function canAccess(tab){
     if(!currentUser)return false
     if(currentUser.role==='admin')return true
-    if(currentUser.tabs&&Array.isArray(currentUser.tabs)&&currentUser.tabs.length){
-      return currentUser.tabs.indexOf(tab)>=0
+    var storedUsers=JSON.parse(localStorage.getItem('loginUsers')||'{}')
+    var storedUser=storedUsers[currentUser.username]
+    var userTabs=null
+    if(storedUser&&storedUser.tabs&&Array.isArray(storedUser.tabs)&&storedUser.tabs.length){
+      userTabs=storedUser.tabs
+    }else if(currentUser.tabs&&Array.isArray(currentUser.tabs)&&currentUser.tabs.length){
+      userTabs=currentUser.tabs
     }
-    var users=getUsers()
-    var u=users[currentUser.username]
-    if(!u)return false
-    if(u.role==='admin')return true
-    if(u.tabs&&Array.isArray(u.tabs)&&u.tabs.length){
-      return u.tabs.indexOf(tab)>=0
-    }
-    var role=currentUser.role||u.role
+    if(userTabs)return userTabs.indexOf(tab)>=0
+    var role=currentUser.role||(storedUser?storedUser.role:null)
     if(!role)return false
     var allowed=tabRoles[tab]
     if(!allowed)return false
