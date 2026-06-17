@@ -9308,7 +9308,7 @@ async function saveDOasPDF(){
     page.style.cssText='width:210mm;padding:12mm 14mm;margin:0 auto;background:#fff;font-size:9pt;color:#000;font-family:Arial,Helvetica,sans-serif;box-shadow:none;flex:none;min-width:0'
     var pdfFixStyle=document.createElement('style')
     pdfFixStyle.id='pdf-fix-style'
-    pdfFixStyle.textContent='#panel-delivery .do-page,.do-page *{color:#000!important;border-color:#888!important}.do-page input,.do-page select{color:#000!important;background:#fff!important}.do-page .main-table th,.do-page .main-table td{border-color:#888!important}'
+    pdfFixStyle.textContent='#panel-delivery .do-page,.do-page *{color:#000!important;border-color:#888!important}.do-page input,.do-page select{color:#000!important;background:#fff!important}.do-page .main-table th,.do-page .main-table td{border-color:#888!important}.do-page .main-table thead th{background:#fff!important;color:#000!important;font-weight:bold}.do-page .th-dispatch,.do-page .th-marks-val,.do-page .th-sub,.do-page .th-sub-right{background:#fff!important;color:#000!important}.do-page .row-color td{color:#000!important;background:#fff!important}.do-page .row-subtotal td{color:#000!important;background:#fff!important}.do-page .row-grand td{color:#000!important;background:#fff!important}'
     document.head.appendChild(pdfFixStyle)
     var savedInputs=[]
     page.querySelectorAll('input').forEach(function(el){
