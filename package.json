@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "acorn": "^8.16.0",
-    "docx": "^8.5.0"
+    "docx": "^8.5.0",
+    "pdf-parse": "^2.4.5"
   }
 }
