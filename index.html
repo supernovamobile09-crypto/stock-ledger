@@ -3027,8 +3027,7 @@ input:focus,select:focus,textarea:focus{
   <div class="topbar-links">
     <span id="snSyncStatus" style="font-size:10px;color:var(--sn-text-3);margin-right:4px"></span>
     <button id="snSyncBtn" style="background:#4ade80;color:#000;border:none;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer" onclick="syncToSupabase()"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button>
-    <button id="themeToggle" class="topbar-link" style="display:inline-flex;align-items:center;gap:4px" onclick="document.body.classList.toggle('dark-mode');var i=this.querySelector('i');if(document.body.classList.contains('dark-mode')){i.className='fas fa-moon'}else{i.className='fas fa-sun'}try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}"><i class="fas fa-sun"></i></button>
-    <script>try{if(localStorage.getItem('darkMode')==='1'){document.body.classList.add('dark-mode');var t=document.getElementById('themeToggle');if(t)t.querySelector('i').className='fas fa-moon'}}catch(e){}</script>
+    <button id="themeToggle" class="topbar-link" style="display:inline-flex;align-items:center;gap:4px"><i class="fas fa-sun"></i></button>
     <button class="topbar-link" id="snChangePwdLink" style="display:none" onclick="var m=document.getElementById('changePwdModal');if(m)m.style.display='flex'">Change Password</button>
     <button class="topbar-link" id="snChangeUserLink" style="display:none" onclick="var m=document.getElementById('changeUserModal');if(m)m.style.display='flex'">Change Username</button>
     <button class="topbar-link" id="snAdminUserLink" style="display:none" onclick="var m=document.getElementById('adminUserModal');if(m)m.style.display='flex'">Manage Users</button>
@@ -9991,7 +9990,7 @@ async function saveToBackend(){
     if(document.body.classList.contains('dark-mode')){if(icon)icon.className='fas fa-moon';if(label)label.textContent='Dark'}else{if(icon)icon.className='fas fa-sun';if(label)label.textContent='Light'}
     try{localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'1':'0')}catch(e){}
   })
-  ;(function(){try{if(localStorage.getItem('darkMode')==='1')document.body.classList.add('dark-mode')}catch(e){}})()
+  ;(function(){try{if(localStorage.getItem('darkMode')==='1'){document.body.classList.add('dark-mode');var t=document.getElementById('themeToggle');if(t){var ic=t.querySelector('i');if(ic)ic.className='fas fa-moon'}}}catch(e){}})()
   if(el=byId('aiSaveKeyBtn'))el.addEventListener('click',function(){
     var key=document.getElementById('aiApiKey').value.trim()
     if(key){try{localStorage.setItem('aiApiKey',key)}catch(e){};document.getElementById('aiStatus').textContent='✓ Key saved'}
