@@ -10403,7 +10403,11 @@ if(window.location.href.indexOf('nocloud')<0&&!window._supabaseDisabled)loadFrom
         try{if(typeof window.renderNotifs==='function')window.renderNotifs()}catch(e){}
         try{if(typeof window.refreshApprovalView==='function')window.refreshApprovalView()}catch(e){}
         try{if(typeof window.refreshPricingView==='function')window.refreshPricingView()}catch(e){}
+        try{if(window.PLM&&window.PLM.renderLinks)window.PLM.renderLinks()}catch(e){}
+        try{if(window.PLM&&window.PLM.renderDashboard)window.PLM.renderDashboard()}catch(e){}
       }
+      // Always refresh PLM from cloud
+      try{if(window.PLM&&window.PLM.loadFromCloud)window.PLM.loadFromCloud()}catch(e){}
     }catch(e){console.warn('[CrossDevice] refresh:',e.message)}
   }
   // Periodic refresh
@@ -14343,7 +14347,23 @@ window.settingsRestore=function(){
   let NOTIFS=load(LS_NOTIF,[]);
   let SETTINGS=Object.assign({},DEFAULTS,load(LS_SET,{}));
 
-  const persistLinks=()=>save(LS_LINKS,LINKS);
+  const persistLinks=()=>{save(LS_LINKS,LINKS); _plmChanged=true; debouncedSyncPLM();};
+  var _plmChanged=false;
+  var _plmSyncTimer=null;
+  var debouncedSyncPLM=function(){
+    if(_plmSyncTimer)clearTimeout(_plmSyncTimer);
+    _plmSyncTimer=setTimeout(function(){
+      if(!_plmChanged)return;
+      _plmChanged=false;
+      try{
+        var plmRaw=localStorage.getItem('plm_links_v1');
+        if(plmRaw){
+          var plmBody={username:'__plm_config',password:'__plm',role:'__plm',name:plmRaw};
+          supabaseReq('users','POST','',plmBody,'resolution=merge-duplicates').catch(function(){});
+        }
+      }catch(e){console.warn('PLM cloud sync error:',e)}
+    },2000);
+  };
   const persistNotifs=()=>save(LS_NOTIF,NOTIFS);
   const persistSettings=()=>save(LS_SET,SETTINGS);
 
