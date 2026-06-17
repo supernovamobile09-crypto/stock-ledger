@@ -13217,7 +13217,8 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
   function getUsers(){
     try{return JSON.parse(localStorage.getItem(USERS_KEY))||{}}catch(e){return {}}
   }
-  function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){};syncUsersToCloud()}
+  function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){}}
+  function saveUsersAndSync(u){saveUsers(u);syncUsersToCloud()}
   function syncUsersToCloud(){
     try{
       var uObj=JSON.parse(localStorage.getItem('loginUsers')||'{}')
@@ -13434,7 +13435,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(!currentUser||!users[currentUser.username]){if(el)el.textContent='Not logged in';return}
     if(users[currentUser.username].password!==cur){if(el)el.textContent='Current password is wrong';return}
     users[currentUser.username].password=nw
-    saveUsers(users)
+    saveUsersAndSync(users)
     if(el)el.textContent=''
     var m=document.getElementById('changePwdModal');if(m)m.style.display='none'
     alert('Password changed successfully')
@@ -13487,7 +13488,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var users=getUsers()
     if(!users[un]){if(el)el.textContent='User not found';return}
     users[un].password=np
-    saveUsers(users)
+    saveUsersAndSync(users)
     if(el)el.textContent=''
     alert('Password reset successfully! You can now log in with your new password.')
     var m=document.getElementById('forgotPwdModal');if(m)m.style.display='none'
@@ -13528,7 +13529,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){if(el)el.textContent='Invalid email format';return}
       users[currentUser.username].email=em
     }
-    saveUsers(users)
+    saveUsersAndSync(users)
     if(el)el.textContent=''
     var unameEl=document.getElementById('userNameDisplay');if(unameEl)unameEl.textContent=currentUser.name||currentUser.username
     var snu=document.getElementById('snUserName');if(snu)snu.textContent=currentUser.name||currentUser.username
@@ -13610,7 +13611,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     if(editUser&&editUser!==un&&users[un]){alert('Username "'+un+'" already taken');return}
     if(editUser&&editUser!==un){delete users[editUser]}
     users[un]={password:pw||users[editUser]?.password||'',tabs:tabs,name:un}
-    saveUsers(users)
+    saveUsersAndSync(users)
     clearUserForm()
     renderUserList()
     alert('User "'+un+'" saved')
@@ -13643,7 +13644,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
         if(!confirm('Delete user "'+u+'"?'))return
         var users=getUsers()
         delete users[u]
-        saveUsers(users)
+        saveUsersAndSync(users)
         renderUserList()
       })
     })
