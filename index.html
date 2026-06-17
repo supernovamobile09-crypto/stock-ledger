@@ -5661,6 +5661,9 @@ const DB = {
     for (var i = 0; i < this.db.length; i++) { if (String(this.db[i].id) === String(id)) { idx = i; break; } }
     if (idx >= 0) {
       this.db.splice(idx, 1);
+      // Track deleted ID so cloud re-download doesn't bring it back
+      this._deletedIds.push(String(id));
+      this._saveDeletedIds();
       var self=this
       ;(async function(){
         try{
