@@ -5623,7 +5623,9 @@ function safeAddEvent(el,type,fn,opts){
 const DB = {
   db: [],
   _deletedIds: [], // Track IDs deleted locally (for Supabase sync)
-  init() { this.db = []; },
+  _saveDeletedIds(){try{localStorage.setItem('dbDeletedIds',JSON.stringify(this._deletedIds))}catch(e){}},
+  _loadDeletedIds(){try{var d=localStorage.getItem('dbDeletedIds');if(d)this._deletedIds=JSON.parse(d)}catch(e){}},
+  init() { this.db = []; this._loadDeletedIds(); },
   save() { },
   nextId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); },
   getTransactions() { return [...this.db].reverse(); },
@@ -6004,8 +6006,11 @@ async function loadFromSupabase(){
       if(cloudTx&&cloudTx.length>0&&!window._supabaseDisabled){
         var localTx=[];try{localTx=typeof DB.getTransactions==='function'?DB.getTransactions():[]}catch(e){}
         var map={};
-        localTx.forEach(function(t){if(t.id)map[t.id]=t})
+        var deleteSet={};
+        if(DB._deletedIds&&DB._deletedIds.length){DB._deletedIds.forEach(function(id){deleteSet[id]=true})}
+        localTx.forEach(function(t){if(t.id&&!deleteSet[t.id])map[t.id]=t})
         cloudTx.forEach(function(ct){
+          if(deleteSet[ct.id])return;
           if(!map[ct.id]){
             map[ct.id]=ct
           }else{
@@ -6154,6 +6159,27 @@ async function syncToSupabase(){
         }
       }
     }catch(e){logSyncError('sync','plm_links',e)}
+    // Re-delete tracked IDs from cloud and sync to pricing_submitted_keys
+    try{
+      if(DB._deletedIds&&DB._deletedIds.length){
+        var keysObj2=JSON.parse(localStorage.getItem('pricingSubmittedKeys')||'{}')
+        DB._deletedIds.forEach(function(id){keysObj2['_del_'+id]=1})
+        localStorage.setItem('pricingSubmittedKeys',JSON.stringify(keysObj2))
+        var delKeys=Object.entries(keysObj2)
+        if(delKeys.length){var delBody=delKeys.map(function(k){return{key:k[0],qty:k[1]}})
+        try{await supabaseReqWithRetry('pricing_submitted_keys','POST','',delBody,'resolution=merge-duplicates')}catch(e){}}
+        var failedIds=[]
+        for(var d=0;d<DB._deletedIds.length;d++){
+          try{
+            var delUrl=SUPABASE_URL+'/rest/v1/transactions?id=eq.'+encodeURIComponent(DB._deletedIds[d])
+            var resp=await fetch(delUrl,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'}})
+            if(!resp.ok&&resp.status!==404)failedIds.push(DB._deletedIds[d])
+          }catch(e){failedIds.push(DB._deletedIds[d])}
+        }
+        DB._deletedIds=failedIds
+        DB._saveDeletedIds()
+      }
+    }catch(e){console.warn('[Supabase] re-delete error:',e)}
     try{
       if(db.length>0){
         var verify=await supabaseReq('transactions','GET','select=id&limit=1')
