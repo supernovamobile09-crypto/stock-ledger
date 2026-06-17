@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS users (
   username TEXT PRIMARY KEY,
   password TEXT,
   role TEXT,
-  name TEXT
+  name TEXT,
+  tabs JSONB DEFAULT '[]'::jsonb
 );
 
 -- 3. Pricing pending (DO submissions)

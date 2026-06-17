@@ -6082,12 +6082,12 @@ async function loadFromSupabase(){
     try{
       users=await supabaseReqWithRetry('users','GET','select=*')
       if(users&&users.length>0&&!window._supabaseDisabled){
-        var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username,tabs:u.tabs||[]}})
+        var uobj={};users.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){var x={password:u.password,role:u.role,name:u.name||u.username};if(u.tabs)x.tabs=u.tabs;uobj[u.username]=x}})
         var existing={};try{existing=JSON.parse(localStorage.getItem('loginUsers')||'{}')}catch(e){}
         for(var dk in existing){
           if(dk==='__plm_config')continue
           if(uobj[dk]){
-            if(!uobj[dk].tabs||!uobj[dk].tabs.length)uobj[dk].tabs=existing[dk].tabs||[]
+            if(!uobj[dk].tabs&&existing[dk].tabs&&existing[dk].tabs.length)uobj[dk].tabs=existing[dk].tabs
           }else{
             uobj[dk]=existing[dk]
           }
@@ -13279,7 +13279,7 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
     var u=users[currentUser.username]
     if(!u){console.log('[canAccess] no user in users for:',currentUser.username);return false}
     if(u.role==='admin')return true
-    if(u.tabs&&Array.isArray(u.tabs)){
+    if(u.tabs&&Array.isArray(u.tabs)&&u.tabs.length){
       var allowed=u.tabs.indexOf(tab)>=0
       console.log('[canAccess] tab:',tab,'u.tabs:',u.tabs,'allowed:',allowed)
       return allowed
@@ -13424,11 +13424,11 @@ html+='<span class="appr-badge pending">'+(entry._directFromDO?'DO Direct':'Pend
       var existing=getUsers()
       console.log('[Login] Local users before merge:',Object.keys(existing))
       if(cloudUsers&&cloudUsers.length>0){
-        var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_'))uobj[u.username]={password:u.password,role:u.role,name:u.name||u.username,tabs:u.tabs||[]}})
+        var uobj={};cloudUsers.forEach(function(u){if(u.username!=='__plm_config'&&!u.username.startsWith('_plm_')){var x={password:u.password,role:u.role,name:u.name||u.username};if(u.tabs)x.tabs=u.tabs;uobj[u.username]=x}})
         for(var ek in existing){
           if(ek==='__plm_config')continue
           if(uobj[ek]){
-            if(!uobj[ek].tabs||!uobj[ek].tabs.length)uobj[ek].tabs=existing[ek].tabs||[]
+            if(!uobj[ek].tabs&&existing[ek].tabs&&existing[ek].tabs.length)uobj[ek].tabs=existing[ek].tabs
           }else{
             uobj[ek]=existing[ek]
           }
